@@ -6,6 +6,6 @@ overig/
 __pycache__/
 createdb.py
 .DS_Store
-templates/_temp.html
+templates/temp.html
 data/
 model.pkl
