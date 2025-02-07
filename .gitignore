@@ -1,0 +1,11 @@
+# Ignore the following files and folders
+node_modules/
+instance/
+overig/
+.venv/
+__pycache__/
+createdb.py
+.DS_Store
+templates/_temp.html
+data/
+model.pkl
