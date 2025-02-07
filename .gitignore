@@ -8,4 +8,5 @@ createdb.py
 .DS_Store
 templates/temp.html
 data/
-model.pkl
+model/
+.ipynb_checkpoints/
