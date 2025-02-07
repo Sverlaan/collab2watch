@@ -1,0 +1,121 @@
+
+
+
+
+
+
+
+
+
+
+/* Add a hover effect to images */
+.hover-zoom img {
+    transition: transform 0.3s ease; /* Smooth scaling effect */
+}
+.hover-zoom img:hover {
+    transform: scale(1.10); /* Slightly enlarge the image on hover */
+    /*box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for emphasis */
+}
+
+.hover-zoom-card .card {
+    transition: transform 0.3s ease; /* Smooth scaling effect */
+}
+
+.hover-zoom-card .card:hover {
+    transform: scale(1.05); /* Slightly enlarge the card on hover */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for emphasis */
+    border-color: goldenrod;
+}
+
+.card-img-wrap {
+  overflow: hidden;
+  position: relative;
+}
+.card-img-wrap:after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+}
+.card-img-wrap img {
+  transition: transform .25s;
+  width: 100%;
+}
+.card-img-wrap:hover img {
+  transform: scale(1.1);
+}
+
+
+
+.carousel-control-prev,
+.carousel-control-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-70%);
+    z-index: 10;
+    filter: invert(100%);
+}
+.carousel-control-prev {
+    left: -70px; 
+}
+.carousel-control-next {
+    right: -70px;
+}
+.carousel-caption {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    text-align: center;
+    color: rgb(180, 180, 180);
+    width: 100%;
+    border-bottom-right-radius: 6px;
+    border-bottom-left-radius: 6px;
+    background: linear-gradient(to top, rgba(79, 79, 79, 0.7), rgba(79, 79, 79, 0.7)); 
+    z-index: 10;
+    /* Darker at the bottom, fading to transparent */
+}
+.carousel-item{
+    position: relative;
+}
+
+
+.card-img-top-hor {
+    height: 100px;
+    object-fit: cover;
+}
+
+.no-spacing {
+  margin: 0;
+  line-height: 1.2; /* Adjust if needed */
+}
+
+
+
+.placeholder {
+    background-color: #cecece;
+    /* color:rgb(114, 207, 114); */
+    animation: flicker 1.5s infinite;
+    border-radius: 8px;
+}
+
+.placeholder-img {
+    height: 300px;   
+    width: 100%;
+}
+.placeholder-img2 {
+    height: 240px;   
+    width: 100%;
+}
+
+@keyframes flicker {
+    0% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.9;
+    }
+    100% {
+        opacity: 0.6;
+    }
+}
