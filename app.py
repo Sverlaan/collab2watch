@@ -1,6 +1,7 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from scraper import get_user_data, get_common_watchlist, get_movie_data, get_rewatch_combo
+from model import get_similar_movies
 from timeit import default_timer as timer
 import random
 from tqdm import tqdm
@@ -97,6 +98,20 @@ def fetch_rewatch_combo(username1, username2, minRating, maxRating, minRuntime, 
     print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(rewatch_combo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
+
+
+@app.route('/fetch_similar_movies/<string:slug>', methods=['GET'])
+def fetch_similar_movies(slug):
+
+    print(f"Fetching similar movies for {slug}")
+    start = timer()
+
+    similar_movies = get_similar_movies(slug)
+
+    print(similar_movies)
+    print(f"Time taken: {timer() - start}")
+
+    return retrieve_movies(similar_movies)
 
 
 def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=600, minYear=1870, maxYear=2030):
