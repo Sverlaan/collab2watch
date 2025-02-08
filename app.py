@@ -99,7 +99,7 @@ def fetch_rewatch_combo(username1, username2, minRating, maxRating, minRuntime, 
     return retrieve_movies(rewatch_combo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
 
 
-def retrieve_movies(movie_slugs, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=600, minYear=1870, maxYear=2030):
 
     start = timer()
     print(f"Start scraping unseen movies' details and adding to db:")
