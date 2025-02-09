@@ -180,6 +180,8 @@ document.body.addEventListener("click", async function (event) {
         let existingModal = document.getElementById("dynamicModal");
         if (existingModal) {
             existingModal.remove();
+            document.querySelector(".modal-backdrop").remove();
+            //document.querySelector(".modal-backdrop").remove();
         }
 
         let slug = event.target.getAttribute("slug");
@@ -188,7 +190,7 @@ document.body.addEventListener("click", async function (event) {
         const movie = await response.json();
 
         // Create modal HTML
-        let modalHtml = CreateModal(movie);
+        let modalHtml = await CreateModal(movie);
 
         // Append modal to body
         document.body.insertAdjacentHTML("beforeend", modalHtml);
@@ -197,144 +199,96 @@ document.body.addEventListener("click", async function (event) {
         let modal = new bootstrap.Modal(document.getElementById("dynamicModal"));
         modal.show();
 
+        console.log("Get similar movies!");
+        const response2 = await fetch(`/fetch_similar_movies/${movie.slug}`);
+        if (!response2.ok) throw new Error("Similar movies not found");
+        const data = await response2.json();
+
+        for (let i = 0; i < data.length; i++) {
+            let similarMovie = data[i];
+            let similarMovieHtml = `
+            <div class="col">
+                <img src="${similarMovie.poster}" 
+                    class="card-img-top rounded open-movie-modal" 
+                    alt="${similarMovie.title}"
+                    slug="${similarMovie.slug}">
+            </div>
+            `;
+            document.getElementById("similarMovies").insertAdjacentHTML("beforeend", similarMovieHtml);
+        }
+
         // Remove modal from DOM after it's closed
         document.getElementById("dynamicModal").addEventListener("hidden.bs.modal", function () {
             this.remove();
+            document.body.style.overflow = "";
+            //document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+            //document.querySelector(".modal-backdrop").remove();
         });
     }
 });
 
-function CreateModal(movie) {
-    // Create modal HTML
+async function CreateModal(movie) {
 
-    // if enhance button is clicked, show more details
-    enhanceButton = document.getElementById("btn-check-outlined");
-    if (enhanceButton.checked) {
-        let modalHtml = `
-            <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
-                <div class="modal-content">
-                    <div class="modal-body p-0">
-                        <div class="card position-relative">
-                            <div class="card-img-wrap">
-                                <button type="button" 
-                                        class="btn-close position-absolute top-0 end-0 m-2"
-                                        data-bs-dismiss="modal" 
-                                        aria-label="Close"
-                                        style="z-index: 10; background-color: white; border-radius: 50%; padding: 10px;">
-                                </button>
-                                <img src="${movie.banner}" 
-                                    class="card-img-top img-fluid" 
-                                    alt="${movie.title}"
-                                    style="object-fit: cover; height: 300px; object-position: top;">
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-lg-2">
-                                        <img src="${movie.poster}" 
-                                            class="card-img rounded" 
-                                            style="object-fit: contain;" 
-                                            alt="${movie.title}">
-                                    </div>
-                                    <div class="col-lg-10">
-                                        <a href="${movie.letterboxd_link}" class="text-decoration-none" style="font-size: 1.5em; font-weight: bolder;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
-                                        <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
-                                        <p class="card-text">${movie.description}</p>
-                                        <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
-                                        <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
-                                        <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
-                                    </div>
+    let modalHtml = `
+        <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
+            <div class="modal-content">
+                <div class="modal-body p-0">
+                    <div class="card position-relative">
+                        <div class="card-img-wrap">
+                            <button type="button" 
+                                    class="btn-close position-absolute top-0 end-0 m-2"
+                                    data-bs-dismiss="modal" 
+                                    aria-label="Close"
+                                    style="z-index: 10; background-color: white; border-radius: 50%; padding: 10px;">
+                            </button>
+                            <img src="${movie.banner}" 
+                                class="card-img-top img-fluid" 
+                                alt="${movie.title}"
+                                style="object-fit: cover; height: 300px; object-position: top;">
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-lg-2">
+                                    <img src="${movie.poster}" 
+                                        class="card-img rounded" 
+                                        style="object-fit: contain;" 
+                                        alt="${movie.title}">
                                 </div>
-                                <hr class="my-3 w-75 mx-auto">
-                                <div class="row g-3 justify-content-center">
-                                    <div class="col-md-6">
-                                        <h4 class="text-center mb-2 text-muted">${movie.rating}</h4>
-                                        <p class="text-center text-muted">Letterboxd</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h4 class="text-center mb-2 text-warning">TBA</h4>
-                                        <p class="text-center text-warning">Expected score</p>
-                                    </div>                            
-                                </div>
-                                <hr class="my-3 w-75 mx-auto">
-                                <div class="row g-3 justify-content-center">
-                                    <h5 class="text-center mb-2 text-warning">Similar Films:</h5>
-                                    <div class="col-md-3">
-                                        <h6 class="text-center mb-2 text-muted">Movie1</h6>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h6 class="text-center mb-2 text-muted">Movie2</h6>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h6 class="text-center mb-2 text-muted">Movie3</h6>
-                                    </div>
-                                    <div class="col-md-3">
-                                        <h6 class="text-center mb-2 text-muted">Movie4</h6
-                                    </div>
+                                <div class="col-lg-10">
+                                    <a href="${movie.letterboxd_link}" class="text-decoration-none" style="font-size: 1.5em; font-weight: bolder;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
+                                    <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
+                                    <p class="card-text">${movie.description}</p>
+                                    <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
+                                    <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
+                                    <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
                                 </div>
                             </div>
+                            
+                            <div class="row g-3 justify-content-center">
+                                <div class="col-md-6">
+                                    <h4 class="text-center mb-2 text-muted">${movie.rating}</h4>
+                                    <p class="text-center text-muted">Letterboxd</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h4 class="text-center mb-2 text-warning">TBA</h4>
+                                    <p class="text-center text-warning">Expected score</p>
+                                </div>                            
+                            </div>
+
+                            <hr class="my-3 w-75 mx-auto">
+                            <h5 class="text-center text-muted">Movies that are similar:</h5>   
+                            <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
+                            </div>
+                            
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-        return modalHtml;
-    }
-    else {
-        let modalHtml = `
-            <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
-                <div class="modal-content">
-                    <div class="modal-body p-0">
-                        <div class="card position-relative">
-                            <div class="card-img-wrap">
-                                <button type="button" 
-                                        class="btn-close position-absolute top-0 end-0 m-2"
-                                        data-bs-dismiss="modal" 
-                                        aria-label="Close"
-                                        style="z-index: 10; background-color: white; border-radius: 50%; padding: 10px;">
-                                </button>
-                                <img src="${movie.banner}" 
-                                    class="card-img-top img-fluid" 
-                                    alt="${movie.title}"
-                                    style="object-fit: cover; height: 300px; object-position: top;">
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3">
-                                    <div class="col-lg-2">
-                                        <img src="${movie.poster}" 
-                                            class="card-img rounded" 
-                                            style="object-fit: contain;" 
-                                            alt="${movie.title}">
-                                    </div>
-                                    <div class="col-lg-10">
-                                        <a href="${movie.letterboxd_link}" class="text-decoration-none" style="font-size: 1.5em; font-weight: bolder;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
-                                        <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
-                                        <p class="card-text">${movie.description}</p>
-                                        <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
-                                        <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
-                                        <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
-                                    </div>
-                                </div>
-                                <hr class="my-3 w-75 mx-auto">
-                                <div class="row g-3 justify-content-center">
-                                    <div class="col-md-6">
-                                        <h4 class="text-center mb-2 text-muted">${movie.rating}</h4>
-                                        <p class="text-center text-muted">Letterboxd</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h4 class="text-center mb-2 text-warning">TBA</h4>
-                                        <p class="text-center text-warning">Expected score</p>
-                                    </div>                            
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        return modalHtml;
-    }
+        </div>
+    `;
+    
+    return modalHtml;
 }
 
 
