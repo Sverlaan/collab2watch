@@ -100,23 +100,23 @@ def fetch_rewatch_combo(username1, username2, minRating, maxRating, minRuntime, 
     return retrieve_movies(rewatch_combo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
 
 
-@app.route('/fetch_similar_movies/<string:slug>', methods=['GET'])
-def fetch_similar_movies(slug):
+@app.route('/fetch_similar_movies/<string:slug>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     print(f"Fetching similar movies for {slug}")
     start = timer()
 
-    hits, similar_movies = get_similar_movies(slug, top_n=4)
+    hits, similar_movies = get_similar_movies(slug, top_n=100)
     if hits == False:
         return jsonify({"error": "Movie ID not in training set"})
 
     print(similar_movies)
     print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(similar_movies)
+    return retrieve_movies(similar_movies, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear, top_k=4)
 
 
-def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=600, minYear=1870, maxYear=2030):
+def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=600, minYear=1870, maxYear=2030, top_k=-1):
 
     start = timer()
     print(f"Start scraping unseen movies' details and adding to db:")
@@ -137,8 +137,11 @@ def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRunt
                                           Movie.year >= minYear, Movie.year <= maxYear,
                                           Movie.slug.in_(movie_slugs)).all()
 
-    movies = [movie.to_dict() for movie in retrieved_movies]
-    # movies = sorted(movies, key=lambda x: x['rating'], reverse=True)
+    # Sort the retrieved movies in the order of movie_slugs
+    movie_dict = {movie.slug: movie.to_dict() for movie in retrieved_movies}
+    movies = [movie_dict[slug] for slug in movie_slugs if slug in movie_dict]
+    movies = movies[:top_k] if top_k != -1 else movies
+
     print(f"Time taken: {timer() - start}")
 
     return jsonify(movies)

@@ -181,6 +181,8 @@ document.body.addEventListener("click", async function (event) {
         if (existingModal) {
             existingModal.remove();
             document.querySelector(".modal-backdrop").remove();
+            
+
             //document.querySelector(".modal-backdrop").remove();
         }
 
@@ -199,8 +201,16 @@ document.body.addEventListener("click", async function (event) {
         let modal = new bootstrap.Modal(document.getElementById("dynamicModal"));
         modal.show();
 
+        // Get maximum runtime from the form
+        const minRating = document.getElementById('minRating').value;
+        const maxRating = document.getElementById('maxRating').value;
+        const minRuntime = document.getElementById('minRuntime').value;
+        const maxRuntime = document.getElementById('maxRuntime').value;
+        const minYear = document.getElementById('minYear').value;
+        const maxYear = document.getElementById('maxYear').value;
+
         console.log("Get similar movies!");
-        const response2 = await fetch(`/fetch_similar_movies/${movie.slug}`);
+        const response2 = await fetch(`/fetch_similar_movies/${movie.slug}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response2.ok) throw new Error("Similar movies not found");
         const data = await response2.json();
 
