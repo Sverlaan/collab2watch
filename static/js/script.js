@@ -187,7 +187,7 @@ document.body.addEventListener("click", async function (event) {
         }
 
         let slug = event.target.getAttribute("slug");
-        const response = await fetch(`/fetch_movie_data_for_modal/${slug}`);
+        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${inputUsername1.value}/${inputUsername2.value}`);
         if (!response.ok) throw new Error("Something went wrong getting movie modal data");
         const movie = await response.json();
 
@@ -239,6 +239,8 @@ document.body.addEventListener("click", async function (event) {
 
 async function CreateModal(movie) {
 
+    let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png" //"https://a.ltrbxd.com/logos/letterboxd-logo-v-neg-rgb.svg" 
+
     let modalHtml = `
         <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
@@ -275,19 +277,39 @@ async function CreateModal(movie) {
                                 </div>
                             </div>
                             
-                            <div class="row g-3 justify-content-center">
-                                <div class="col-md-6">
-                                    <h4 class="text-center mb-2 text-muted">${movie.rating}</h4>
-                                    <p class="text-center text-muted">Letterboxd</p>
+                            <div class="row g-3 mt-2 mb-3 justify-content-center">
+                                <div class="col-md-2 d-flex flex-column align-items-center">
+                                    <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
+                                    <img src="${letterboxd_logo}" style="width: 50px; height: 50px;">
+                                    <p class="text-muted text-center"><small>Letterboxd</small></p>
                                 </div>
-                                <div class="col-md-6">
-                                    <h4 class="text-center mb-2 text-warning">TBA</h4>
-                                    <p class="text-center text-warning">Expected score</p>
-                                </div>                            
+                                <div class="col-md-3 d-flex flex-column align-items-center">
+                                    <h5 class="text-center mb-2 text-warning">${movie.pred_1}</h5>
+                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid grey;">
+                                    <p class="text-muted text-center"><small>${user1_name}</small></p>
+                                </div>     
+                                <div class="col-md-3 d-flex flex-column align-items-center">
+                                    <h5 class="text-center mb-2 text-warning">${movie.pred_2}</h5>
+                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid grey;">
+                                    <p class="text-muted text-center"><small>${user2_name}</small></p>
+                                </div>    
+                                <div class="col-md-3 d-flex flex-column align-items-center">
+                                    <h5 class="text-center mb-2 text-warning">${movie.pred_combined}</h5>
+                                    <div class="position-relative" style="width: 60px; height: 50px; left: 50%; transform: translateX(-120%);">
+                                        <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
+                                            style="width: 50px; height: 50px; left: 0; z-index: 2; border: 1px solid grey;">
+                                        <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
+                                            style="width: 50px; height: 50px; left: 25px; z-index: 1; border: 1px solid grey;">
+                                    </div>
+                                    <p class="text-muted text-center"><small>Combined</small></p>
+                                </div>                          
                             </div>
 
-                            <hr class="my-3 w-75 mx-auto">
-                            <h5 class="text-center text-muted">Movies that are similar:</h5>   
+                            <hr class="my-3 mt-4 w-75 mx-auto">
+
+                            <div class="w-100 p-2">
+                                <h5 class="text-center text-warning">Movies that are similar:</h5>   
+                            </div>
                             <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
                             </div>
                             
