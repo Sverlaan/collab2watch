@@ -48,35 +48,35 @@ def get_movie_name(id, item_mapping):
 
 
 global model, trainset, item_mapping
-model, trainset, item_mapping = None, None, None
+model, trainset, item_mapping = get_pretrained_model()
 
 
 def get_similar_movies(movie_slug, top_n=5):
 
     global model, trainset, item_mapping
 
-    if model is None or trainset is None or item_mapping is None:
-        model, trainset, item_mapping = get_pretrained_model()
+    try:
+        if model is None or trainset is None or item_mapping is None:
+            model, trainset, item_mapping = get_pretrained_model()
 
-    movie_id = get_movie_id(movie_slug, item_mapping)
+        movie_id = get_movie_id(movie_slug, item_mapping)
 
-    movie_id_mapping = {inner_id: trainset.to_raw_iid(inner_id) for inner_id in trainset.all_items()}
+        movie_id_mapping = {inner_id: trainset.to_raw_iid(inner_id) for inner_id in trainset.all_items()}
 
-    if movie_id not in movie_id_mapping.values():
-        return "Movie ID not in training set"
+        inner_id = trainset.to_inner_iid(movie_id)
 
-    inner_id = trainset.to_inner_iid(movie_id)
+        movie_embeddings = model.qi
 
-    movie_embeddings = model.qi
+        similarities = cosine_similarity([movie_embeddings[inner_id]], movie_embeddings)[0]
+        similar_indices = similarities.argsort()[::-1][1:top_n+1]
 
-    similarities = cosine_similarity([movie_embeddings[inner_id]], movie_embeddings)[0]
-    similar_indices = similarities.argsort()[::-1][1:top_n+1]
+        similar_movie_ids = [movie_id_mapping[idx] for idx in similar_indices]
 
-    similar_movie_ids = [movie_id_mapping[idx] for idx in similar_indices]
+        similar_movie_slugs = [get_movie_name(movie_id, item_mapping) for movie_id in similar_movie_ids]
 
-    similar_movie_slugs = [get_movie_name(movie_id, item_mapping) for movie_id in similar_movie_ids]
-
-    return similar_movie_slugs
+        return True, similar_movie_slugs
+    except:
+        return False, None
 
 
 if __name__ == '__main__':

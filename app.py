@@ -106,7 +106,9 @@ def fetch_similar_movies(slug):
     print(f"Fetching similar movies for {slug}")
     start = timer()
 
-    similar_movies = get_similar_movies(slug)
+    hits, similar_movies = get_similar_movies(slug, top_n=4)
+    if hits == False:
+        return jsonify({"error": "Movie ID not in training set"})
 
     print(similar_movies)
     print(f"Time taken: {timer() - start}")
@@ -136,7 +138,7 @@ def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRunt
                                           Movie.slug.in_(movie_slugs)).all()
 
     movies = [movie.to_dict() for movie in retrieved_movies]
-    movies = sorted(movies, key=lambda x: x['rating'], reverse=True)
+    # movies = sorted(movies, key=lambda x: x['rating'], reverse=True)
     print(f"Time taken: {timer() - start}")
 
     return jsonify(movies)
