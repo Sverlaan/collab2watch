@@ -1,11 +1,12 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from scraper import get_user_data, get_common_watchlist, get_movie_data, get_rewatch_combo
-from model import get_similar_movies
+from model import get_similar_movies, get_prediction
 from timeit import default_timer as timer
 import random
 from tqdm import tqdm
 import pandas as pd
+
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
@@ -58,8 +59,8 @@ def get_user(username):
     return jsonify(user_data)
 
 
-@app.route('/fetch_movie_data_for_modal/<string:slug>', methods=['GET'])
-def fetch_movie_data_for_modal(slug):
+@app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])
+def fetch_movie_data_for_modal(slug, username1, username2):
 
     print(f"Fetching movie data for {slug} from db")
     start = timer()
@@ -67,8 +68,22 @@ def fetch_movie_data_for_modal(slug):
     if movie is None:
         raise Exception(f"{slug} not in db. Since this is for opening a modal, this should not happen.")
 
+    # Get predicted ratings for both users
+    movie_data = movie.to_dict()
+
+    pred_rating_1 = get_prediction(username1, slug)
+    pred_rating_2 = get_prediction(username2, slug)
+
+    movie_data["pred_1"] = str(pred_rating_1) + "%" if pred_rating_1 != "TBA" else "TBA"
+    movie_data["pred_2"] = str(pred_rating_2) + "%" if pred_rating_2 != "TBA" else "TBA"
+
+    if movie_data["pred_1"] == "TBA" or movie_data["pred_2"] == "TBA":
+        movie_data["pred_combined"] = "TBA"
+    else:
+        movie_data["pred_combined"] = str(int((pred_rating_1 + pred_rating_2) / 2)) + "%"
+
     print(f"Time taken: {timer() - start}")
-    return jsonify(movie.to_dict())
+    return jsonify(movie_data)
 
 
 @app.route('/fetch_common_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
