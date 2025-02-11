@@ -8,7 +8,7 @@ import time
 global user_instances
 user_instances = {}
 user_watchlists = {}
-user_allfilms = {}
+user_ratings = {}
 
 
 def get_movie_data(movie_slug):
@@ -94,17 +94,29 @@ def get_user_data(username):
     return user_info
 
 
+def get_user_rating(username, movie_slug):
+    """Get user rating for a movie"""
+    if user_instances.get(username) is None:
+        user_inst = user.User(username)
+        user_instances[username] = user_inst
+    user_inst = user_instances[username]
+
+    if user_ratings.get(username) is None:
+        user_ratings[username] = {key: value['rating']/2.0 for key, value in user_inst.get_films()['movies'].items() if value['rating'] is not None}
+
+    if movie_slug in user_ratings[username]:
+        return user_ratings[username][movie_slug]
+
+    return None
+
+
 def get_rewatch_combo(username1, username2):
     """Get all movies watched by a user"""
     user_inst = user_instances[username1]
 
-    if user_allfilms.get(username1) is not None:
-        nstar_rated_movies = user_allfilms[username1]
-    else:
-        star_rated_movies5 = set(user_inst.get_films_by_rating(5)['movies'].keys())
-        star_rated_movies45 = set(user_inst.get_films_by_rating(4.5)['movies'].keys())
-        nstar_rated_movies = star_rated_movies5.union(star_rated_movies45)
-        user_allfilms[username1] = nstar_rated_movies
+    star_rated_movies5 = set(user_inst.get_films_by_rating(5)['movies'].keys())
+    star_rated_movies45 = set(user_inst.get_films_by_rating(4.5)['movies'].keys())
+    nstar_rated_movies = star_rated_movies5.union(star_rated_movies45)
 
     watchlist_other_user = user_watchlists[username2]
 
@@ -137,4 +149,4 @@ def get_common_watchlist(username1, username2):
 
 if __name__ == '__main__':
     # Example usage
-    print(get_movie_data("the-ascent"))
+    print(get_user_rating("sverlaan", 'pride-prejudice'))

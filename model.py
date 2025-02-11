@@ -119,7 +119,7 @@ def get_prediction(username, movie_slug):
     movie_id = get_movie_id(movie_slug, item_mapping)
 
     if user_id is None or movie_id is None:
-        return "TBA"
+        return None
 
     prediction = model.predict(user_id, movie_id)
     return int(prediction.est * 20)
