@@ -121,7 +121,7 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     print(f"Fetching similar movies for {slug}")
     start = timer()
 
-    hits, similar_movies = get_similar_movies(slug, top_n=100)
+    hits, similar_movies = get_similar_movies(slug, top_n=4)
     if hits == False:
         return jsonify({"error": "Movie ID not in training set"})
 

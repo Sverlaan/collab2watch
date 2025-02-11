@@ -230,9 +230,16 @@ document.body.addEventListener("click", async function (event) {
         // Remove modal from DOM after it's closed
         document.getElementById("dynamicModal").addEventListener("hidden.bs.modal", function () {
             this.remove();
-            document.body.style.overflow = "";
-            //document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
-            //document.querySelector(".modal-backdrop").remove();
+                // Remove backdrop only if no modals are open
+            setTimeout(() => {
+                if (document.querySelectorAll(".modal.show").length === 0) {
+                    document.querySelectorAll(".modal-backdrop").forEach(el => el.remove());
+
+                    // Restore Bootstrap's default body padding (prevents page shift)
+                    document.body.style.overflow = "";
+                    document.body.style.paddingRight = "";
+                }
+            }, 100); // Delay ensures Bootstrap fully updates the UI first
         });
     }
 });
@@ -278,28 +285,28 @@ async function CreateModal(movie) {
                             </div>
                             
                             <div class="row g-3 mt-2 mb-3 justify-content-center">
-                                <div class="col-md-2 d-flex flex-column align-items-center">
+                                <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
-                                    <img src="${letterboxd_logo}" style="width: 50px; height: 50px;">
+                                    <img src="${letterboxd_logo}" style="width: 60px; height: 60px;">
                                     <p class="text-muted text-center"><small>Letterboxd</small></p>
                                 </div>
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-warning">${movie.pred_1}</h5>
-                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid grey;">
+                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
                                     <p class="text-muted text-center"><small>${user1_name}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-warning">${movie.pred_2}</h5>
-                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid grey;">
+                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
                                     <p class="text-muted text-center"><small>${user2_name}</small></p>
                                 </div>    
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-warning">${movie.pred_combined}</h5>
-                                    <div class="position-relative" style="width: 60px; height: 50px; left: 50%; transform: translateX(-120%);">
+                                    <div class="position-relative" style="width: 60px; height: 60px; left: 50%; transform: translateX(-135%);">
                                         <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
-                                            style="width: 50px; height: 50px; left: 0; z-index: 2; border: 1px solid grey;">
+                                            style="width: 60px; height: 60px; left: 0; z-index: 2; border: 1px solid grey;">
                                         <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
-                                            style="width: 50px; height: 50px; left: 25px; z-index: 1; border: 1px solid grey;">
+                                            style="width: 60px; height: 60px; left: 30px; z-index: 1; border: 1px solid grey;">
                                     </div>
                                     <p class="text-muted text-center"><small>Combined</small></p>
                                 </div>                          
