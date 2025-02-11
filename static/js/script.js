@@ -86,6 +86,7 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
         document.getElementById(NameElement).textContent = "User not found. Try again:";
         document.getElementById(AvatarElement).src = "https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png";
         document.getElementById(StatsElement1).textContent = "Only Letterboxd accounts are supported.";
+        document.getElementById("loadingProgress").style.visibility = "hidden";
 
         // Reset correct submission flag
         if (user_id == 1) {
@@ -97,6 +98,65 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
         checkIfBothSubmitted();
     }
 }
+
+
+
+function hideElements() {
+
+    document.getElementById("progress1").textContent = `Fetching data from ${inputUsername1.value}'s profile`;
+    document.getElementById("progress2").textContent = `Fetching data from ${inputUsername2.value}'s profile`;
+
+    document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
+    document.getElementById("circleImagePlaceholder2").style.display = "inline-block";
+    document.getElementById("circleImagePlaceholder3").style.display = "inline-block";
+
+    // Hide the checkmarks and circle images
+    document.getElementById("circleImage1").style.display = "none";
+    document.getElementById("circleImage2").style.display = "none";
+    document.getElementById("circleImage3").style.display = "none";
+
+    // Hide the spinners
+    document.getElementById("spinner1").style.display = "none";
+    document.getElementById("spinner2").style.display = "none";
+    document.getElementById("spinner3").style.display = "none";
+
+    // Make loading progress visible, remove d-none
+    document.getElementById("loadingProgress").style.visibility = "visible";
+}
+
+function startTasks() {
+    return new Promise((resolve) => {
+        function checkStatus(taskNumber) {
+            fetch(`/get_status/${taskNumber}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "complete") {
+                        document.getElementById(`spinner${taskNumber}`).style.display = "none";
+                        document.getElementById(`circleImagePlaceholder${taskNumber}`).style.display = "none";
+                        document.getElementById(`circleImage${taskNumber}`).style.display = "inline-block";
+
+                        if (taskNumber < 3) {
+                            let nextTask = taskNumber + 1;
+                            document.getElementById(`spinner${nextTask}`).style.display = "inline-block";
+                            document.getElementById(`circleImagePlaceholder${nextTask}`).style.display = "none";
+                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}`)
+                                .then(() => checkStatus(nextTask));
+                        } else {
+                            resolve(); // Resolves the Promise when the last task is complete
+                        }
+                    } else {
+                        setTimeout(() => checkStatus(taskNumber), 1000);
+                    }
+                });
+        }
+
+        document.getElementById("spinner1").style.display = "inline-block";
+        document.getElementById("circleImagePlaceholder1").style.display = "none";
+        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}`)
+            .then(() => checkStatus(1));
+    });
+}
+
 
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
@@ -284,7 +344,7 @@ async function CreateModal(movie) {
                                 </div>
                             </div>
                             
-                            <div class="row g-3 mt-2 mb-3 justify-content-center">
+                            <div class="row g-3 mt-1 justify-content-center">
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
                                     <img src="${letterboxd_logo}" style="width: 60px; height: 60px;">
@@ -312,10 +372,10 @@ async function CreateModal(movie) {
                                 </div>                          
                             </div>
 
-                            <hr class="my-3 mt-4 w-75 mx-auto">
+                            <hr class="my-3 w-75 mx-auto">
 
                             <div class="w-100 p-2">
-                                <h5 class="text-center text-warning">Movies that are similar:</h5>   
+                                <h5 class="text-center text-warning">Similar movies:</h5>   
                             </div>
                             <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
                             </div>
@@ -347,6 +407,10 @@ const compareButton = document.getElementById('compareButton');
 compareButton.addEventListener('click', async function (event) {
 
     console.log("Compare button clicked!");
+
+    // Hide the checkmarks and circle images
+    hideElements();
+    await startTasks();
     
     const commonWatchlistContainer = document.getElementById('CommonWatchlistContainer');
     const loadingPlaceholders = document.getElementById('loadingPlaceholders');

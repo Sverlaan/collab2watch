@@ -9,6 +9,7 @@ global user_instances
 user_instances = {}
 user_watchlists = {}
 user_ratings = {}
+user_seen_movies = {}
 
 
 def get_movie_data(movie_slug):
@@ -79,7 +80,7 @@ def get_TMDb_backdrop(tmdb_link):
     return "https://image.tmdb.org/t/p/original/" + result
 
 
-def get_user_data(username):
+def get_user_profile(username):
     """Get user data from Letterboxd API"""
     user_inst = user.User(username)
     user_instances[username] = user_inst
@@ -92,6 +93,19 @@ def get_user_data(username):
                  "watchlist_length": user_inst.watchlist_length,
                  "user_url": user_inst.url}
     return user_info
+
+
+def initize_user_data(username):
+    # Store watchlist
+    user_inst = user_instances[username]
+    if user_watchlists.get(username) is None:
+        user_watchlists[username] = {movie['slug'] for movie in user_inst.get_watchlist()['data'].values()}
+
+    # Store ratings
+    if user_ratings.get(username) is None:
+        all_user_ratings = {key: value['rating']/2.0 for key, value in user_inst.get_films()['movies'].items() if value['rating'] is not None}
+        user_ratings[username] = all_user_ratings
+        user_seen_movies[username] = set(all_user_ratings.keys())
 
 
 def get_user_rating(username, movie_slug):
@@ -149,4 +163,4 @@ def get_common_watchlist(username1, username2):
 
 if __name__ == '__main__':
     # Example usage
-    print(get_user_rating("sverlaan", 'pride-prejudice'))
+    print(initize_user_data("sverlaan"))

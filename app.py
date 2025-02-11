@@ -1,11 +1,13 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from scraper import get_user_data, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating
-from model import get_similar_movies, get_prediction
+from scraper import get_user_profile, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating, initize_user_data
+from model import get_similar_movies, get_prediction, init_pretrained_model
 from timeit import default_timer as timer
 import random
 from tqdm import tqdm
 import pandas as pd
+import threading
+import time
 
 
 app = Flask(__name__)
@@ -51,12 +53,51 @@ def get_user(username):
 
     start = timer()
     print(f"Start scraping user {username} data")
-    user_data = get_user_data(username)
+    user_data = get_user_profile(username)
     print(f"Time taken: {timer() - start}")
 
     if user_data == 404:
         return jsonify({"error": "User not found!"}), 404
     return jsonify(user_data)
+
+
+# Store task statuses
+task_status = {1: "pending", 2: "pending", 3: "pending"}
+
+
+def init_user_data(task_number, username):
+    """Simulate a task that takes a few seconds"""
+    global task_status
+    initize_user_data(username)
+    task_status[task_number] = "complete"  # Mark as complete
+
+
+def init_model(task_number):
+    """Simulate a task that takes a few seconds"""
+    global task_status
+    init_pretrained_model()
+    task_status[task_number] = "complete"  # Mark as complete
+
+
+@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>")
+def start_task(task_number, username1, username2):
+    """Start a task in a new thread"""
+    global task_status
+    task_status[task_number] = "running"
+    if task_number == 1:
+        thread = threading.Thread(target=init_user_data, args=(task_number, username1))
+    if task_number == 2:
+        thread = threading.Thread(target=init_user_data, args=(task_number, username2))
+    if task_number == 3:
+        thread = threading.Thread(target=init_model, args=(task_number,))
+    thread.start()
+    return jsonify({"message": f"Task {task_number} started"})
+
+
+@app.route("/get_status/<int:task_number>")
+def get_status(task_number):
+    """Return the current status of the task"""
+    return jsonify({"status": task_status[task_number]})
 
 
 @app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])

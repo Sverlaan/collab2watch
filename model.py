@@ -76,8 +76,14 @@ def get_user_name(id, user_mapping):
         return None
 
 
-global model, trainset, ratingsdf, item_mapping, user_mapping
-model, trainset, ratingsdf, item_mapping, user_mapping = get_pretrained_model()
+model, trainset, ratingsdf, item_mapping, user_mapping = None, None, None, None, None
+
+
+def init_pretrained_model():
+    global model, trainset, ratingsdf, item_mapping, user_mapping
+
+    if model is None or trainset is None or item_mapping is None or user_mapping is None:
+        model, trainset, ratingsdf, item_mapping, user_mapping = get_pretrained_model()
 
 
 def get_similar_movies(movie_slug, top_n=5):
@@ -154,5 +160,5 @@ def generate_recommendation(username, movie_slugs, n_items=None):
 
 
 if __name__ == '__main__':
-
+    init_pretrained_model()
     print(generate_recommendation("liannehr", ["minari", "little-miss-sunshine", "solaris"], n_items=5))
