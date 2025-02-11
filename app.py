@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from scraper import get_user_data, get_common_watchlist, get_movie_data, get_rewatch_combo
+from scraper import get_user_data, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating
 from model import get_similar_movies, get_prediction
 from timeit import default_timer as timer
 import random
@@ -62,25 +62,52 @@ def get_user(username):
 @app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])
 def fetch_movie_data_for_modal(slug, username1, username2):
 
+    # Get movie details
     print(f"Fetching movie data for {slug} from db")
     start = timer()
     movie = Movie.query.filter_by(slug=slug).first()
     if movie is None:
         raise Exception(f"{slug} not in db. Since this is for opening a modal, this should not happen.")
-
-    # Get predicted ratings for both users
     movie_data = movie.to_dict()
 
-    pred_rating_1 = get_prediction(username1, slug)
-    pred_rating_2 = get_prediction(username2, slug)
+    pred_1, pred_2 = None, None
 
-    movie_data["pred_1"] = str(pred_rating_1) + "%" if pred_rating_1 != "TBA" else "TBA"
-    movie_data["pred_2"] = str(pred_rating_2) + "%" if pred_rating_2 != "TBA" else "TBA"
-
-    if movie_data["pred_1"] == "TBA" or movie_data["pred_2"] == "TBA":
-        movie_data["pred_combined"] = "TBA"
+    # Get user ratings
+    rating_1 = get_user_rating(username1, slug)
+    if rating_1 is not None:
+        movie_data["score_1"] = f"{rating_1}"
+        movie_data["score_1_color"] = f"text-muted"
     else:
-        movie_data["pred_combined"] = str(int((pred_rating_1 + pred_rating_2) / 2)) + "%"
+        pred_1 = get_prediction(username1, slug)
+        if pred_1 is not None:
+            movie_data["score_1"] = f"{pred_1}%"
+            movie_data["score_1_color"] = f"text-warning"
+        else:
+            movie_data["score_1"] = "--"
+            movie_data["score_1_color"] = "text-muted"
+
+    rating_2 = get_user_rating(username2, slug)
+    if rating_2 is not None:
+        movie_data["score_2"] = f"{rating_2}"
+        movie_data["score_2_color"] = f"text-muted"
+    else:
+        pred_2 = get_prediction(username2, slug)
+        if pred_2 is not None:
+            movie_data["score_2"] = f"{pred_2}%"
+            movie_data["score_2_color"] = f"text-warning"
+        else:
+            movie_data["score_2"] = "--"
+            movie_data["score_2_color"] = "text-muted"
+
+    if rating_1 is not None and rating_2 is not None:
+        movie_data["score_combined"] = str(round((rating_1 + rating_2) / 2.0, 3))
+        movie_data["score_combined_color"] = "text-muted"
+    elif pred_1 is not None and pred_2 is not None:
+        movie_data["score_combined"] = str(int((pred_1 + pred_2) / 2.0)) + "%"
+        movie_data["score_combined_color"] = "text-warning"
+    else:
+        movie_data["score_combined"] = "--"
+        movie_data["score_combined_color"] = "text-muted"
 
     print(f"Time taken: {timer() - start}")
     return jsonify(movie_data)

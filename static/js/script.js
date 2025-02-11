@@ -291,17 +291,17 @@ async function CreateModal(movie) {
                                     <p class="text-muted text-center"><small>Letterboxd</small></p>
                                 </div>
                                 <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 text-warning">${movie.pred_1}</h5>
+                                    <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
                                     <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
                                     <p class="text-muted text-center"><small>${user1_name}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 text-warning">${movie.pred_2}</h5>
+                                    <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
                                     <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
                                     <p class="text-muted text-center"><small>${user2_name}</small></p>
                                 </div>    
                                 <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 text-warning">${movie.pred_combined}</h5>
+                                    <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
                                     <div class="position-relative" style="width: 60px; height: 60px; left: 50%; transform: translateX(-135%);">
                                         <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
                                             style="width: 60px; height: 60px; left: 0; z-index: 2; border: 1px solid grey;">
