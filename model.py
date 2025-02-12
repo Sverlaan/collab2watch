@@ -131,7 +131,7 @@ def get_prediction(username, movie_slug):
     return int(prediction.est * 20)
 
 
-def generate_recommendation(username, movie_slugs, n_items=None):
+def generate_recommendation(username, movie_slugs, n_items=None, sorted=True):
     # movie_ids = ratings_df["movieId"].unique()
     # movie_ids_user = ratings_df.loc[ratings_df["userId"] == user_id, "movieId"]
     # movie_ids_to_pred = np.setdiff1d(movie_ids, movie_ids_user)
@@ -150,6 +150,8 @@ def generate_recommendation(username, movie_slugs, n_items=None):
     predictions = model.test(test_set)
 
     pred_ratings = np.array([pred.est for pred in predictions])
+    if not sorted:
+        return pred_ratings
 
     if n_items is None:
         n_items = len(movie_ids_to_pred)

@@ -425,8 +425,8 @@ compareButton.addEventListener('click', async function (event) {
     const recommendContainer = document.getElementById('RecommendContainer');
     document.getElementById("RC-name-1").textContent = "Rewatches for " + user1_name;
     document.getElementById("RC-name-2").textContent = "Rewatches for " + user2_name;
-    document.getElementById("RC-sub-1").textContent = "Movies on " + user2_name + "'s watchlist that are highly rated by " + user1_name;
-    document.getElementById("RC-sub-2").textContent = "Movies on " + user1_name + "'s watchlist that are highly rated by " + user2_name;
+    document.getElementById("RC-sub-1").textContent = "Movies seen by " + user1_name + " that " + user2_name + " might like!";
+    document.getElementById("RC-sub-2").textContent = "Movies seen by " + user2_name + " that " + user1_name + " might like!";
 
     // Show the container and placeholders, hide the real content
     commonWatchlistContainer.classList.remove('d-none'); 

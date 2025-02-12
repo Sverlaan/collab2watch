@@ -3,6 +3,7 @@ from letterboxdpy import user
 from letterboxdpy import movie
 import requests
 import time
+from model import generate_recommendation
 
 # Keep track of user instances and watchlists
 global user_instances
@@ -124,7 +125,7 @@ def get_user_rating(username, movie_slug):
     return None
 
 
-def get_rewatch_combo(username1, username2):
+def get_rewatch_combo_OLD(username1, username2):
     """Get all movies watched by a user"""
     user_inst = user_instances[username1]
 
@@ -137,6 +138,41 @@ def get_rewatch_combo(username1, username2):
     # Get intersection
     common_slugs = nstar_rated_movies.intersection(watchlist_other_user)
     return common_slugs
+
+
+def get_rewatch_combo(username1, username2):
+    """Get all movies watched by a user"""
+    user1_inst = user_instances[username1]
+    user2_inst = user_instances[username2]
+
+    if user_seen_movies.get(username1) is not None:
+        user1_seen_slugs = user_seen_movies[username1]
+    else:
+        user1_seen_slugs = {movie['slug'] for movie in user1_inst.get_films()['movies'].values()}
+        user_seen_movies[username1] = user1_seen_slugs
+
+    if user_seen_movies.get(username2) is not None:
+        user2_seen_slugs = user_seen_movies[username2]
+    else:
+        user2_seen_slugs = {movie['slug'] for movie in user2_inst.get_films()['movies'].values()}
+        user_seen_movies[username2] = user2_seen_slugs
+
+    # Get all movies of user2 that user1 has not seen yet
+    diff_slugs = list(user1_seen_slugs.difference(user2_seen_slugs))
+
+    # Get predicted ratings for common movies
+    preds_user1 = generate_recommendation(username2, diff_slugs, sorted=False)
+
+    # TODO: zip ratings with slugs
+    preds = [(slug, preds_user1[i]) for i, slug in enumerate(diff_slugs)]
+
+    # Sort by predicted rating
+    preds.sort(key=lambda x: x[1], reverse=True)
+    preds = preds[:10]
+    print(preds)
+
+    # Return sorted list of common movies
+    return [slug for slug, _ in preds]
 
 
 def get_common_watchlist(username1, username2):
@@ -157,8 +193,22 @@ def get_common_watchlist(username1, username2):
         user_watchlists[username2] = user2_watchlist_slugs
 
     # Get intersection
-    common_slugs = user1_watchlist_slugs.intersection(user2_watchlist_slugs)
-    return list(common_slugs)
+    common_slugs = list(user1_watchlist_slugs.intersection(user2_watchlist_slugs))
+
+    # Get predicted ratings for common movies
+    preds_user1 = generate_recommendation(username1, common_slugs, sorted=False)
+    print(preds_user1)
+    preds_user2 = generate_recommendation(username2, common_slugs, sorted=False)
+    print(preds_user2)
+
+    preds_avg = [(slug, (preds_user1[i] + preds_user2[i]) / 2.0) for i, slug in enumerate(common_slugs)]
+    print(preds_avg)
+
+    # Sort by predicted rating
+    preds_avg.sort(key=lambda x: x[1], reverse=True)
+
+    # Return sorted list of common movies
+    return [slug for slug, _ in preds_avg]
 
 
 if __name__ == '__main__':
