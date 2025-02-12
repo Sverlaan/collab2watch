@@ -375,7 +375,7 @@ async function CreateModal(movie) {
                             <hr class="my-3 w-75 mx-auto">
 
                             <div class="w-100 p-2">
-                                <h5 class="text-center text-warning">Similar movies:</h5>   
+                                <h5 class="text-center text-warning">Movies similar to ${movie.title}:</h5>   
                             </div>
                             <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
                             </div>
