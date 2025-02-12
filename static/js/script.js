@@ -161,7 +161,7 @@ function startTasks() {
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const response = await fetch(`/fetch_movies/common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting common watchlist");
         const data = await response.json();
 
@@ -194,11 +194,45 @@ async function FetchCommonWatchlist(username1, username2, minRating, maxRating, 
     
 }
 
+// Fetch common watchlist from Flask backend and populate the DOM
+async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+    try {
+        const response = await fetch(`/fetch_movies/single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
+        const data = await response.json();
+
+        const realContent = document.getElementById(`SWC${SWL_num}_RC`);
+        // delete all existing cards
+        while (realContent.firstChild) {
+            realContent.removeChild(realContent.firstChild);
+        }
+
+        // Loop through the data and generate the cards + modals
+        data.forEach(movie => {
+
+            // Generate each card
+            const card = document.createElement("div");
+            card.classList.add("col");
+            card.innerHTML = `
+                <img src="${movie.poster}" 
+                    class="card-img-top rounded open-movie-modal" 
+                    alt="${`${movie.title}`}"
+                    slug="${movie.slug}">
+            `;
+            realContent.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error(error);
+    }
+    
+}
+
 
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchRewatchCombo(username1, username2, realRewatchCombo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_rewatch_combo/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const response = await fetch(`/fetch_movies/rewatch_combo/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting rewatch combo");
         const data = await response.json();
         
@@ -428,6 +462,11 @@ compareButton.addEventListener('click', async function (event) {
     document.getElementById("RC-sub-1").textContent = "Movies seen by " + user1_name + " that " + user2_name + " might like!";
     document.getElementById("RC-sub-2").textContent = "Movies seen by " + user2_name + " that " + user1_name + " might like!";
 
+    document.getElementById(`SWL1_title`).textContent = `On ${user1_name}'s`;
+    document.getElementById(`SWL1_subtitle`).textContent = `Movies on ${user1_name}'s watchlist that ${user2_name} might like!`;
+    document.getElementById(`SWL2_title`).textContent = `On ${user2_name}'s`;
+    document.getElementById(`SWL2_subtitle`).textContent = `Movies on ${user2_name}'s watchlist that ${user1_name} might like!`;
+
     // Show the container and placeholders, hide the real content
     commonWatchlistContainer.classList.remove('d-none'); 
     loadingPlaceholders.classList.remove('d-none'); 
@@ -454,11 +493,19 @@ compareButton.addEventListener('click', async function (event) {
 
     // Fetch common watchlist and populate the DOM
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-
     // After loading finishes, hide placeholders and show real content
     commonWatchlistContainer.classList.remove('d-none');
     loadingPlaceholders.classList.add('d-none');
     realContent.classList.remove('d-none');
+
+    // Fetch single watchlist 1 and populate the DOM
+    await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    // Fetch single watchlist 2 and populate the DOM
+    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    document.getElementById("SingleWatchlistContainer1").classList.remove('d-none');
+    document.getElementById("SingleWatchlistContainer2").classList.remove('d-none');
+    document.getElementById("SWC1_RC").classList.remove('d-none');
+    document.getElementById("SWC2_RC").classList.remove('d-none');
 
     console.log("Start fetching rewatch combo 1!");
     
