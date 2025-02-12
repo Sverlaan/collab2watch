@@ -196,7 +196,7 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     print(similar_movies)
     print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(similar_movies, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear, top_k=4)
+    return retrieve_movies(similar_movies, top_k=4)
 
 
 def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=600, minYear=1870, maxYear=2030, top_k=-1):
