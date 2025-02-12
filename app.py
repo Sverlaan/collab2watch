@@ -163,7 +163,6 @@ def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntim
     start = timer()
     print(f"Start collecting watchlist data")
     common_watchlist = get_common_watchlist(username1, username2)
-    random.shuffle(common_watchlist)
     print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(common_watchlist, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
