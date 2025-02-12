@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
-from scraper import get_user_profile, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating, initize_user_data
+from scraper import get_user_profile, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating, initize_user_data, get_single_watchlist
 from model import get_similar_movies, get_prediction, init_pretrained_model
 from timeit import default_timer as timer
 import random
@@ -154,32 +154,25 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     return jsonify(movie_data)
 
 
-@app.route('/fetch_common_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_movies/<string:type>/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_movies(type, username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     minRating = float(minRating)
     maxRating = float(maxRating)
 
     start = timer()
-    print(f"Start collecting watchlist data")
-    common_watchlist = get_common_watchlist(username1, username2)
+    print(f"Start collecting {type} data")
+    if type == "common_watchlist":
+        slugs = get_common_watchlist(username1, username2)
+    elif type == "rewatch_combo":
+        slugs = get_rewatch_combo(username1, username2)
+    elif type == "single_watchlist":
+        slugs = get_single_watchlist(username1, username2)
+    else:
+        raise Exception(f"Invalid type: {type}")
     print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(common_watchlist, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
-
-
-@app.route('/fetch_rewatch_combo/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_rewatch_combo(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
-
-    minRating = float(minRating)
-    maxRating = float(maxRating)
-
-    start = timer()
-    print(f"Start collecting all_watched_films data")
-    rewatch_combo = get_rewatch_combo(username1, username2)
-    print(f"Time taken: {timer() - start}")
-
-    return retrieve_movies(rewatch_combo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
+    return retrieve_movies(slugs, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear)
 
 
 @app.route('/fetch_similar_movies/<string:slug>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
