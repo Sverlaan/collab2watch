@@ -43,7 +43,7 @@ def get_pretrained_model():
         user_mapping = pickle.load(file)
 
     with open('model/new_ratingsdf.pkl', 'rb') as file:
-        ratingsdf = pickle.load
+        ratingsdf = pickle.load(file)
 
     return model, trainset, ratingsdf, item_mapping, user_mapping
 
@@ -128,7 +128,7 @@ def get_prediction(username, movie_slug):
         return None
 
     prediction = model.predict(user_id, movie_id)
-    return int(prediction.est * 20)
+    return prediction.est
 
 
 def generate_recommendation(username, movie_slugs, n_items=None, sorted=True):
@@ -157,8 +157,47 @@ def generate_recommendation(username, movie_slugs, n_items=None, sorted=True):
         n_items = len(movie_ids_to_pred)
     index_max = (-pred_ratings).argsort()[:n_items]
 
-    preds = [(get_movie_name(movie_ids_to_pred[i], item_mapping), round(pred_ratings[i], 2)) for i in index_max]
+    preds = [(get_movie_name(movie_ids_to_pred[i], item_mapping), pred_ratings[i]) for i in index_max]
     return preds
+
+
+def get_recommendations(username1, username2, all_seen1, all_seen2, weight):
+
+    global model, trainset, ratingsdf, item_mapping, user_mapping
+
+    if model is None or trainset is None or item_mapping is None or user_mapping is None:
+        model, trainset, ratingsdf, item_mapping, user_mapping = get_pretrained_model()
+
+    w1 = 1.0
+    w2 = 1.0
+    if weight == -1:
+        w2 = 0
+        seen_slugs = all_seen1
+    elif weight == 1:
+        w1 = 0
+        seen_slugs = all_seen2
+    else:
+        seen_slugs = all_seen1.union(all_seen2)
+
+    print("WEIGHT", weight, w1, w2)
+
+    all_movie_ids = ratingsdf["movieId"].unique()
+    all_movie_slugs = {get_movie_name(movie_id, item_mapping) for movie_id in all_movie_ids}
+
+    slugs_to_pred = list(all_movie_slugs.difference(seen_slugs))
+
+    user_1_preds = generate_recommendation(username1, slugs_to_pred, sorted=False)
+    user_2_preds = generate_recommendation(username2, slugs_to_pred, sorted=False)
+    avg_preds = [(slugs_to_pred[i], ((w1*user_1_preds[i] + w2*user_2_preds[i]) / (w1+w2))) for i in range(len(slugs_to_pred))]
+
+    index_max = (-np.array([pred[1] for pred in avg_preds])).argsort()
+    top_slugs = [avg_preds[i][0] for i in index_max]
+    scores = [avg_preds[i][1] for i in index_max]
+
+    # Combine scores in dictionary
+    scores_dict = {slug: score for slug, score in zip(top_slugs, scores)}
+
+    return top_slugs, scores_dict
 
 
 if __name__ == '__main__':

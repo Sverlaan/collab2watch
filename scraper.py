@@ -140,6 +140,18 @@ def get_rewatch_combo_OLD(username1, username2):
     return common_slugs
 
 
+def get_all_seen_movies(username):
+    """Get all movies watched by a user"""
+    user_inst = user_instances[username]
+
+    if user_seen_movies.get(username) is not None:
+        return user_seen_movies[username]
+
+    all_seen_movies = {movie['slug'] for movie in user_inst.get_films()['movies'].values()}
+    user_seen_movies[username] = all_seen_movies
+    return all_seen_movies
+
+
 def get_rewatch_combo(username1, username2):
     """Get all movies watched by a user"""
     user1_inst = user_instances[username1]
@@ -168,8 +180,7 @@ def get_rewatch_combo(username1, username2):
 
     # Sort by predicted rating
     preds.sort(key=lambda x: x[1], reverse=True)
-    preds = preds[:10]
-    print(preds)
+    preds = preds
 
     # Return sorted list of common movies
     return [slug for slug, _ in preds]
@@ -249,7 +260,7 @@ def get_single_watchlist(username1, username2):
 
     # Sort by predicted rating
     preds.sort(key=lambda x: x[1], reverse=True)
-    preds = preds[:5]
+    preds = preds
     print(preds)
 
     # Return sorted list of common movies
