@@ -266,9 +266,97 @@ async function FetchRewatchCombo(username1, username2, realRewatchCombo, minRati
     
 }
 
-document.body.addEventListener("click", async function (event) {
-    if (event.target.classList.contains("open-movie-modal")) {
+// Fetch recommendations from Flask backend and populate the DOM
+async function FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+    try {
         
+
+        const response = await fetch(`/fetch_recommendations/recommendations/${username1}/${username2}/${weight}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        if (!response.ok) throw new Error("Something went wrong getting recommendations");
+        const data = await response.json();
+
+        const realRecommendContent = document.getElementById("RecommendContainerReal");
+        // delete all existing cards
+        while (realRecommendContent.firstChild) {
+            realRecommendContent.removeChild(realRecommendContent.firstChild);
+        }
+
+        index = 0;
+        // Loop through the data and generate the cards + modals
+        data.forEach(movie => {
+
+            index += 1;
+
+            // Generate each carousel item
+            realRecommendContent.innerHTML += `
+            <div class="row">
+                <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                    <h5 class="text-center">${index}.</h5>
+                </div>
+                <div class="col-lg-11">
+                    <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
+                        <div class="row g-0"> 
+                            <div class="col-lg-1">
+                                <img src="${movie.poster}" class="rec-card-img open-movie-modal rounded-start" alt="${movie.title}" slug="${movie.slug}">
+                            </div>
+                            <div class="col-lg-9 ms-3">
+                                <div class="card-body" slug="${movie.slug}">
+                                    <h5 class="card-title">${movie.title} (${movie.year})</h5>
+                                    <p class="card-text text-muted">${movie.genres}</p>
+                                </div>
+                            </div>
+                            <div class="col-lg-1 align-items-center d-flex flex-column justify-content-start mt-4">
+                                <h5 class="text-top text-warning">${movie.score}%</h5>
+                                <div class="position-relative" style="width: 40px; height: 40px; left: 20%; transform: translateX(-60%);">
+                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
+                                        style="width: 40px; height: 40px; left: 0; z-index: 2; border: 1px solid grey;">
+                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
+                                        style="width: 40px; height: 40px; left: 20px; z-index: 1; border: 1px solid grey;">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            `;    
+        });
+
+
+    } catch (error) {
+        console.error(error);
+    }
+    
+}
+
+document.getElementById("weightRange").addEventListener("input", async function () {
+
+    console.log("Weight range changed!");
+
+    weight = this.value;
+    const minRating = document.getElementById('minRating').value;
+    const maxRating = document.getElementById('maxRating').value;
+    const minRuntime = document.getElementById('minRuntime').value;
+    const maxRuntime = document.getElementById('maxRuntime').value;
+    const minYear = document.getElementById('minYear').value;
+    const maxYear = document.getElementById('maxYear').value;
+
+    document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
+    document.getElementById("RecommendContainerReal").classList.add('d-none');
+    await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
+    document.getElementById("RecommendContainerReal").classList.remove('d-none');
+});
+
+
+document.body.addEventListener("click", async function (event) {
+
+    console.log("Click event!");
+
+    let modalTrigger = event.target.closest(".open-movie-modal");
+
+    if (modalTrigger) {
+        
+        console.log("Open movie modal!");
         
         // Remove existing modal if it exists
         let existingModal = document.getElementById("dynamicModal");
@@ -280,7 +368,8 @@ document.body.addEventListener("click", async function (event) {
             //document.querySelector(".modal-backdrop").remove();
         }
 
-        let slug = event.target.getAttribute("slug");
+        //let slug = event.target.getAttribute("slug");
+        let slug = modalTrigger.getAttribute("slug");
         const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${inputUsername1.value}/${inputUsername2.value}`);
         if (!response.ok) throw new Error("Something went wrong getting movie modal data");
         const movie = await response.json();
@@ -456,7 +545,6 @@ compareButton.addEventListener('click', async function (event) {
     const placeholderRC2 = document.getElementById('placeholderRC2');
     const carouselRC1 = document.getElementById('carousel1');
     const carouselRC2 = document.getElementById('carousel2');
-    const recommendContainer = document.getElementById('RecommendContainer');
     document.getElementById("RC-name-1").textContent = "Rewatches for " + user1_name;
     document.getElementById("RC-name-2").textContent = "Rewatches for " + user2_name;
     document.getElementById("RC-sub-1").textContent = "Movies seen by " + user1_name + " that " + user2_name + " might like!";
@@ -466,6 +554,8 @@ compareButton.addEventListener('click', async function (event) {
     document.getElementById(`SWL1_subtitle`).textContent = `Movies on ${user1_name}'s watchlist that ${user2_name} might like!`;
     document.getElementById(`SWL2_title`).textContent = `On ${user2_name}'s`;
     document.getElementById(`SWL2_subtitle`).textContent = `Movies on ${user2_name}'s watchlist that ${user1_name} might like!`;
+    document.getElementById(`RC_user1_name`).textContent = `${user1_name}`;
+    document.getElementById(`RC_user2_name`).textContent = `${user2_name}`;
 
     // Show the container and placeholders, hide the real content
     commonWatchlistContainer.classList.remove('d-none'); 
@@ -474,7 +564,9 @@ compareButton.addEventListener('click', async function (event) {
     rewatchComboContainer.classList.remove('d-none');
     placeholderRC1.classList.remove('d-none');
     placeholderRC2.classList.remove('d-none');
-    recommendContainer.classList.remove('d-none');
+
+    //document.getElementById('RecommendContainer').remove('d-none');
+    //document.getElementById('RecommendContainerPlaceholder').remove('d-none');
 
     realContent.classList.add('d-none'); 
     carouselRC1.classList.add('d-none');
@@ -520,6 +612,16 @@ compareButton.addEventListener('click', async function (event) {
     placeholderRC2.classList.add('d-none');
     carouselRC1.classList.remove('d-none');
     carouselRC2.classList.remove('d-none');
+
+    document.getElementById("RecommendContainer").classList.remove('d-none');
+    document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
+
+    const weight = document.getElementById('weightRange').value; 
+    await FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    
+    //document.getElementById("RecommendContainer").classList.add('d-none');
+    document.getElementById("RecommendContainerReal").classList.remove('d-none');
+    document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
 
 });
 
@@ -568,7 +670,7 @@ function checkIfBothSubmitted() {
         const recommendContainer = document.getElementById('RecommendContainer');
         commonWatchlistContainer.classList.add('d-none');
         rewatchComboContainer.classList.add('d-none');
-        recommendContainer.classList.add('d-none');
+        //recommendContainer.classList.add('d-none');
 
     }
 }
