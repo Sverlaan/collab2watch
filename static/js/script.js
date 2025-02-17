@@ -290,8 +290,8 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
             // Generate each carousel item
             realRecommendContent.innerHTML += `
             <div class="row">
-                <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                    <h5 class="text-center">${index}.</h5>
+                <div class="col-lg-1 align-items-center d-flex justify-content-end">
+                    <h5 class="text-end">${index}.</h5>
                 </div>
                 <div class="col-lg-11">
                     <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
@@ -302,16 +302,17 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
                             <div class="col-lg-9 ms-3">
                                 <div class="card-body" slug="${movie.slug}">
                                     <h5 class="card-title">${movie.title} (${movie.year})</h5>
-                                    <p class="card-text text-muted">${movie.genres}</p>
+                                    <p class="card-text no-spacing text-muted">${movie.genres}</p> 
+                                    <p class="card-text no-spacing text-muted">${movie.runtime} mins</p> 
                                 </div>
                             </div>
                             <div class="col-lg-1 align-items-center d-flex flex-column justify-content-start mt-4">
-                                <h5 class="text-top text-warning">${movie.score}%</h5>
-                                <div class="position-relative" style="width: 40px; height: 40px; left: 20%; transform: translateX(-60%);">
+                                <h5 class="text-top text-score">${movie.score}%</h5>
+                                <div class="position-relative" style="width: 40px; height: 40px; left: 25%; transform: translateX(-72%);">
                                     <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
-                                        style="width: 40px; height: 40px; left: 0; z-index: 2; border: 1px solid grey;">
+                                        style="width: 40px; height: 40px; left: 0; z-index: 2; border: 1px solid rgba(130, 130, 130, 1);">
                                     <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
-                                        style="width: 40px; height: 40px; left: 20px; z-index: 1; border: 1px solid grey;">
+                                        style="width: 40px; height: 40px; left: 25px; z-index: 1; border: 1px solid rgba(130, 130, 130, 1);">
                                 </div>
                             </div>
                         </div>
@@ -467,29 +468,29 @@ async function CreateModal(movie) {
                                 </div>
                             </div>
                             
-                            <div class="row g-3 mt-1 justify-content-center">
+                            <div class="row g-3 mt-1 justify-content-evenly">
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
-                                    <img src="${letterboxd_logo}" style="width: 60px; height: 60px;">
+                                    <img src="${letterboxd_logo}" style="width: 50px; height: 50px;">
                                     <p class="text-muted text-center"><small>Letterboxd</small></p>
                                 </div>
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
-                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
+                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
                                     <p class="text-muted text-center"><small>${user1_name}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
-                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 60px; height: 60px; border: 1px solid grey;">
+                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
                                     <p class="text-muted text-center"><small>${user2_name}</small></p>
                                 </div>    
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
-                                    <div class="position-relative" style="width: 60px; height: 60px; left: 50%; transform: translateX(-135%);">
+                                    <div class="position-relative" style="width: 50px; height: 50px; left: 30%; transform: translateX(-104%);">
                                         <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
-                                            style="width: 60px; height: 60px; left: 0; z-index: 2; border: 1px solid grey;">
+                                            style="width: 50px; height: 50px; left: 0; z-index: 2; border: 1px solid rgba(130, 130, 130, 1);">
                                         <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
-                                            style="width: 60px; height: 60px; left: 30px; z-index: 1; border: 1px solid grey;">
+                                            style="width: 50px; height: 50px; left: 30px; z-index: 1; border: 1px solid rgba(130, 130, 130, 1);">
                                     </div>
                                     <p class="text-muted text-center"><small>Combined</small></p>
                                 </div>                          
@@ -498,7 +499,7 @@ async function CreateModal(movie) {
                             <hr class="my-3 w-75 mx-auto">
 
                             <div class="w-100 p-2">
-                                <h5 class="text-center text-warning">Movies similar to ${movie.title}:</h5>   
+                                <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
                             </div>
                             <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
                             </div>
