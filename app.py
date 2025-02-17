@@ -117,12 +117,12 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     rating_1 = get_user_rating(username1, slug)
     if rating_1 is not None:
         movie_data["score_1"] = f"{rating_1}"
-        movie_data["score_1_color"] = f"text-muted"
+        movie_data["score_1_color"] = "text-muted"
     else:
         pred_1 = get_prediction(username1, slug)
         if pred_1 is not None:
             movie_data["score_1"] = f"{round(pred_1 * 20, 1)}%"
-            movie_data["score_1_color"] = f"text-warning"
+            movie_data["score_1_color"] = "text-score"
         else:
             movie_data["score_1"] = "--"
             movie_data["score_1_color"] = "text-muted"
@@ -130,12 +130,12 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     rating_2 = get_user_rating(username2, slug)
     if rating_2 is not None:
         movie_data["score_2"] = f"{rating_2}"
-        movie_data["score_2_color"] = f"text-muted"
+        movie_data["score_2_color"] = "text-muted"
     else:
         pred_2 = get_prediction(username2, slug)
         if pred_2 is not None:
             movie_data["score_2"] = f"{round(pred_2 * 20, 1)}%"
-            movie_data["score_2_color"] = f"text-warning"
+            movie_data["score_2_color"] = "text-score"
         else:
             movie_data["score_2"] = "--"
             movie_data["score_2_color"] = "text-muted"
@@ -145,7 +145,7 @@ def fetch_movie_data_for_modal(slug, username1, username2):
         movie_data["score_combined_color"] = "text-muted"
     elif pred_1 is not None and pred_2 is not None:
         movie_data["score_combined"] = str(round((pred_1 * 20 + pred_2 * 20) / 2.0, 1)) + "%"
-        movie_data["score_combined_color"] = "text-warning"
+        movie_data["score_combined_color"] = "text-score"
     else:
         movie_data["score_combined"] = "--"
         movie_data["score_combined_color"] = "text-muted"
@@ -167,7 +167,7 @@ def fetch_movies(type, username1, username2, minRating, maxRating, minRuntime, m
         top_k = -1
     elif type == "rewatch_combo":
         slugs = get_rewatch_combo(username1, username2)
-        top_k = 5
+        top_k = 10
     elif type == "single_watchlist":
         slugs = get_single_watchlist(username1, username2)
         top_k = 5

@@ -86,10 +86,12 @@ def get_user_profile(username):
     user_inst = user.User(username)
     user_instances[username] = user_inst
 
+    print(user_inst.get_avatar()['url'])
+
     stats = user_inst.stats
     user_info = {"name": user_inst.display_name,
                  "username": username,
-                 "avatar": user_inst.get_avatar()['url'],
+                 "avatar": user_inst.get_avatar()['url']+'?niks',
                  "num_movies_watched": stats['films'],
                  "watchlist_length": user_inst.watchlist_length,
                  "user_url": user_inst.url}

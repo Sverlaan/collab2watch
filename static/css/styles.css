@@ -1,5 +1,14 @@
 
+/* Custom color for scores */
+/* Default (Light Mode) */
+.text-score {
+  color: green !important;
+}
 
+/* Dark Mode */
+[data-bs-theme="dark"] .text-score {
+  color: lightgreen !important;
+}
 
 
 
