@@ -296,19 +296,19 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
                 <div class="col-lg-11">
                     <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
                         <div class="row g-0"> 
-                            <div class="col-lg-1">
+                            <div class="col-auto">
                                 <img src="${movie.poster}" class="rec-card-img open-movie-modal rounded-start" alt="${movie.title}" slug="${movie.slug}">
                             </div>
-                            <div class="col-lg-9 ms-3">
+                            <div class="col-lg-8">
                                 <div class="card-body" slug="${movie.slug}">
                                     <h5 class="card-title">${movie.title} (${movie.year})</h5>
                                     <p class="card-text no-spacing text-muted">${movie.genres}</p> 
                                     <p class="card-text no-spacing text-muted">${movie.runtime} mins</p> 
                                 </div>
                             </div>
-                            <div class="col-lg-1 align-items-center d-flex flex-column justify-content-start mt-4">
-                                <h5 class="text-top text-score">${movie.score}%</h5>
-                                <div class="position-relative" style="width: 40px; height: 40px; left: 25%; transform: translateX(-72%);">
+                            <div class="col-lg-2 align-items-center d-flex flex-column justify-content-start mt-4">
+                                <h5 class="text-top text-score p">${movie.score}%</h5>
+                                <div class="position-relative" style="width: 40px; height: 40px; left: 25%; transform: translateX(-60%);">
                                     <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
                                         style="width: 40px; height: 40px; left: 0; z-index: 2; border: 1px solid rgba(130, 130, 130, 1);">
                                     <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
