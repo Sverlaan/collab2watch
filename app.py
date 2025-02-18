@@ -49,7 +49,7 @@ def get_user(username):
 
         return jsonify(user_data)
     except:
-        return 404
+        return jsonify({"error": "User not found"}), 404
 
 
 def get_user_data(task_number, usernames):
