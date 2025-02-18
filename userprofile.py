@@ -1,7 +1,5 @@
 # Imports
 from letterboxdpy import user
-from letterboxdpy import movie
-import requests
 import time
 
 
@@ -17,27 +15,40 @@ class UserProfile:
         self.watchlist_length = self.user_instance.watchlist_length
         self.url = self.user_instance.url
 
+        self.initialize_complete = False
         self.watchlist = None
         self.ratings = None
         self.watched = None
 
     def get_watchlist(self):
+        """
+        Get watchlist of user
+        """
         if self.watchlist is None:
             self.watchlist = {movie['slug'] for movie in self.user_instance.get_watchlist()['data'].values()}
         return self.watchlist
 
     def get_watched(self):
+        """
+        Get watched movies of user
+        """
         if self.watched is None:
             self.watched = {slug for slug in self.user_instance.get_films()['movies'].keys()}
         return self.watched
 
     def get_ratings(self):
+        """
+        Get all ratings of user
+        """
         if self.ratings is None:
             all_user_ratings = {key: value['rating']/2.0 for key, value in self.user_instance.get_films()['movies'].items() if value['rating'] is not None}
             self.ratings = all_user_ratings
         return self.ratings
 
     def get_rating(self, movie_slug):
+        """
+        Get rating of user for a specific movie
+        """
         if self.ratings is None:
             self.get_ratings()
         if movie_slug in self.ratings:
@@ -45,11 +56,15 @@ class UserProfile:
         return None
 
     def initialize_complete_profile(self):
+        """
+        Initialize watchlist, watched and ratings
+        """
         self.get_watchlist()
         self.get_watched()
         self.get_ratings()
+        self.initialize_complete = True
 
-    def as_dict(self):
+    def to_dict(self):
         return {"username": self.username,
                 "name": self.display_name,
                 "avatar": self.avatar,
@@ -57,11 +72,8 @@ class UserProfile:
                 "watchlist_length": self.watchlist_length,
                 "url": self.url}
 
-    def __str__(self):
-        return f"User: {self.display_name} ({self.username})"
-
 
 if __name__ == '__main__':
     # Example usage
     usr = UserProfile("sverlaan")
-    print(usr)
+    print(usr.to_dict())

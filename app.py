@@ -1,15 +1,11 @@
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from scraper import get_user_profile, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating, initize_user_data, get_single_watchlist, get_all_seen_movies
-from model import get_similar_movies, get_prediction, get_recommendations
 from timeit import default_timer as timer
-import random
 from tqdm import tqdm
-import pandas as pd
 import threading
-import time
-from user_profile import UserProfile
-from model import MovieRecommender
+from userprofile import UserProfile
+from movieprofile import get_movie_data
+from model import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
 
 
 app = Flask(__name__)
@@ -50,19 +46,23 @@ class Movie(db.Model):
                 "letterboxd_link": self.letterboxd_link, "trailer": self.trailer}
 
 
+################ Initialization ################
+
 # Store user profiles
 user_profiles = dict()
 
 
 @app.route('/get_user/<string:username>', methods=['GET'])
 def get_user(username):
-
     try:
         start = timer()
         print(f"Start scraping user {username} data")
-        profile = UserProfile(username)
-        user_profiles[username] = profile
-        user_data = profile.as_dict()
+        if username in user_profiles:
+            user_data = user_profiles[username].as_dict()
+        else:
+            profile = UserProfile(username)
+            user_profiles[username] = profile
+            user_data = profile.to_dict()
         print(f"Time taken: {timer() - start}")
 
         return jsonify(user_data)
@@ -78,12 +78,18 @@ def init_user_data(task_number, usernames):
     """Simulate a task that takes a few seconds"""
     global task_status
     global user_profiles
+
     for username in usernames:
-        user_profiles[username].initialize_complete_profile()
+        user_inst = user_profiles[username]
+        if not user_inst.initialize_complete:
+            user_inst.initialize_complete_profile()
+        else:
+            print(f"{username} already initialized")
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
+# Store recommender instance
 recommender_instance = None
 
 
@@ -93,7 +99,8 @@ def init_recommender(task_number, usernames):
     global task_status
     global user_profiles
 
-    recommender_instance = MovieRecommender(data_path="data/ratings.csv")
+    if recommender_instance is None:
+        recommender_instance = MovieRecommender(data_path="data/ratings.csv")
     recommender_instance.initialize(usernames, user_profiles)
 
     task_status[task_number] = "complete"  # Mark as complete
@@ -106,7 +113,6 @@ def train_model(task_number):
     if recommender_instance is None:
         task_status[task_number] = "error: recommender not initialized"
         return
-
     recommender_instance.train_model()
 
     task_status[task_number] = "complete"  # Mark as complete
@@ -133,6 +139,8 @@ def get_status(task_number):
     return jsonify({"status": task_status[task_number]})
 
 
+################ Fetch data for components ################
+
 @app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])
 def fetch_movie_data_for_modal(slug, username1, username2):
 
@@ -147,12 +155,12 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     pred_1, pred_2 = None, None
 
     # Get user ratings
-    rating_1 = get_user_rating(username1, slug)
+    rating_1 = user_profiles[username1].get_rating(slug)
     if rating_1 is not None:
         movie_data["score_1"] = f"{rating_1}"
         movie_data["score_1_color"] = "text-muted"
     else:
-        pred_1 = get_prediction(username1, slug)
+        pred_1 = recommender_instance.get_prediction(username1, slug)
         if pred_1 is not None:
             movie_data["score_1"] = f"{round(pred_1 * 20, 1)}%"
             movie_data["score_1_color"] = "text-score"
@@ -160,12 +168,12 @@ def fetch_movie_data_for_modal(slug, username1, username2):
             movie_data["score_1"] = "--"
             movie_data["score_1_color"] = "text-muted"
 
-    rating_2 = get_user_rating(username2, slug)
+    rating_2 = user_profiles[username2].get_rating(slug)
     if rating_2 is not None:
         movie_data["score_2"] = f"{rating_2}"
         movie_data["score_2_color"] = "text-muted"
     else:
-        pred_2 = get_prediction(username2, slug)
+        pred_2 = recommender_instance.get_prediction(username2, slug)
         if pred_2 is not None:
             movie_data["score_2"] = f"{round(pred_2 * 20, 1)}%"
             movie_data["score_2_color"] = "text-score"
@@ -187,49 +195,48 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     return jsonify(movie_data)
 
 
-@app.route('/fetch_movies/<string:type>/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_movies(type, username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_common_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
-    minRating = float(minRating)
-    maxRating = float(maxRating)
+    start = timer()
+    print(f"Start collecting common watchlist data")
+    slugs = get_common_watchlist(username1, username2, user_profiles, recommender_instance)
+    print(f"Time taken: {timer() - start}")
+
+    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)
+
+
+@app.route('/fetch_single_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+
+    start = timer()
+    print(f"Start collecting common watchlist data")
+    slugs = get_single_watchlist(username1, username2, user_profiles, recommender_instance)
+    print(f"Time taken: {timer() - start}")
+
+    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=5)
+
+
+@app.route('/fetch_rewatchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+
+    start = timer()
+    print(f"Start collecting common watchlist data")
+    slugs = get_rewatchlist(username1, username2, user_profiles, recommender_instance)
+    print(f"Time taken: {timer() - start}")
+
+    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=10)
+
+
+@app.route('/fetch_recommendations/<string:username1>/<string:username2>/<string:weight>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
     print(f"Start collecting {type} data")
-    if type == "common_watchlist":
-        slugs = get_common_watchlist(username1, username2)
-        top_k = -1
-    elif type == "rewatch_combo":
-        slugs = get_rewatch_combo(username1, username2)
-        top_k = 10
-    elif type == "single_watchlist":
-        slugs = get_single_watchlist(username1, username2)
-        top_k = 5
-    else:
-        raise Exception(f"Invalid type: {type}")
+    slugs, scores_dict = get_recommendations(username1, username2, int(weight), user_profiles, recommender_instance)
     print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(slugs, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear, top_k=top_k)
-
-
-@app.route('/fetch_recommendations/<string:type>/<string:username1>/<string:username2>/<string:weight>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_recommendations(type, username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
-
-    minRating = float(minRating)
-    maxRating = float(maxRating)
-
-    start = timer()
-    print(f"Start collecting {type} data")
-    if type == "recommendations":
-        all_seen1 = get_all_seen_movies(username1)
-        all_seen2 = get_all_seen_movies(username2)
-        weight = int(weight)
-        slugs, scores_dict = get_recommendations(username1, username2, all_seen1, all_seen2, weight)
-        top_k = 50
-    else:
-        raise Exception(f"Invalid type: {type}")
-    print(f"Time taken: {timer() - start}")
-
-    return retrieve_movies(slugs, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear, top_k=top_k, scores=scores_dict)
+    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
 
 
 @app.route('/fetch_similar_movies/<string:slug>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
@@ -238,11 +245,9 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     print(f"Fetching similar movies for {slug}")
     start = timer()
 
-    hits, similar_movies = get_similar_movies(slug, top_n=4)
+    hits, similar_movies = get_similar_movies(slug, recommender_instance, top_n=4)
     if hits == False:
         return jsonify({"error": "Movie ID not in training set"})
-
-    print(similar_movies)
     print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(similar_movies, top_k=4)

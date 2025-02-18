@@ -40,7 +40,9 @@ applyButton.addEventListener('click', async function (event) {
 
     const compareButton = document.getElementById('compareButton');
     if (!compareButton.disabled) {
-        compareButton.click();
+        const event = new Event('click', { bubbles: true });
+        event.refresh = false; // Add custom property
+        compareButton.dispatchEvent(event);
     }
 });
 
@@ -161,7 +163,7 @@ function startTasks() {
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_movies/common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const response = await fetch(`/fetch_common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting common watchlist");
         const data = await response.json();
 
@@ -197,7 +199,7 @@ async function FetchCommonWatchlist(username1, username2, minRating, maxRating, 
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_movies/single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const response = await fetch(`/fetch_single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
         const data = await response.json();
 
@@ -230,10 +232,10 @@ async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, ma
 
 
 // Fetch common watchlist from Flask backend and populate the DOM
-async function FetchRewatchCombo(username1, username2, realRewatchCombo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+async function FetchRewatchlist(username1, username2, realRewatchCombo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_movies/rewatch_combo/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
-        if (!response.ok) throw new Error("Something went wrong getting rewatch combo");
+        const response = await fetch(`/fetch_rewatchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        if (!response.ok) throw new Error("Something went wrong getting rewatchlist");
         const data = await response.json();
         
         // delete all existing carousel items
@@ -271,7 +273,7 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
     try {
         
 
-        const response = await fetch(`/fetch_recommendations/recommendations/${username1}/${username2}/${weight}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const response = await fetch(`/fetch_recommendations/${username1}/${username2}/${weight}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting recommendations");
         const data = await response.json();
 
@@ -530,11 +532,13 @@ const compareButton = document.getElementById('compareButton');
 // Listen for the compare button click event
 compareButton.addEventListener('click', async function (event) {
 
-    console.log("Compare button clicked!");
+    const refresh = event.refresh ?? true; // Use event.refresh if available, otherwise default to true
+    console.log("Compare button clicked! Refresh: ", refresh);
 
-    // Hide the checkmarks and circle images
-    hideElements();
-    await startTasks();
+    if (refresh) {
+        hideElements();
+        await startTasks();
+    }
     
     const commonWatchlistContainer = document.getElementById('CommonWatchlistContainer');
     const loadingPlaceholders = document.getElementById('loadingPlaceholders');
@@ -603,10 +607,10 @@ compareButton.addEventListener('click', async function (event) {
     console.log("Start fetching rewatch combo 1!");
     
     const realRewatchCombo1 = document.querySelector('#carousel1 .carousel-inner');
-    await FetchRewatchCombo(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
-    await FetchRewatchCombo(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     rewatchComboContainer.classList.remove('d-none');
     placeholderRC1.classList.add('d-none');
