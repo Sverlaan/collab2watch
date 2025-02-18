@@ -103,8 +103,8 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
 
 function hideElements() {
 
-    document.getElementById("progress1").textContent = `Fetching data from ${inputUsername1.value}'s profile`;
-    document.getElementById("progress2").textContent = `Fetching data from ${inputUsername2.value}'s profile`;
+    document.getElementById("progress1").textContent = `Fetching profile data from ${inputUsername1.value} and ${inputUsername2.value}`;
+    document.getElementById("progress2").textContent = `Fetching data from 5000 users and 4000 movies`;
 
     document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
     document.getElementById("circleImagePlaceholder2").style.display = "inline-block";

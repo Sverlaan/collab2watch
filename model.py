@@ -18,6 +18,15 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
+# from scraper import get_user_ratings
+
+
+class MappingObject:
+
+    def __init__(self, df, user_mapping, item_mapping):
+        self.df = df
+        self.user_mapping = user_mapping
+        self.item_mapping = item_mapping
 
 
 def get_pretrained_model():
@@ -46,6 +55,61 @@ def get_pretrained_model():
         ratingsdf = pickle.load(file)
 
     return model, trainset, ratingsdf, item_mapping, user_mapping
+
+
+class MovieRecommender:
+    def __init__(self, data_path):
+        self.data_path = data_path
+        self.df = None
+        self.user_mapping = None
+        self.item_mapping = None
+        self.model = None
+        self.trainset = None
+        self.testset = None
+
+    def initialize(self, usernames, user_profiles):
+        # Load existing data
+        self.df = pd.read_csv(self.data_path, dtype={
+            'user_name': 'string',
+            'film_id': 'string',
+            'rating': 'float64'
+        }).rename(columns={'user_name': 'userId', 'film_id': 'movieId'})
+
+        # Only keep movies with more than 1000 ratings and users with more than 10 ratings
+        self.df = self.df[self.df.groupby("movieId")["movieId"].transform("count") >= 1000]
+        self.df = self.df[self.df.groupby("userId")["userId"].transform("count") >= 10]
+
+        # Sample 5000 random users for faster training
+        random_users = self.df['userId'].drop_duplicates().sample(n=5000, replace=False)
+        self.df = self.df[self.df['userId'].isin(random_users)]
+
+        # Add ratings from new users
+        for username in usernames:
+            user_profile = user_profiles[username]
+            rows = [(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items()]
+            new_df = pd.DataFrame(rows, columns=self.df.columns)
+            self.df = pd.concat([self.df, new_df], ignore_index=True)
+
+        # Factorize user and movie IDs
+        self.df["userId"], self.user_mapping = pd.factorize(self.df["userId"])
+        self.df["movieId"], self.item_mapping = pd.factorize(self.df["movieId"])
+
+        # Define rating scale
+        min_rating = self.df.rating.min()
+        max_rating = self.df.rating.max()
+
+        # Load dataset for Surprise
+        reader = Reader(rating_scale=(min_rating, max_rating))
+        data = Dataset.load_from_df(self.df[["userId", "movieId", "rating"]], reader)
+        self.trainset, self.testset = train_test_split(data, test_size=0.1)
+
+        # Initialize model
+        self.model = SVD(n_factors=50, n_epochs=10, verbose=True)
+
+    def train_model(self):
+        if self.model is None or self.trainset is None:
+            raise ValueError("Initialize training data before training the model.")
+        self.model.fit(self.trainset)
 
 
 def get_movie_id(slug, item_mapping):
