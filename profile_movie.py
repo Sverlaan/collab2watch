@@ -2,6 +2,35 @@
 from letterboxdpy import movie
 import requests
 import time
+from sqlalchemy import Column, Integer, String, Float, Text
+from database import db  # Import db from a new database module
+
+
+class Movie(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(255), nullable=False)
+    title = db.Column(db.String(255), nullable=False)
+    year = db.Column(db.Integer, nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    director = db.Column(db.String(255), nullable=True)
+    rating = db.Column(db.Float, nullable=True)
+    runtime = db.Column(db.Integer, nullable=True)
+    genres = db.Column(db.String(255), nullable=True)
+    actors = db.Column(db.String(255), nullable=True)
+    tagline = db.Column(db.Text, nullable=True)
+    poster = db.Column(db.String(255), nullable=True)
+    banner = db.Column(db.String(255), nullable=True)
+    tmdb_link = db.Column(db.String(255), nullable=True)
+    imdb_link = db.Column(db.String(255), nullable=True)
+    letterboxd_link = db.Column(db.String(255), nullable=True)
+    trailer = db.Column(db.String(255), nullable=True)
+
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "year": self.year, "description": self.description,
+                "director": self.director, "rating": self.rating, "runtime": self.runtime, "genres": self.genres,
+                "actors": self.actors, "tagline": self.tagline, "poster": self.poster,
+                "banner": self.banner, "slug": self.slug, "tmdb_link": self.tmdb_link, "imdb_link": self.imdb_link,
+                "letterboxd_link": self.letterboxd_link, "trailer": self.trailer}
 
 
 def get_movie_data(movie_slug):

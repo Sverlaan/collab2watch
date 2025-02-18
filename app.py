@@ -1,17 +1,20 @@
+from database import db  # Import db from the separate module
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
-from userprofile import UserProfile
-from movieprofile import get_movie_data
-from model import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
+from profile_user import UserProfile
+from profile_movie import Movie, get_movie_data
+from recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
 
-
+# Initialize Flask app
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+
+# Initialize db with the Flask app
+db.init_app(app)
 
 
 @app.route('/')
@@ -19,37 +22,16 @@ def home():
     return render_template('index.html')
 
 
-class Movie(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    slug = db.Column(db.String(255), nullable=False)
-    title = db.Column(db.String(255), nullable=False)
-    year = db.Column(db.Integer, nullable=True)
-    description = db.Column(db.Text, nullable=True)
-    director = db.Column(db.String(255), nullable=True)
-    rating = db.Column(db.Float, nullable=True)
-    runtime = db.Column(db.Integer, nullable=True)
-    genres = db.Column(db.String(255), nullable=True)
-    actors = db.Column(db.String(255), nullable=True)
-    tagline = db.Column(db.Text, nullable=True)
-    poster = db.Column(db.String(255), nullable=True)
-    banner = db.Column(db.String(255), nullable=True)
-    tmdb_link = db.Column(db.String(255), nullable=True)
-    imdb_link = db.Column(db.String(255), nullable=True)
-    letterboxd_link = db.Column(db.String(255), nullable=True)
-    trailer = db.Column(db.String(255), nullable=True)
-
-    def to_dict(self):
-        return {"id": self.id, "title": self.title, "year": self.year, "description": self.description,
-                "director": self.director, "rating": self.rating, "runtime": self.runtime, "genres": self.genres,
-                "actors": self.actors, "tagline": self.tagline, "poster": self.poster,
-                "banner": self.banner, "slug": self.slug, "tmdb_link": self.tmdb_link, "imdb_link": self.imdb_link,
-                "letterboxd_link": self.letterboxd_link, "trailer": self.trailer}
-
-
 ################ Initialization ################
 
 # Store user profiles
 user_profiles = dict()
+
+# Store task statuses
+task_status = {1: "pending", 2: "pending", 3: "pending"}
+
+# Store recommender instance
+recommender_instance = None
 
 
 @app.route('/get_user/<string:username>', methods=['GET'])
@@ -70,14 +52,9 @@ def get_user(username):
         return 404
 
 
-# Store task statuses
-task_status = {1: "pending", 2: "pending", 3: "pending"}
-
-
-def init_user_data(task_number, usernames):
+def get_user_data(task_number, usernames):
     """Simulate a task that takes a few seconds"""
     global task_status
-    global user_profiles
 
     for username in usernames:
         user_inst = user_profiles[username]
@@ -89,15 +66,10 @@ def init_user_data(task_number, usernames):
     task_status[task_number] = "complete"  # Mark as complete
 
 
-# Store recommender instance
-recommender_instance = None
-
-
-def init_recommender(task_number, usernames):
+def preprocess_data(task_number, usernames):
     """Simulate a task that takes a few seconds"""
     global recommender_instance
     global task_status
-    global user_profiles
 
     if recommender_instance is None:
         recommender_instance = MovieRecommender(data_path="data/ratings.csv")
@@ -124,9 +96,9 @@ def start_task(task_number, username1, username2):
     global task_status
     task_status[task_number] = "running"
     if task_number == 1:
-        thread = threading.Thread(target=init_user_data, args=(task_number, [username1, username2]))
+        thread = threading.Thread(target=get_user_data, args=(task_number, [username1, username2]))
     if task_number == 2:
-        thread = threading.Thread(target=init_recommender, args=(task_number, [username1, username2]))
+        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2]))
     if task_number == 3:
         thread = threading.Thread(target=train_model, args=(task_number,))
     thread.start()
