@@ -1,5 +1,4 @@
 # Imports
-from letterboxdpy import user
 from letterboxdpy import movie
 import requests
 import time
