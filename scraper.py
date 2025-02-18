@@ -98,17 +98,34 @@ def get_user_profile(username):
     return user_info
 
 
-def initize_user_data(username):
-    # Store watchlist
-    user_inst = user_instances[username]
-    if user_watchlists.get(username) is None:
-        user_watchlists[username] = {movie['slug'] for movie in user_inst.get_watchlist()['data'].values()}
+def initize_user_data(usernames):
+    """Initialize user data"""
+    for username in usernames:
 
-    # Store ratings
+        # Get user instance
+        user_inst = user_instances[username]
+
+        # Store watchlist
+        if user_watchlists.get(username) is None:
+            user_watchlists[username] = {movie['slug'] for movie in user_inst.get_watchlist()['data'].values()}
+
+        # Store ratings
+        if user_ratings.get(username) is None:
+            all_user_ratings = {key: value['rating']/2.0 for key, value in user_inst.get_films()['movies'].items() if value['rating'] is not None}
+            user_ratings[username] = all_user_ratings
+            user_seen_movies[username] = set(all_user_ratings.keys())
+
+
+def get_user_ratings(username):
+    """Get user ratings"""
+    user_inst = user_instances[username]
+
     if user_ratings.get(username) is None:
         all_user_ratings = {key: value['rating']/2.0 for key, value in user_inst.get_films()['movies'].items() if value['rating'] is not None}
         user_ratings[username] = all_user_ratings
         user_seen_movies[username] = set(all_user_ratings.keys())
+
+    return user_ratings[username]
 
 
 def get_user_rating(username, movie_slug):

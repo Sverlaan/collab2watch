@@ -1,13 +1,15 @@
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from scraper import get_user_profile, get_common_watchlist, get_movie_data, get_rewatch_combo, get_user_rating, initize_user_data, get_single_watchlist, get_all_seen_movies
-from model import get_similar_movies, get_prediction, init_pretrained_model, get_recommendations
+from model import get_similar_movies, get_prediction, get_recommendations
 from timeit import default_timer as timer
 import random
 from tqdm import tqdm
 import pandas as pd
 import threading
 import time
+from user_profile import UserProfile
+from model import MovieRecommender
 
 
 app = Flask(__name__)
@@ -48,34 +50,65 @@ class Movie(db.Model):
                 "letterboxd_link": self.letterboxd_link, "trailer": self.trailer}
 
 
+# Store user profiles
+user_profiles = dict()
+
+
 @app.route('/get_user/<string:username>', methods=['GET'])
 def get_user(username):
 
-    start = timer()
-    print(f"Start scraping user {username} data")
-    user_data = get_user_profile(username)
-    print(f"Time taken: {timer() - start}")
+    try:
+        start = timer()
+        print(f"Start scraping user {username} data")
+        profile = UserProfile(username)
+        user_profiles[username] = profile
+        user_data = profile.as_dict()
+        print(f"Time taken: {timer() - start}")
 
-    if user_data == 404:
-        return jsonify({"error": "User not found!"}), 404
-    return jsonify(user_data)
+        return jsonify(user_data)
+    except:
+        return 404
 
 
 # Store task statuses
 task_status = {1: "pending", 2: "pending", 3: "pending"}
 
 
-def init_user_data(task_number, username):
+def init_user_data(task_number, usernames):
     """Simulate a task that takes a few seconds"""
     global task_status
-    initize_user_data(username)
+    global user_profiles
+    for username in usernames:
+        user_profiles[username].initialize_complete_profile()
+
     task_status[task_number] = "complete"  # Mark as complete
 
 
-def init_model(task_number):
+recommender_instance = None
+
+
+def init_recommender(task_number, usernames):
+    """Simulate a task that takes a few seconds"""
+    global recommender_instance
+    global task_status
+    global user_profiles
+
+    recommender_instance = MovieRecommender(data_path="data/ratings.csv")
+    recommender_instance.initialize(usernames, user_profiles)
+
+    task_status[task_number] = "complete"  # Mark as complete
+
+
+def train_model(task_number):
     """Simulate a task that takes a few seconds"""
     global task_status
-    init_pretrained_model()
+
+    if recommender_instance is None:
+        task_status[task_number] = "error: recommender not initialized"
+        return
+
+    recommender_instance.train_model()
+
     task_status[task_number] = "complete"  # Mark as complete
 
 
@@ -85,11 +118,11 @@ def start_task(task_number, username1, username2):
     global task_status
     task_status[task_number] = "running"
     if task_number == 1:
-        thread = threading.Thread(target=init_user_data, args=(task_number, username1))
+        thread = threading.Thread(target=init_user_data, args=(task_number, [username1, username2]))
     if task_number == 2:
-        thread = threading.Thread(target=init_user_data, args=(task_number, username2))
+        thread = threading.Thread(target=init_recommender, args=(task_number, [username1, username2]))
     if task_number == 3:
-        thread = threading.Thread(target=init_model, args=(task_number,))
+        thread = threading.Thread(target=train_model, args=(task_number,))
     thread.start()
     return jsonify({"message": f"Task {task_number} started"})
 
