@@ -1,12 +1,12 @@
-from database import db  # Import db from the separate module
 from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
-from profile_user import UserProfile
-from profile_movie import Movie, get_movie_data
-from recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
+from backend.database import db  # Import db from the separate module
+from backend.profile_user import UserProfile
+from backend.profile_movie import Movie, get_movie_data
+from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
 
 # Initialize Flask app
 app = Flask(__name__)

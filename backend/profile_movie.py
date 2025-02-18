@@ -3,7 +3,7 @@ from letterboxdpy import movie
 import requests
 import time
 from sqlalchemy import Column, Integer, String, Float, Text
-from database import db  # Import db from a new database module
+from backend.database import db
 
 
 class Movie(db.Model):
