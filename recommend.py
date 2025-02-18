@@ -160,12 +160,9 @@ def get_common_watchlist(username1, username2, user_profiles, recommender):
 
     # Get predicted ratings for common movies
     preds_user1 = recommender.get_predictions(username1, common_slugs, sorted=False)
-    print(preds_user1)
     preds_user2 = recommender.get_predictions(username2, common_slugs, sorted=False)
-    print(preds_user2)
 
     preds_avg = [(slug, (preds_user1[i] + preds_user2[i]) / 2.0) for i, slug in enumerate(common_slugs)]
-    print(preds_avg)
 
     # Sort by predicted rating
     preds_avg.sort(key=lambda x: x[1], reverse=True)
@@ -199,7 +196,6 @@ def get_single_watchlist(username1, username2, user_profiles, recommender):
     # Sort by predicted rating
     preds.sort(key=lambda x: x[1], reverse=True)
     preds = preds
-    print(preds)
 
     # Return sorted list of common movies
     return [slug for slug, _ in preds]
