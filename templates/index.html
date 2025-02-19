@@ -63,6 +63,8 @@
                 <p class="text-center text-muted">Fill in two usernames and get recommendations!</p>
                 <button type="button" class="btn btn-outline-primary mb-2" id="filterButton" 
                     style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#filtersModal">Filters</button>
+                <button type="button" class="btn btn-outline-primary mb-2" id="settingsButton" 
+                    style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
                 <button type="button" class="btn btn-primary" id="compareButton" 
                     style="width: 180pt; font-size: 18pt" disabled>Go!</button>
 
@@ -457,7 +459,7 @@
                                  <label class="form-label">-</label>
                             </div>
                             <div class="col-md-3">
-                                <input type="number" class="form-control"  id="maxRuntime" min="0" max="9999" value="1000">
+                                <input type="number" class="form-control"  id="maxRuntime" min="0" max="9999" value="9999">
                             </div>
                         </div>
 
@@ -512,9 +514,106 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-danger" id="resetFilters">Reset</button>
                     <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="applyFilters">Apply</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Settings Modal -->
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-labelledby="settingsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-top">
+            <div class="modal-content">
+                <div class="modal-header d-flex flex-column align-items-start">
+                    <div class="w-100 d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="modal-title" id="settingsModalLabel">Settings</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                </div>
+
+                <div class="modal-body">
+                    <form id="settingsForm">
+
+                        <div class="row mb-3">
+                            <div class="d-flex justify-content-center gap-2">
+                                <button type="button" class="btn btn-warning" id="fastSettings" style="width: 100px;">Fast</button>
+                                <button type="button" class="btn btn-secondary" id="defaultSettings" style="width: 100px;">Default</button>
+                                <button type="button" class="btn btn-success" id="accurateSettings" style="width: 100px;">Accurate</button>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="mb-3">
+
+                            <label class="form-label no-spacing">Num. Samples</label>
+                            <p class="text-muted">The number of samples used to train the model</p>
+                            <div class="position-relative">
+                                <!-- Range Track (Behind the sliders) -->
+                                <div id="samplesTrack" class="range-track"></div>
+
+                                <!-- Lower Bound Slider -->
+                                <input type="range" class="form-range range-input" min="500000" max="10000000" step="500000" id="nsamples" value="5000000">
+
+                                <!-- Labels for Each Step -->
+                                <div class="d-flex justify-content-between">
+                                    <span>500K</span>
+                                    <span>5M</span>
+                                    <span>10M</span>
+                                </div>
+                            </div>
+
+                            <hr class="my-3 mx-auto">
+                        </div>
+                    
+                        <div class="mb-3"> 
+                            <label class="form-label no-spacing">Num. Factors</label>
+                            <p class="text-muted">The number of latent factors in the model</p>
+                            <div class="position-relative">
+                                <!-- Range Track (Behind the sliders) -->
+                                <div id="factorsTrack" class="range-track"></div>
+
+                                <!-- Lower Bound Slider -->
+                                <input type="range" class="form-range range-input" min="10" max="100" step="10" id="nfactors" value="50">
+
+                                <!-- Labels for Each Step -->
+                                <div class="d-flex justify-content-between">
+                                    <span>10</span>
+                                    <span>100</span>
+                                </div>
+                            </div>
+
+                            <hr class="my-3 mx-auto">
+                        </div>
+
+                        <div class="mb-3"> 
+                            <label class="form-label no-spacing">Num. Epochs</label>
+                            <p class="text-muted">The number of training rounds</p>
+                            <div class="position-relative">
+                                <!-- Range Track (Behind the sliders) -->
+                                <div id="epochsTrack" class="range-track"></div>
+
+                                <!-- Lower Bound Slider -->
+                                <input type="range" class="form-range range-input" min="5" max="30" step="5" id="nepochs" value="10">
+
+                                <!-- Labels for Each Step -->
+                                <div class="d-flex justify-content-between">
+                                    <span>5</span>
+                                    <span>30</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="resetSettings">Reset</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="applySettings">Apply</button>
                 </div>
             </div>
         </div>

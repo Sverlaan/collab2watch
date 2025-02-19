@@ -45,9 +45,9 @@ class MovieRecommender:
         """
         return self.user_mapping[id]
 
-    def initialize(self, usernames, user_profiles, num_users=5000):
+    def preprocess(self, usernames, user_profiles, n_samples=5000000):
         """
-        Preprocess the data and initialize the model
+        Preprocess the data
         """
 
         if self.loaded_df is None:
@@ -67,8 +67,14 @@ class MovieRecommender:
         self.df = self.df[self.df.groupby("userId")["userId"].transform("count") >= 10]
 
         # Sample random users for faster training
-        random_users = self.df['userId'].drop_duplicates().sample(n=num_users, replace=False)
-        self.df = self.df[self.df['userId'].isin(random_users)]
+        # print(f"Sampling {num_users} random users")
+        # random_users = self.df['userId'].drop_duplicates().sample(n=num_users, replace=False)
+        # self.df = self.df[self.df['userId'].isin(random_users)]
+
+        # Sample random rows for faster training
+        if n_samples < len(self.df):
+            print(f"Sampling {n_samples} random rows out of {len(self.df)}")
+            self.df = self.df.sample(n=n_samples, replace=False)
 
         # Add ratings from our app users
         for username in usernames:
@@ -88,14 +94,20 @@ class MovieRecommender:
         data = Dataset.load_from_df(self.df[["userId", "movieId", "rating"]], reader)
         self.trainset, self.testset = train_test_split(data, test_size=0.1)
 
-    def train_model(self, n_factors=50, n_epochs=10):
+    def train_model(self, n_factors=50, n_epochs=10, evaluate=True):
         """
         Train the model
         """
         if self.trainset is None:
             raise ValueError("Initialize training data before training the model.")
+        print(f"Train SVD model with {n_factors} factors and {n_epochs} epochs")
+        timer_start = timer()
         self.model = SVD(n_factors=n_factors, n_epochs=n_epochs, verbose=True)
         self.model.fit(self.trainset)
+        print(f"Training took {timer() - timer_start} seconds")
+
+        if evaluate:
+            self.evaluate_model()
 
     def evaluate_model(self):
         """
