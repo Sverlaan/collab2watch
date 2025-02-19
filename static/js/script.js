@@ -22,26 +22,71 @@ function updateIcon(theme) {
 }
 
 // event handler for resetFilters button click
-const resetButton = document.getElementById('resetFilters');
-resetButton.addEventListener('click', function (event) {
-    console.log("Reset button clicked!");
+const resetFiltersButton = document.getElementById('resetFilters');
+resetFiltersButton.addEventListener('click', function (event) {
+    console.log("Resetting filters!");
     // reset form filters in modal
     document.getElementById('minRating').value = 0;
     document.getElementById('maxRating').value = 5;
     document.getElementById('minRuntime').value = 0;
-    document.getElementById('maxRuntime').value = 300;
+    document.getElementById('maxRuntime').value = 9999;
     document.getElementById('minYear').value = 1870;
     document.getElementById('maxYear').value = 2025;
 
 });
 
-const applyButton = document.getElementById('applyFilters');
-applyButton.addEventListener('click', async function (event) {
+const applyFiltersButton = document.getElementById('applyFilters');
+applyFiltersButton.addEventListener('click', async function (event) {
 
     const compareButton = document.getElementById('compareButton');
     if (!compareButton.disabled) {
         const event = new Event('click', { bubbles: true });
         event.refresh = false; // Add custom property
+        compareButton.dispatchEvent(event);
+    }
+});
+
+// event handler for resetFilters button click
+const fastSettingsButton = document.getElementById('fastSettings');
+fastSettingsButton.addEventListener('click', function (event) {
+    console.log("Resetting model settings!");
+    // reset form filters in modal
+    document.getElementById('nsamples').value = 500000;
+    document.getElementById('nfactors').value = 10;
+    document.getElementById('nepochs').value = 5;
+});
+
+// event handler for resetFilters button click
+const resetButtons = document.querySelectorAll('#defaultSettings, #resetSettings');
+resetButtons.forEach(button => {
+    button.addEventListener('click', function () {
+        console.log("Resetting model settings!");
+        
+        // Reset form filters in modal
+        document.getElementById('nsamples').value = 5000000;
+        document.getElementById('nfactors').value = 50;
+        document.getElementById('nepochs').value = 10;
+    });
+});
+
+
+// event handler for resetFilters button click
+const accurateSettingsButton = document.getElementById('accurateSettings');
+accurateSettingsButton.addEventListener('click', function (event) {
+    console.log("Resetting model settings!");
+    // reset form filters in modal
+    document.getElementById('nsamples').value = 10000000;
+    document.getElementById('nfactors').value = 100;
+    document.getElementById('nepochs').value = 30;
+});
+
+const applySettingsButton = document.getElementById('applySettings');
+applySettingsButton.addEventListener('click', async function (event) {
+
+    const compareButton = document.getElementById('compareButton');
+    if (!compareButton.disabled) {
+        const event = new Event('click', { bubbles: true });
+        event.refresh = true; // Add custom property
         compareButton.dispatchEvent(event);
     }
 });
@@ -106,7 +151,14 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
 function hideElements() {
 
     document.getElementById("progress1").textContent = `Fetching profile data from ${inputUsername1.value} and ${inputUsername2.value}`;
-    document.getElementById("progress2").textContent = `Fetching data from 5000 users and 4000 movies`;
+    // Convert value to K or M int
+    num_of_samples = document.getElementById('nsamples').value;
+    if (num_of_samples >= 1000000) {
+        num_of_samples = (num_of_samples / 1000000).toFixed(1) + "M";
+    } else if (num_of_samples >= 1000) {
+        num_of_samples = (num_of_samples / 1000).toFixed(1) + "K";
+    }
+    document.getElementById("progress2").textContent = `Collecting ${num_of_samples} ratings from over 10K users`;
 
     document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
     document.getElementById("circleImagePlaceholder2").style.display = "inline-block";
@@ -141,7 +193,7 @@ function startTasks() {
                             let nextTask = taskNumber + 1;
                             document.getElementById(`spinner${nextTask}`).style.display = "inline-block";
                             document.getElementById(`circleImagePlaceholder${nextTask}`).style.display = "none";
-                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}`)
+                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}/${document.getElementById('nsamples').value}/${document.getElementById('nfactors').value}/${document.getElementById('nepochs').value}`)
                                 .then(() => checkStatus(nextTask));
                         } else {
                             resolve(); // Resolves the Promise when the last task is complete
@@ -154,7 +206,13 @@ function startTasks() {
 
         document.getElementById("spinner1").style.display = "inline-block";
         document.getElementById("circleImagePlaceholder1").style.display = "none";
-        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}`)
+        
+        n_samples = document.getElementById('nsamples').value;
+        n_factors = document.getElementById('nfactors').value;
+        n_epochs = document.getElementById('nepochs').value;
+        console.log("values: ", n_samples, n_factors, n_epochs);
+        
+        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}/${n_samples}/${n_factors}/${n_epochs}`)
             .then(() => checkStatus(1));
     });
 }

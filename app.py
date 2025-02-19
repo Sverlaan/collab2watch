@@ -38,14 +38,13 @@ recommender_instance = None
 def get_user(username):
     try:
         start = timer()
-        print(f"Start scraping user {username} data")
         if username in user_profiles:
-            user_data = user_profiles[username].as_dict()
+            user_data = user_profiles[username].to_dict()
         else:
             profile = UserProfile(username)
             user_profiles[username] = profile
             user_data = profile.to_dict()
-        print(f"Time taken: {timer() - start}")
+        # print(f"Time taken: {timer() - start}")
 
         return jsonify(user_data)
     except:
@@ -57,50 +56,53 @@ def get_user_data(task_number, usernames):
     global task_status
 
     for username in usernames:
+        print(f"Initializing {username}")
+        start = timer()
         user_inst = user_profiles[username]
         if not user_inst.initialize_complete:
             user_inst.initialize_complete_profile()
         else:
             print(f"{username} already initialized")
+        print(f"Time taken: {timer() - start}")
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
-def preprocess_data(task_number, usernames):
+def preprocess_data(task_number, usernames, num_samples):
     """Simulate a task that takes a few seconds"""
     global recommender_instance
     global task_status
 
     if recommender_instance is None:
         recommender_instance = MovieRecommender(data_path="data/ratings.csv")
-    recommender_instance.initialize(usernames, user_profiles)
+    recommender_instance.preprocess(usernames, user_profiles, n_samples=int(num_samples))
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
-def train_model(task_number):
+def train_model(task_number, n_factors, n_epochs):
     """Simulate a task that takes a few seconds"""
     global task_status
 
     if recommender_instance is None:
         task_status[task_number] = "error: recommender not initialized"
         return
-    recommender_instance.train_model()
+    recommender_instance.train_model(n_factors=int(n_factors), n_epochs=int(n_epochs))
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
-@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>")
-def start_task(task_number, username1, username2):
+@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>/<int:n_samples>/<int:n_factors>/<int:n_epochs>")
+def start_task(task_number, username1, username2, n_samples, n_factors, n_epochs):
     """Start a task in a new thread"""
     global task_status
     task_status[task_number] = "running"
     if task_number == 1:
         thread = threading.Thread(target=get_user_data, args=(task_number, [username1, username2]))
     if task_number == 2:
-        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2]))
+        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2], n_samples))
     if task_number == 3:
-        thread = threading.Thread(target=train_model, args=(task_number,))
+        thread = threading.Thread(target=train_model, args=(task_number, n_factors, n_epochs))
     thread.start()
     return jsonify({"message": f"Task {task_number} started"})
 
@@ -117,7 +119,7 @@ def get_status(task_number):
 def fetch_movie_data_for_modal(slug, username1, username2):
 
     # Get movie details
-    print(f"Fetching movie data for {slug} from db")
+    # print(f"Fetching movie data for {slug} from db")
     start = timer()
     movie = Movie.query.filter_by(slug=slug).first()
     if movie is None:
@@ -163,7 +165,7 @@ def fetch_movie_data_for_modal(slug, username1, username2):
         movie_data["score_combined"] = "--"
         movie_data["score_combined_color"] = "text-muted"
 
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
     return jsonify(movie_data)
 
 
@@ -171,9 +173,8 @@ def fetch_movie_data_for_modal(slug, username1, username2):
 def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    print(f"Start collecting common watchlist data")
     slugs = get_common_watchlist(username1, username2, user_profiles, recommender_instance)
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)
 
@@ -182,9 +183,8 @@ def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntim
 def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    print(f"Start collecting common watchlist data")
     slugs = get_single_watchlist(username1, username2, user_profiles, recommender_instance)
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=5)
 
@@ -193,9 +193,8 @@ def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntim
 def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    print(f"Start collecting common watchlist data")
     slugs = get_rewatchlist(username1, username2, user_profiles, recommender_instance)
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=10)
 
@@ -204,9 +203,8 @@ def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, ma
 def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    print(f"Start collecting {type} data")
     slugs, scores_dict = get_recommendations(username1, username2, int(weight), user_profiles, recommender_instance)
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
 
@@ -214,13 +212,11 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
 @app.route('/fetch_similar_movies/<string:slug>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
 def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
-    print(f"Fetching similar movies for {slug}")
     start = timer()
-
     hits, similar_movies = get_similar_movies(slug, recommender_instance, top_n=4)
     if hits == False:
         return jsonify({"error": "Movie ID not in training set"})
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return retrieve_movies(similar_movies, top_k=4)
 
@@ -228,19 +224,17 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
 def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=9999, minYear=1870, maxYear=2030, top_k=-1, scores=None):
 
     start = timer()
-    print(f"Start scraping unseen movies' details and adding to db:")
     for slug in movie_slugs:
         movie = Movie.query.filter_by(slug=slug).first()
         if movie is None:
-            print(f"{slug}")
+            print(f"{slug} not in db. Resort to scraping.")
             movie_data = get_movie_data(slug)
             movie = Movie(**movie_data)
             db.session.add(movie)
     db.session.commit()
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     start = timer()
-    print(f"Start retrieving movie details from database")
     retrieved_movies = Movie.query.filter(Movie.rating >= minRating, Movie.rating <= maxRating,
                                           Movie.runtime >= minRuntime, Movie.runtime <= maxRuntime,
                                           Movie.year >= minYear, Movie.year <= maxYear,
@@ -257,7 +251,7 @@ def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRunt
 
     movies = movies[:top_k] if top_k != -1 else movies
 
-    print(f"Time taken: {timer() - start}")
+    # print(f"Time taken: {timer() - start}")
 
     return jsonify(movies)
 
