@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="light">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <link href='https://fonts.googleapis.com/css?family=Red Hat Display' rel='stylesheet'>
-    <link href='https://fonts.googleapis.com/css?family=Familjen Grotesk' rel='stylesheet'>
 </head>
   <body>
 
@@ -28,7 +27,7 @@
             </div>
             <!-- Dark/Light Mode Toggle Button -->
             <button class="btn btn-outline-secondary" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark/Light Mode">
-                <i class="bi bi-moon-stars" id="theme-icon"> </i> <!-- Moon icon -->
+                <i class="bi bi-moon-stars" id="theme-icon"> </i>
             </button>
         </div>
     </nav>
@@ -38,6 +37,7 @@
     <div class="container-fluid hover-zoom bg-secondary-subtle p-3">
         <div class = "row mb-3 justify-content-center align-items-center">
 
+            <!-- User 1 -->
             <div class="col-md-3 text-center">
                 <img id="avatar-1" src="https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png" 
                     alt="User Avatar" class="img-fluid rounded-circle mb-3" 
@@ -46,7 +46,6 @@
                 <h2 id="name-1">Enter user below:</h2>
                 <p class="text-center text-muted" id="stats-1" style="margin-bottom: 0;">Only Letterboxd accounts are supported</p>
 
-                <!-- Flex container for horizontal alignment -->
                 <form class="d-flex mt-3 justify-content-center align-items-center gap-2" id="usernameForm1">
                     <input type="text" class="form-control" id="inputUsername1" 
                         value="sverlaan" placeholder="Username" autocomplete="off" style="width: 150px;">
@@ -55,9 +54,7 @@
                 </form>
             </div>
 
-
-
-
+            <!-- Center Column -->
             <div class="col-md-4 text-center">
                 <h1 class="text-center"><b>Collab2Watch</b></h1>
                 <p class="text-center text-muted">Fill in two usernames and get recommendations!</p>
@@ -68,7 +65,7 @@
                 <button type="button" class="btn btn-primary" id="compareButton" 
                     style="width: 180pt; font-size: 18pt" disabled>Go!</button>
 
-                <!-- Center the progress section while keeping the text left-aligned -->
+                <!-- Progress Bars -->
                 <div class="row mt-5 mx-auto text-start" id="loadingProgress" style="visibility:hidden; max-width: 500px;"> 
                     <div class="d-flex align-items-center gap-2">
                         <img src="https://static-00.iconduck.com/assets.00/circle-icon-2048x2046-dx0m7pxn.png" style="width: 30px; height: 20px; opacity: 0.0;"/>
@@ -102,6 +99,7 @@
                 </div>   
             </div>
 
+            <!-- User 2 -->
             <div class="col-md-3 text-center">
                 <img id="avatar-2" src="https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png" 
                     alt="User Avatar" class="img-fluid rounded-circle mb-3" 
@@ -110,7 +108,6 @@
                 <h2 id="name-2">Enter user below:</h2>
                 <p class="text-center text-muted" id="stats-2" style="margin-bottom: 0;">Only Letterboxd accounts are supported</p>
 
-                <!-- Flex container for horizontal alignment -->
                 <form class="d-flex mt-3 justify-content-center align-items-center gap-2" id="usernameForm2">
                     <input type="text" class="form-control" id="inputUsername2" 
                         value="liannehr" placeholder="Username" autocomplete="off" style="width: 150px;">
@@ -123,276 +120,245 @@
 
 
 
+    <!-- Parent container for all the content -->
+    <div class="container-fluid d-none" id="contentContainer">     
 
 
-    <!-- Loading Container -->
-    <div class="container-fluid bg-tertiary-subtle w-50 mb-5 d-none">
-        <div class="mt-4">
-            <div class="d-flex align-items-center justify-content-start gap-2">
-                <div id="spinner1" class="spinner-border text-secondary" style="width: 20px; height: 20px;" role="status"></div>
-                <img id="circleImage1" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Eo_circle_grey_checkmark.svg/2048px-Eo_circle_grey_checkmark.svg.png" style="display:none; width: 20px; height: 20px;" alt="Complete" />
-                <span>Fetching user data sverlaan</span>
+        <!-- Common watchlist container -->
+        <div class="container mt-5 hover-zoom bg-tertiary-subtle w-75 p-3" id="CommonWatchlistContainer"">
+
+            <!-- Title -->
+            <div class="row justify-content-center align-items-top">
+                <div class="col-md-3">
+                    <!-- Empty div for spacing -->
+                </div>
+                <div class="col-md-5 text-center">
+                    <h1 class="text-center">Common Watchlist (<span id="commonWatchlistCount">...</span>)</h1>
+                    <p class="text-center text-muted mb-5">Let's see what movies you both want to watch!</p>
+                </div>
+                <div class="col-md-3 justify-content-start align-items-top mt-1 p-1">
+                    <input type="checkbox" class="btn-check" id="btn-check-outlined" autocomplete="off">
+                    <label class="btn btn-outline-warning" for="btn-check-outlined">Enhance</label>
+                </div>
+            </div>
+            
+
+            <!-- Placeholder Row -->
+            <div class="row row-cols-1 row-cols-md-5 g-4 placeholders d-none" id="loadingPlaceholders">
+                <div class="col">
+                    <div class="placeholder placeholder-img"></div>
+                </div>
+                <div class="col">
+                    <div class="placeholder placeholder-img"></div>
+                </div>
+                <div class="col">
+                    <div class="placeholder placeholder-img"></div>
+                </div>
+                <div class="col">
+                    <div class="placeholder placeholder-img"></div>
+                </div>
+                <div class="col">
+                    <div class="placeholder placeholder-img"></div>
+                </div>
             </div>
 
-            <div class="d-flex align-items-center justify-content-start gap-2">
-                <div id="spinner2" class="spinner-border text-secondary" style="width: 20px; height: 20px;" role="status"></div>
-                <img id="circleImage2" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Eo_circle_grey_checkmark.svg/2048px-Eo_circle_grey_checkmark.svg.png" style="display:none; width: 20px; height: 20px;" alt="Complete" />
-                <span>Fetching user data liannehr</span>
-            </div>
-
-            <div class="d-flex align-items-center justify-content-start gap-2">
-                <div id="spinner3" class="spinner-border text-secondary" style="width: 20px; height: 20px;" role="status"></div>
-                <img id="circleImage3" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Eo_circle_grey_checkmark.svg/2048px-Eo_circle_grey_checkmark.svg.png" style="display:none; width: 20px; height: 20px;" alt="Complete" />
-                <span>Building recommendation model</span>
-            </div>
+            <!-- Real content -->
+            <div class="row row-cols-1 row-cols-md-5 g-4" id="realContent"></div>
         </div>
-    </div>
+
+        
+        <!--divider-->
+        <hr class="my-5 w-75 mx-auto">
+        
+        
+        <!-- Single watchlist container 1 -->
+        <div class="container hover-zoom bg-tertiary-subtle w-75 p-3" id="SingleWatchlistContainer1"">
+
+            <!-- Title -->
+            <div class="row justify-content-evenly align-items-center">
+                <div class="col-md-3 justify-content-center align-items-center">
+                    <h1 id="SWL1_title" style="margin-bottom: 0px;" class="text-center">User 1</h1>
+                    <h1 class="text-center">Watchlist</h1>
+                    <p id="SWL1_subtitle" class="text-center text-muted">Let's see single watchlist!</p>
+                </div>
+                <div class="col-md-8 justify-content-center align-items-center">
+                    <!-- Real content -->
+                    <div class="row row-cols-1 row-cols-md-5 g-4" id="SWC1_RC"></div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Single watchlist container 2 -->
+        <div class="container mt-4 hover-zoom bg-tertiary-subtle w-75 p-3" id="SingleWatchlistContainer2"">
+
+            <!-- Title -->
+            <div class="row justify-content-evenly align-items-center">
+                <div class="col-md-8 justify-content-center align-items-center">
+                    <!-- Real content -->
+                    <div class="row row-cols-1 row-cols-md-5 g-4" id="SWC2_RC"></div>
+                </div>
+                <div class="col-md-3 justify-content-center align-items-center">
+                    <h1 id="SWL2_title" style="margin-bottom: 0px;" class="text-center">User 2</h1>
+                    <h1 class="text-center">Watchlist</h1>
+                    <p id="SWL2_subtitle" class="text-center text-muted">Let's see single watchlist!</p>
+                </div>  
+            </div>
+            
+        </div>
 
 
+        <!--divider-->
+        <hr class="my-5 w-75 mx-auto">
 
+
+        <div class="container hover-zoom bg-tertiary-subtle w-75 p-3" id="RewatchComboContainer"">
+
+            <!-- Title -->
+            <div class="row justify-content-between align-items-top">
+
+                <div class="col-md-5">
+
+                    <!-- Header -->
+                    <h1 id="RC-name-1" class="text-center">Rewatches for user1</h1>
+                    <p id="RC-sub-1" class="text-center text-muted mb-3">Movies on user2's watchlist that are highly rated by user1</p>
                     
+                    <!-- Placeholder -->
+                    <div class="placeholder placeholder-img2 d-none" id="placeholderRC1"></div>
 
+                    <!-- Carousel -->
+                    <div id="carousel1" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel1" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel1" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
 
-    <!-- Common watchlist container -->
-    <div class="container mt-5 hover-zoom bg-tertiary-subtle w-75 p-3 d-none" id="CommonWatchlistContainer"">
+                <div class="col-md-5">
 
-        <!-- Title -->
-        <div class="row justify-content-center align-items-top">
-            <div class="col-md-3">
-                <!-- Empty div for spacing -->
-            </div>
-            <div class="col-md-5 text-center">
-                <h1 class="text-center">Common Watchlist (<span id="commonWatchlistCount">...</span>)</h1>
-                <p class="text-center text-muted mb-5">Let's see what movies you both want to watch!</p>
-            </div>
-            <div class="col-md-3 justify-content-start align-items-top mt-1 p-1">
-                <input type="checkbox" class="btn-check" id="btn-check-outlined" autocomplete="off">
-                <label class="btn btn-outline-warning" for="btn-check-outlined">Enhance</label>
+                    <!-- Header -->
+                    <h1 id="RC-name-2" class="text-center">Rewatches for user2</h1>
+                    <p id="RC-sub-2" class="text-center text-muted mb-3">Movies on user1's watchlist that are highly rated by user2</p>
+                    
+                    <!-- Placeholder -->
+                    <div class="placeholder placeholder-img2 d-none" id="placeholderRC2"></div>
+
+                    <!-- Carousel -->
+                    <div id="carousel2" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel2" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#carousel2" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
-        
-
-        <!-- Placeholder Row -->
-        <div class="row row-cols-1 row-cols-md-5 g-4 placeholders d-none" id="loadingPlaceholders">
-            <div class="col">
-                <div class="placeholder placeholder-img"></div>
-            </div>
-            <div class="col">
-                <div class="placeholder placeholder-img"></div>
-            </div>
-            <div class="col">
-                <div class="placeholder placeholder-img"></div>
-            </div>
-            <div class="col">
-                <div class="placeholder placeholder-img"></div>
-            </div>
-            <div class="col">
-                <div class="placeholder placeholder-img"></div>
-            </div>
-        </div>
-
-        <!-- Real content -->
-        <div class="row row-cols-1 row-cols-md-5 g-4 d-none" id="realContent"></div>
-    </div>
-
-    
-    
-    
-    <!-- Single watchlist container 1 -->
-    <div class="container mt-3 hover-zoom bg-tertiary-subtle w-75 p-3 d-none" id="SingleWatchlistContainer1"">
 
         <!--divider-->
-        <hr class="my-5 w-75 mx-auto">
-
-        <!-- Title -->
-        <div class="row justify-content-evenly align-items-center">
-            <div class="col-md-3 justify-content-center align-items-center">
-                <h1 id="SWL1_title" style="margin-bottom: 0px;" class="text-center">User 1</h1>
-                <h1 class="text-center">Watchlist</h1>
-                <p id="SWL1_subtitle" class="text-center text-muted">Let's see single watchlist!</p>
-            </div>
-            <div class="col-md-8 justify-content-center align-items-center">
-                <!-- Real content -->
-                <div class="row row-cols-1 row-cols-md-5 g-4 d-none" id="SWC1_RC"></div>
-            </div>
-        </div>
-
-        <!-- Real content -->
-        
-    </div>
-
-    <!-- Single watchlist container 2 -->
-    <div class="container mt-5 hover-zoom bg-tertiary-subtle w-75 p-3 d-none" id="SingleWatchlistContainer2"">
-
-        <!-- Title -->
-        <div class="row justify-content-evenly align-items-center">
-            <div class="col-md-8 justify-content-center align-items-center">
-                <!-- Real content -->
-                <div class="row row-cols-1 row-cols-md-5 g-4 d-none" id="SWC2_RC"></div>
-            </div>
-            <div class="col-md-3 justify-content-center align-items-center">
-                <h1 id="SWL2_title" style="margin-bottom: 0px;" class="text-center">User 2</h1>
-                <h1 class="text-center">Watchlist</h1>
-                <p id="SWL2_subtitle" class="text-center text-muted">Let's see single watchlist!</p>
-            </div>  
-        </div>
-
-        <!-- Real content -->
-        
-    </div>
+        <hr class="my-3 w-75 mx-auto">
 
 
+        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3" id="RecommendContainer">
 
+            <div class="row justify-content-center align-items-top g-0 mb-5">
+                <h1 class="text-center">Recommendations</h1>
+                <p class="text-center text-muted mb-3">See recommendations outside of your watchlists!</p>
+                <!-- slider -->
+                <div class="d-flex flex-column align-items-center">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+                        <label class="btn btn-outline-warning" for="btnradio1" weight="-1" id="RC_user1_name">User 1</label>
 
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
+                        <label class="btn btn-outline-warning" for="btnradio2" weight="0">Combined</label>
 
-
-    <div class="container hover-zoom bg-tertiary-subtle w-75 p-3 d-none" id="RewatchComboContainer"">
-
-        <!--divider-->
-        <hr class="my-5 w-75 mx-auto">
-
-        <!-- Title -->
-        <div class="row justify-content-between align-items-top">
-
-            <div class="col-md-5">
-
-                <!-- Header -->
-                <h1 id="RC-name-1" class="text-center">Rewatches for user1</h1>
-                <p id="RC-sub-1" class="text-center text-muted mb-5">Movies on user2's watchlist that are highly rated by user1</p>
-                
-                <!-- Placeholder -->
-                <div class="placeholder placeholder-img2 d-none" id="placeholderRC1"></div>
-
-                <!-- Carousel -->
-                <div id="carousel1" class="carousel slide d-none" data-bs-ride="carousel">
-                    <div class="carousel-inner">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                        <label class="btn btn-outline-warning" for="btnradio3" weight="1" id="RC_user2_name">User 2</label>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel1" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carousel1" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                    </button>
+                </div>
+
+            </div>
+
+            <div class="row justify-content-between align-items-top g-0" id="RecommendContainerPlaceholder">
+                <div class="col-md-2">
+                </div>
+                <div class="col-md-7">
+                            <!-- Placeholder Row -->
+                    <div class="row justify-content-center align-items-top g-0">
+
+                        <div class="row">
+                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            </div>
+                            <div class="col-lg-11 mb-3">
+                                <div class="placeholder placeholder-rec-card"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            </div>
+                            <div class="col-lg-11 mb-3">
+                                <div class="placeholder placeholder-rec-card"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            </div>
+                            <div class="col-lg-11 mb-3">
+                                <div class="placeholder placeholder-rec-card"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            </div>
+                            <div class="col-lg-11 mb-3">
+                                <div class="placeholder placeholder-rec-card"></div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            </div>
+                            <div class="col-lg-11 mb-3">
+                                <div class="placeholder placeholder-rec-card"></div>
+                            </div>
+                        </div>
+
+                    </div>
+                    
+                </div>
+                <div class="col-md-2">
                 </div>
             </div>
 
-            <div class="col-md-5">
-
-                <!-- Header -->
-                <h1 id="RC-name-2" class="text-center">Rewatches for user2</h1>
-                <p id="RC-sub-2" class="text-center text-muted mb-5">Movies on user1's watchlist that are highly rated by user2</p>
-                
-                <!-- Placeholder -->
-                <div class="placeholder placeholder-img2 d-none" id="placeholderRC2"></div>
-
-                <!-- Carousel -->
-                <div id="carousel2" class="carousel slide d-none" data-bs-ride="carousel">
-                    <div class="carousel-inner">
-                    </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel2" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carousel2" data-bs-slide="next">
-                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                    <span class="visually-hidden">Next</span>
-                    </button>
+            <div class="row justify-content-between align-items-top hover-zoom-rec-card g-0">
+                <div class="col-md-2">
                 </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="container bg-tertiary-subtle mb-3 p-3 d-none" id="RecommendContainer">
-
-        <!--divider-->
-        <div class="row justify-content-center align-items-top g-0">
-            <hr class="my-3 w-75 mx-auto">
-        </div>
-
-        <div class="row justify-content-center align-items-top g-0 mt-4 mb-5">
-            <h1 class="text-center">Recommendations</h1>
-            <p class="text-center text-muted mb-3">See recommendations outside of your watchlists!</p>
-            <!-- slider -->
-            <div class="d-flex flex-column align-items-center">
-                <!-- <label for="customRange3" class="form-label">Weight</label> -->
-                <input type="range" class="form-range w-25" min="-1" max="1" step="1" value="0" id="weightRange">
-                <div class="w-25 d-flex justify-content-between">
-                    <span id="RC_user1_name">User1</span>
-                    <span>Combined</span>
-                    <span id="RC_user2_name">User2</span>
+                <div class="col-md-7">
+                    <div class="row justify-content-center align-items-top g-0 overflow-auto d-none" 
+                        id="RecommendContainerReal" 
+                        style="max-height: 630px;">
+                    </div>
+                </div>
+                <div class="col-md-2">
                 </div>
             </div>
 
-        </div>
-
-        <div class="row justify-content-center align-items-top g-0 mb-2 d-none" id="RecommendContainerPlaceholder">
-            <div class="col-md-2">
-            </div>
-            <div class="col-md-8">
-                        <!-- Placeholder Row -->
-                <div class="row justify-content-center align-items-top g-0">
-
-                    <div class="row">
-                        <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                        </div>
-                        <div class="col-lg-11 mb-3">
-                            <div class="placeholder placeholder-card-hor"></div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                        </div>
-                        <div class="col-lg-11 mb-3">
-                            <div class="placeholder placeholder-card-hor"></div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                        </div>
-                        <div class="col-lg-11 mb-3">
-                            <div class="placeholder placeholder-card-hor"></div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                        </div>
-                        <div class="col-lg-11 mb-3">
-                            <div class="placeholder placeholder-card-hor"></div>
-                        </div>
-                    </div>
-
-                    <div class="row">
-                        <div class="col-lg-1 align-items-center d-flex justify-content-center">
-                        </div>
-                        <div class="col-lg-11 mb-3">
-                            <div class="placeholder placeholder-card-hor"></div>
-                        </div>
-                    </div>
-
-                </div>
-                
-            </div>
-            <div class="col-md-2">
-            </div>
-        </div>
-
-        <div class="row justify-content-between align-items-top hover-zoom-card g-0 mb-2">
-            <div class="col-md-2">
-            </div>
-            <div class="col-md-7">
-                <div class="row justify-content-center align-items-top g-0 overflow-auto" 
-                    id="RecommendContainerReal" 
-                    style="max-height: 630px;">
-                </div>
-            </div>
-            <div class="col-md-2">
-            </div>
         </div>
 
     </div>
@@ -502,8 +468,6 @@
                                 </div>
                             </div>
                             
-
-
                         </div>
 
                         <div class="mb-3">
@@ -546,66 +510,40 @@
                             </div>
                         </div>
 
-
-
-
-                        <div class="mb-3">
-
-                            <label class="form-label no-spacing">Num. Samples</label>
-                            <p class="text-muted">The number of samples used to train the model</p>
-                            <div class="position-relative">
-                                <!-- Range Track (Behind the sliders) -->
-                                <div id="samplesTrack" class="range-track"></div>
-
-                                <!-- Lower Bound Slider -->
-                                <input type="range" class="form-range range-input" min="500000" max="10000000" step="500000" id="nsamples" value="5000000">
-
-                                <!-- Labels for Each Step -->
-                                <div class="d-flex justify-content-between">
-                                    <span>500K</span>
-                                    <span>5M</span>
-                                    <span>10M</span>
-                                </div>
+                        <label class="form-label no-spacing">Num. Samples</label>
+                        <p class="text-muted">The number of samples used to train the model</p>
+                        <div class="position-relative">
+                            <div id="samplesTrack" class="range-track"></div>
+                            <input type="range" class="form-range range-input" min="500000" max="10000000" step="500000" id="nsamples" value="5000000">
+                            <div class="d-flex justify-content-between">
+                                <span>500K</span>
+                                <span>10M</span>
                             </div>
-
-                            <hr class="my-3 mx-auto">
                         </div>
+
+                        <hr class="my-4 mx-auto">
                     
-                        <div class="mb-3"> 
-                            <label class="form-label no-spacing">Num. Factors</label>
-                            <p class="text-muted">The number of latent factors in the model</p>
-                            <div class="position-relative">
-                                <!-- Range Track (Behind the sliders) -->
-                                <div id="factorsTrack" class="range-track"></div>
-
-                                <!-- Lower Bound Slider -->
-                                <input type="range" class="form-range range-input" min="10" max="100" step="10" id="nfactors" value="50">
-
-                                <!-- Labels for Each Step -->
-                                <div class="d-flex justify-content-between">
-                                    <span>10</span>
-                                    <span>100</span>
-                                </div>
+                        <label class="form-label no-spacing">Num. Factors</label>
+                        <p class="text-muted">The number of latent factors in the model</p>
+                        <div class="position-relative">
+                            <div id="factorsTrack" class="range-track"></div>
+                            <input type="range" class="form-range range-input" min="10" max="100" step="10" id="nfactors" value="50">
+                            <div class="d-flex justify-content-between">
+                                <span>10</span>
+                                <span>100</span>
                             </div>
-
-                            <hr class="my-3 mx-auto">
                         </div>
 
-                        <div class="mb-3"> 
-                            <label class="form-label no-spacing">Num. Epochs</label>
-                            <p class="text-muted">The number of training rounds</p>
-                            <div class="position-relative">
-                                <!-- Range Track (Behind the sliders) -->
-                                <div id="epochsTrack" class="range-track"></div>
+                        <hr class="my-4 mx-auto">
 
-                                <!-- Lower Bound Slider -->
-                                <input type="range" class="form-range range-input" min="5" max="30" step="5" id="nepochs" value="10">
-
-                                <!-- Labels for Each Step -->
-                                <div class="d-flex justify-content-between">
-                                    <span>5</span>
-                                    <span>30</span>
-                                </div>
+                        <label class="form-label no-spacing">Num. Epochs</label>
+                        <p class="text-muted">The number of training rounds</p>
+                        <div class="position-relative">
+                            <div id="epochsTrack" class="range-track"></div>
+                            <input type="range" class="form-range range-input" min="5" max="30" step="5" id="nepochs" value="10">
+                            <div class="d-flex justify-content-between">
+                                <span>5</span>
+                                <span>30</span>
                             </div>
                         </div>
 
@@ -618,8 +556,6 @@
             </div>
         </div>
     </div>
-
-
 
     <!-- Footer -->
     <footer class="text-center bg-tertiary-subtle text-lg-start">

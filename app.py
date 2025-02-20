@@ -1,9 +1,8 @@
-from flask import Flask, render_template, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, jsonify, abort
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
-from backend.database import db  # Import db from the separate module
+from backend.database import db
 from backend.profile_user import UserProfile
 from backend.profile_movie import Movie, get_movie_data
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
@@ -113,7 +112,7 @@ def get_status(task_number):
     return jsonify({"status": task_status[task_number]})
 
 
-################ Fetch data for components ################
+################ Fetch data for content ################
 
 @app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])
 def fetch_movie_data_for_modal(slug, username1, username2):
@@ -176,7 +175,8 @@ def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntim
     slugs = get_common_watchlist(username1, username2, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)
+    return jsonify(movies)
 
 
 @app.route('/fetch_single_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
@@ -186,7 +186,8 @@ def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntim
     slugs = get_single_watchlist(username1, username2, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=5)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=5)
+    return jsonify(movies)
 
 
 @app.route('/fetch_rewatchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
@@ -196,17 +197,20 @@ def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, ma
     slugs = get_rewatchlist(username1, username2, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=10)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=10)
+    return jsonify(movies)
 
 
 @app.route('/fetch_recommendations/<string:username1>/<string:username2>/<string:weight>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
 def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
+    print(f"Fetching recommendations")
     slugs, scores_dict = get_recommendations(username1, username2, int(weight), user_profiles, recommender_instance)
-    # print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
+    print(f"Time taken: {timer() - start}")
+    return jsonify(movies)
 
 
 @app.route('/fetch_similar_movies/<string:slug>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
@@ -215,10 +219,12 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     start = timer()
     hits, similar_movies = get_similar_movies(slug, recommender_instance, top_n=4)
     if hits == False:
-        return jsonify({"error": "Movie ID not in training set"})
+        return jsonify({"success": False, "message": "No similar movies found", "movies": []})  # Return a valid response with a flag
     # print(f"Time taken: {timer() - start}")
 
-    return retrieve_movies(similar_movies, top_k=4)
+    movies = retrieve_movies(similar_movies, top_k=4)
+
+    return jsonify({"success": True, "message": "Similar movies found", "movies": movies})
 
 
 def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=9999, minYear=1870, maxYear=2030, top_k=-1, scores=None):
@@ -253,7 +259,7 @@ def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRunt
 
     # print(f"Time taken: {timer() - start}")
 
-    return jsonify(movies)
+    return movies
 
 
 def put_movies_in_db(movie_slugs):

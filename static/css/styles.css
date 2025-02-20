@@ -1,37 +1,62 @@
 
 /* Custom color for scores */
-/* Default (Light Mode) */
 .text-score {
-  color: green !important;
+  color: goldenrod !important;
 }
-
-/* Dark Mode */
 [data-bs-theme="dark"] .text-score {
-  color: lightgreen !important;
+  color: gold !important;
 }
 
-
-
+/* For overlapping avatar images */
+.avatar-group {
+    position: relative;
+    width: 85px; /* Adjust to fit both images */
+    height: 50px;
+    display: flex;
+    justify-content: center;
+}
+.avatar-group-B {
+    position: relative;
+    width: 68px; /* Adjust to fit both images */
+    height: 40px;
+    display: flex;
+    justify-content: center;
+}
+.avatar-img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    position: absolute;
+    border: 1px solid rgba(130, 130, 130, 1);
+}
+.avatar-img-B {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    position: absolute;
+    border: 1px solid rgba(130, 130, 130, 1);
+}
+.avatar-img-1 {
+    left: 0%;
+    transform: translateX(0%);
+    z-index: 2;
+}
+.avatar-img-2 {
+    left: 0%;
+    transform: translateX(70%); /* Adjust for desired overlap */
+    z-index: 1;
+}
 
 /* Add a hover effect to images */
 .hover-zoom img {
-    transition: transform 0.3s ease; /* Smooth scaling effect */
+    transition: transform 0.3s ease;
 }
 .hover-zoom img:hover {
-    transform: scale(1.10); /* Slightly enlarge the image on hover */
-    /*box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for emphasis */
+    transform: scale(1.10);
 }
 
-.hover-zoom-card .card {
-    transition: transform 0.3s ease; /* Smooth scaling effect */
-}
 
-.hover-zoom-card .card:hover {
-    /* transform: scale(1.05); Slightly enlarge the card on hover */
-    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); Add a subtle shadow for emphasis */
-    background-color: rgba(173, 216, 230, .5);
-}
-
+/* For movie banners on movie page */
 .card-img-wrap {
   overflow: hidden;
   position: relative;
@@ -49,8 +74,7 @@
   transform: scale(1.1);
 }
 
-
-
+/* Carousel */
 .carousel-control-prev,
 .carousel-control-next {
     position: absolute;
@@ -65,7 +89,7 @@
 .carousel-control-next {
     right: -70px;
 }
-.carousel-caption {
+.carousel-caption {  /* not used currently */
     position: absolute;
     bottom: 0;
     left: 0;
@@ -78,60 +102,55 @@
     border-bottom-left-radius: 6px;
     background: linear-gradient(to top, rgba(79, 79, 79, 0.7), rgba(79, 79, 79, 0.7)); 
     z-index: 10;
-    /* Darker at the bottom, fading to transparent */
 }
 .carousel-item{
     position: relative;
 }
 
-
+/* For the recommendation cards */
 .rec-card-img {
     height: 120px;
     object-fit: cover;
 }
-
 .rec-card {
     border-radius: 8px;
     border-width: 0px;
-    /* box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease; Smooth scaling effect */
     background-color:rgba(173, 216, 230, .3);
     height: 120px;
 }
+.hover-zoom-rec-card .card:hover {
+    background-color: rgba(173, 216, 230, .5);
+}
 
+/* For the recommendation container scrollbar */
 #RecommendContainerReal::-webkit-scrollbar {
     width: 8px;
 }
-
 #RecommendContainerReal::-webkit-scrollbar-thumb {
     background: #888; 
     border-radius: 4px;
 }
-
 #RecommendContainerReal::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
-
 #RecommendContainerReal::-webkit-scrollbar-track {
-    /* background: #f1f1f1;  */
-    background:rgb(233, 236, 239);
+    background: var(--bs-secondary-bg);
 
 }
 
+/* To remove spacing between elements */
 .no-spacing {
   margin: 0;
   line-height: 1.2; /* Adjust if needed */
 }
 
-
-
+/* Placeholders */
 .placeholder {
     background-color: #cecece;
     /* color:rgb(114, 207, 114); */
     animation: flicker 1.5s infinite;
     border-radius: 8px;
 }
-
 .placeholder-img {
     height: 300px;   
     width: 100%;
@@ -140,13 +159,10 @@
     height: 240px;   
     width: 100%;
 }
-.placeholder-card-hor {
+.placeholder-rec-card {
     height: 120px;
-    width: 100%;
+    width: 635px;
 }
-
-
-
 @keyframes flicker {
     0% {
         opacity: 0.6;

@@ -1,5 +1,6 @@
 
 
+////////////////////////////////////////// Dark/Light Mode //////////////////////////////////////////
 // Toggle the theme between dark and light
 function toggleTheme() {
     const currentTheme = document.documentElement.getAttribute("data-bs-theme");
@@ -21,67 +22,51 @@ function updateIcon(theme) {
     }
 }
 
-// event handler for resetFilters button click
-const resetFiltersButton = document.getElementById('resetFilters');
-resetFiltersButton.addEventListener('click', function (event) {
-    console.log("Resetting filters!");
-    // reset form filters in modal
+////////////////////////////////////////// Filter and Settings //////////////////////////////////////////
+document.getElementById('resetFilters').addEventListener('click', function (event) {
+
     document.getElementById('minRating').value = 0;
     document.getElementById('maxRating').value = 5;
     document.getElementById('minRuntime').value = 0;
     document.getElementById('maxRuntime').value = 9999;
     document.getElementById('minYear').value = 1870;
     document.getElementById('maxYear').value = 2025;
-
 });
 
-const applyFiltersButton = document.getElementById('applyFilters');
-applyFiltersButton.addEventListener('click', async function (event) {
+document.getElementById('applyFilters').addEventListener('click', async function (event) {
 
     const compareButton = document.getElementById('compareButton');
     if (!compareButton.disabled) {
         const event = new Event('click', { bubbles: true });
-        event.refresh = false; // Add custom property
+        event.refresh = false;
         compareButton.dispatchEvent(event);
     }
 });
 
-// event handler for resetFilters button click
-const fastSettingsButton = document.getElementById('fastSettings');
-fastSettingsButton.addEventListener('click', function (event) {
-    console.log("Resetting model settings!");
-    // reset form filters in modal
+document.getElementById('fastSettings').addEventListener('click', function (event) {
+
     document.getElementById('nsamples').value = 500000;
     document.getElementById('nfactors').value = 10;
     document.getElementById('nepochs').value = 5;
 });
 
-// event handler for resetFilters button click
-const resetButtons = document.querySelectorAll('#defaultSettings, #resetSettings');
-resetButtons.forEach(button => {
+document.querySelectorAll('#defaultSettings, #resetSettings').forEach(button => {
     button.addEventListener('click', function () {
-        console.log("Resetting model settings!");
-        
-        // Reset form filters in modal
+
         document.getElementById('nsamples').value = 5000000;
         document.getElementById('nfactors').value = 50;
         document.getElementById('nepochs').value = 10;
     });
 });
 
+document.getElementById('accurateSettings').addEventListener('click', function (event) {
 
-// event handler for resetFilters button click
-const accurateSettingsButton = document.getElementById('accurateSettings');
-accurateSettingsButton.addEventListener('click', function (event) {
-    console.log("Resetting model settings!");
-    // reset form filters in modal
     document.getElementById('nsamples').value = 10000000;
     document.getElementById('nfactors').value = 100;
     document.getElementById('nepochs').value = 30;
 });
 
-const applySettingsButton = document.getElementById('applySettings');
-applySettingsButton.addEventListener('click', async function (event) {
+document.getElementById('applySettings').addEventListener('click', async function (event) {
 
     const compareButton = document.getElementById('compareButton');
     if (!compareButton.disabled) {
@@ -92,13 +77,38 @@ applySettingsButton.addEventListener('click', async function (event) {
 });
 
 
+////////////////////////////////////////// Radio Buttons //////////////////////////////////////////
+document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
+    radio.addEventListener("change", async function () {
+
+        const selectedRadio = document.querySelector('input[name="btnradio"]:checked');
+        const associatedLabel = document.querySelector(`label[for="${selectedRadio.id}"]`);
+        const weight = parseInt(associatedLabel.getAttribute("weight"), 10);
+
+        // Get filter settings
+        const minRating = document.getElementById('minRating').value;
+        const maxRating = document.getElementById('maxRating').value;
+        const minRuntime = document.getElementById('minRuntime').value;
+        const maxRuntime = document.getElementById('maxRuntime').value;
+        const minYear = document.getElementById('minYear').value;
+        const maxYear = document.getElementById('maxYear').value;
+
+        document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
+        document.getElementById("RecommendContainerReal").classList.add('d-none');
+        await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+        document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
+        document.getElementById("RecommendContainerReal").classList.remove('d-none');
+        });
+});
 
 
 
-let user1_name = " "
-let user2_name = " "
 
-// Fetch user data from Flask backend and populate the DOM
+// Track submission states
+let form1Submitted = false;
+let form2Submitted = false;
+
+////////////////////////////////////////// Fetch User Data //////////////////////////////////////////
 async function fetchUserData(username, user_id, NameElement, AvatarElement, StatsElement1, RewatchesNameElement) {
     try {
         const response = await fetch(`/get_user/${username}`);
@@ -109,33 +119,23 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
         document.getElementById(NameElement).innerHTML =  `<a href="${data.user_url}" class="text-decoration-none" style="font-weight: bolder;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
         document.getElementById(AvatarElement).src = data.avatar;
         document.getElementById(StatsElement1).textContent = "Watched: " + data.num_movies_watched + "  |  " + "Watchlist: " + data.watchlist_length;
-        if (user_id == 1) {
-            user1_name = data.name;
-        } else {
-            user2_name = data.name;
-        }
-        
-        // Flag the correct submission
-        console.log("Fetched data");
+
         if (user_id == 1) {
             form1Submitted = true;
         }
         else {
             form2Submitted = true;
         }
-        // Check if both users are submitted successfully
         checkIfBothSubmitted();
 
     } catch (error) {
         console.error(error);
 
-        // Update the DOM with fetched data
         document.getElementById(NameElement).textContent = "User not found. Try again:";
         document.getElementById(AvatarElement).src = "https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png";
         document.getElementById(StatsElement1).textContent = "Only Letterboxd accounts are supported.";
         document.getElementById("loadingProgress").style.visibility = "hidden";
 
-        // Reset correct submission flag
         if (user_id == 1) {
             form1Submitted = false;
         }
@@ -146,9 +146,36 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
     }
 }
 
+////////////////////////////////////////// User Profile Form Submission //////////////////////////////////////////
+const inputUsername1 = document.getElementById('inputUsername1');
+const inputUsername2 = document.getElementById('inputUsername2');
+
+// Listen for the form submit event
+document.getElementById('usernameForm1').addEventListener('submit', function (event) {
+    event.preventDefault();
+    fetchUserData(inputUsername1.value, 1, 'name-1', 'avatar-1', 'stats-1', 'rewatches-name-1');
+});
+
+// Listen for the form submit event
+document.getElementById('usernameForm2').addEventListener('submit', function (event) {
+    event.preventDefault();
+    fetchUserData(inputUsername2.value, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
+});
+
+// Enable the Compare button if both forms are submitted
+function checkIfBothSubmitted() {
+    if (form1Submitted && form2Submitted) {
+        document.getElementById('compareButton').disabled = false;
+    }
+    else {
+        document.getElementById('compareButton').disabled = true;
+        document.getElementById("contentContainer").classList.add('d-none');
+    }
+}
 
 
-function hideElements() {
+////////////////////////////////////////// Progress Bars //////////////////////////////////////////
+function ResetProgressBars() {
 
     document.getElementById("progress1").textContent = `Fetching profile data from ${inputUsername1.value} and ${inputUsername2.value}`;
     // Convert value to K or M int
@@ -178,6 +205,7 @@ function hideElements() {
     document.getElementById("loadingProgress").style.visibility = "visible";
 }
 
+////////////////////////////////////////// Initialization Tasks //////////////////////////////////////////
 function startTasks() {
     return new Promise((resolve) => {
         function checkStatus(taskNumber) {
@@ -196,7 +224,7 @@ function startTasks() {
                             fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}/${document.getElementById('nsamples').value}/${document.getElementById('nfactors').value}/${document.getElementById('nepochs').value}`)
                                 .then(() => checkStatus(nextTask));
                         } else {
-                            resolve(); // Resolves the Promise when the last task is complete
+                            resolve();
                         }
                     } else {
                         setTimeout(() => checkStatus(taskNumber), 1000);
@@ -210,14 +238,13 @@ function startTasks() {
         n_samples = document.getElementById('nsamples').value;
         n_factors = document.getElementById('nfactors').value;
         n_epochs = document.getElementById('nepochs').value;
-        console.log("values: ", n_samples, n_factors, n_epochs);
         
         fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}/${n_samples}/${n_factors}/${n_epochs}`)
             .then(() => checkStatus(1));
     });
 }
 
-
+////////////////////////////////////////// Fetch Content Data //////////////////////////////////////////
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
@@ -233,7 +260,7 @@ async function FetchCommonWatchlist(username1, username2, minRating, maxRating, 
 
         document.getElementById("commonWatchlistCount").textContent = data.length;
 
-        // Loop through the data and generate the cards + modals
+        // Loop through the data and generate the cards
         data.forEach(movie => {
 
             // Generate each card
@@ -254,7 +281,7 @@ async function FetchCommonWatchlist(username1, username2, minRating, maxRating, 
     
 }
 
-// Fetch common watchlist from Flask backend and populate the DOM
+// Fetch single watchlist from Flask backend and populate the DOM
 async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
         const response = await fetch(`/fetch_single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
@@ -267,7 +294,7 @@ async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, ma
             realContent.removeChild(realContent.firstChild);
         }
 
-        // Loop through the data and generate the cards + modals
+        // Loop through the data and generate the cards
         data.forEach(movie => {
 
             // Generate each card
@@ -287,7 +314,6 @@ async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, ma
     }
     
 }
-
 
 // Fetch common watchlist from Flask backend and populate the DOM
 async function FetchRewatchlist(username1, username2, realRewatchCombo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
@@ -301,7 +327,7 @@ async function FetchRewatchlist(username1, username2, realRewatchCombo, minRatin
             realRewatchCombo.removeChild(realRewatchCombo.firstChild);
         }
 
-        // Loop through the data and generate the cards + modals
+        // Loop through the data and generate the carousel items
         index = 0;
         data.forEach(movie => {
 
@@ -326,110 +352,105 @@ async function FetchRewatchlist(username1, username2, realRewatchCombo, minRatin
     
 }
 
-// Fetch recommendations from Flask backend and populate the DOM
 async function FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        
-
         const response = await fetch(`/fetch_recommendations/${username1}/${username2}/${weight}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting recommendations");
         const data = await response.json();
 
         const realRecommendContent = document.getElementById("RecommendContainerReal");
-        // delete all existing cards
-        while (realRecommendContent.firstChild) {
-            realRecommendContent.removeChild(realRecommendContent.firstChild);
-        }
+        realRecommendContent.innerHTML = "";  // Clear content efficiently
 
-        index = 0;
-        // Loop through the data and generate the cards + modals
+        const fragment = document.createDocumentFragment(); // Create a Document Fragment
+
+        let index = 0;
         data.forEach(movie => {
-
             index += 1;
 
-            // Generate each carousel item
-            realRecommendContent.innerHTML += `
-            <div class="row">
+            // Determine avatar display based on weight
+            let avatarHTML = "";
+            if (weight === 0) {
+                avatarHTML = `
+                    <div class="avatar-group-B">
+                        <img src="${document.getElementById('avatar-1').src}" class="avatar-img-B avatar-img-1">
+                        <img src="${document.getElementById('avatar-2').src}" class="avatar-img-B avatar-img-2">
+                    </div>`;
+            } else if (weight === -1) {
+                avatarHTML = `
+                    <div>
+                        <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
+                    </div>`;
+            } else if (weight === 1) {
+                avatarHTML = `
+                    <div>
+                        <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
+                    </div>`;
+            }
+
+            // Create a new div for each movie and append to the fragment
+            const movieElement = document.createElement("div");
+            movieElement.classList.add("row");
+            movieElement.innerHTML = `
                 <div class="col-lg-1 align-items-center d-flex justify-content-end">
                     <h5 class="text-end">${index}.</h5>
                 </div>
-                <div class="col-lg-11">
+
+                <div class="col">
                     <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
-                        <div class="row g-0"> 
+                        <div class="row g-0">
                             <div class="col-auto">
                                 <img src="${movie.poster}" class="rec-card-img open-movie-modal rounded-start" alt="${movie.title}" slug="${movie.slug}">
                             </div>
-                            <div class="col-lg-8">
+
+                            <div class="col">
                                 <div class="card-body" slug="${movie.slug}">
                                     <h5 class="card-title">${movie.title} (${movie.year})</h5>
                                     <p class="card-text no-spacing text-muted">${movie.genres}</p> 
                                     <p class="card-text no-spacing text-muted">${movie.runtime} mins</p> 
                                 </div>
                             </div>
-                            <div class="col-lg-2 align-items-center d-flex flex-column justify-content-start mt-4">
+
+                            <div class="col-auto p-4 align-items-center d-flex flex-column justify-content-center">
                                 <h5 class="text-top text-score p">${movie.score}%</h5>
-                                <div class="position-relative" style="width: 40px; height: 40px; left: 25%; transform: translateX(-60%);">
-                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
-                                        style="width: 40px; height: 40px; left: 0; z-index: 2; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
-                                        style="width: 40px; height: 40px; left: 25px; z-index: 1; border: 1px solid rgba(130, 130, 130, 1);">
+                                <div class="avatar-group-container" style="display: flex; justify-content: center;">
+                                    ${avatarHTML}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            `;    
+            `;
+
+            fragment.appendChild(movieElement);
         });
 
+        // Append all movie elements to the DOM in one go
+        realRecommendContent.appendChild(fragment);
 
     } catch (error) {
         console.error(error);
     }
-    
 }
 
-document.getElementById("weightRange").addEventListener("input", async function () {
-
-    console.log("Weight range changed!");
-
-    weight = this.value;
-    const minRating = document.getElementById('minRating').value;
-    const maxRating = document.getElementById('maxRating').value;
-    const minRuntime = document.getElementById('minRuntime').value;
-    const maxRuntime = document.getElementById('maxRuntime').value;
-    const minYear = document.getElementById('minYear').value;
-    const maxYear = document.getElementById('maxYear').value;
-
-    document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
-    document.getElementById("RecommendContainerReal").classList.add('d-none');
-    await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
-    document.getElementById("RecommendContainerReal").classList.remove('d-none');
-});
 
 
+
+
+////////////////////////////////////////// Movie Modal //////////////////////////////////////////
+// Listen for click events on the body
 document.body.addEventListener("click", async function (event) {
-
-    console.log("Click event!");
 
     let modalTrigger = event.target.closest(".open-movie-modal");
 
     if (modalTrigger) {
-        
-        console.log("Open movie modal!");
-        
+
         // Remove existing modal if it exists
         let existingModal = document.getElementById("dynamicModal");
         if (existingModal) {
             existingModal.remove();
             document.querySelector(".modal-backdrop").remove();
-            
-
-            //document.querySelector(".modal-backdrop").remove();
         }
 
-        //let slug = event.target.getAttribute("slug");
         let slug = modalTrigger.getAttribute("slug");
         const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${inputUsername1.value}/${inputUsername2.value}`);
         if (!response.ok) throw new Error("Something went wrong getting movie modal data");
@@ -445,7 +466,7 @@ document.body.addEventListener("click", async function (event) {
         let modal = new bootstrap.Modal(document.getElementById("dynamicModal"));
         modal.show();
 
-        // Get maximum runtime from the form
+        // Get filter settings
         const minRating = document.getElementById('minRating').value;
         const maxRating = document.getElementById('maxRating').value;
         const minRuntime = document.getElementById('minRuntime').value;
@@ -453,23 +474,37 @@ document.body.addEventListener("click", async function (event) {
         const minYear = document.getElementById('minYear').value;
         const maxYear = document.getElementById('maxYear').value;
 
-        console.log("Get similar movies!");
+        // Fetch similar movies and populate the DOM
         const response2 = await fetch(`/fetch_similar_movies/${movie.slug}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
-        if (!response2.ok) throw new Error("Similar movies not found");
         const data = await response2.json();
 
-        for (let i = 0; i < data.length; i++) {
-            let similarMovie = data[i];
-            let similarMovieHtml = `
-            <div class="col">
-                <img src="${similarMovie.poster}" 
-                    class="card-img-top rounded open-movie-modal" 
-                    alt="${similarMovie.title}"
-                    slug="${similarMovie.slug}">
-            </div>
-            `;
-            document.getElementById("similarMovies").insertAdjacentHTML("beforeend", similarMovieHtml);
+        if (!data.success)
+        {
+            console.log("No similar movies found");
+            document.getElementById("similarMoviesContainer").classList.add('d-none');
+        } 
+        else {
+
+            const movies = data.movies;
+
+            for (let i = 0; i < movies.length; i++) {
+                let similarMovie = movies[i];
+                let similarMovieHtml = `
+                <div class="col">
+                    <img src="${similarMovie.poster}" 
+                        class="card-img-top rounded open-movie-modal" 
+                        alt="${similarMovie.title}"
+                        slug="${similarMovie.slug}">
+                </div>
+                `;
+                document.getElementById("similarMovies").insertAdjacentHTML("beforeend", similarMovieHtml);
+            }
+
+            document.getElementById("similarMoviesContainer").classList.remove('d-none');
+
         }
+            
+
 
         // Remove modal from DOM after it's closed
         document.getElementById("dynamicModal").addEventListener("hidden.bs.modal", function () {
@@ -488,6 +523,7 @@ document.body.addEventListener("click", async function (event) {
     }
 });
 
+// Create movie modal HTML
 async function CreateModal(movie) {
 
     let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png" //"https://a.ltrbxd.com/logos/letterboxd-logo-v-neg-rgb.svg" 
@@ -528,7 +564,7 @@ async function CreateModal(movie) {
                                 </div>
                             </div>
                             
-                            <div class="row g-3 mt-1 justify-content-evenly">
+                            <div class="row g-3 mt-1 justify-content-between">
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
                                     <img src="${letterboxd_logo}" style="width: 50px; height: 50px;">
@@ -537,31 +573,34 @@ async function CreateModal(movie) {
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
                                     <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${user1_name}</small></p>
+                                    <p class="text-muted text-center"><small>${document.getElementById("name-1").textContent}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
                                     <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${user2_name}</small></p>
+                                    <p class="text-muted text-center"><small>${document.getElementById("name-2").textContent}</small></p>
                                 </div>    
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
-                                    <div class="position-relative" style="width: 50px; height: 50px; left: 30%; transform: translateX(-104%);">
-                                        <img src="${document.getElementById('avatar-1').src}" class="rounded-circle position-absolute" 
-                                            style="width: 50px; height: 50px; left: 0; z-index: 2; border: 1px solid rgba(130, 130, 130, 1);">
-                                        <img src="${document.getElementById('avatar-2').src}" class="rounded-circle position-absolute" 
-                                            style="width: 50px; height: 50px; left: 30px; z-index: 1; border: 1px solid rgba(130, 130, 130, 1);">
+                                    <div class="avatar-group-container" style="display: flex; justify-content: center;">
+                                        <div class="avatar-group">
+                                            <img src="${document.getElementById('avatar-1').src}" class="avatar-img avatar-img-1">
+                                            <img src="${document.getElementById('avatar-2').src}" class="avatar-img avatar-img-2">
+                                        </div>
                                     </div>
                                     <p class="text-muted text-center"><small>Combined</small></p>
-                                </div>                          
+                                </div>          
                             </div>
 
-                            <hr class="my-3 w-75 mx-auto">
+                            <class="container-fluid" id="similarMoviesContainer">
 
-                            <div class="w-100 p-2">
-                                <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
-                            </div>
-                            <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
+                                <hr class="my-3 w-75 mx-auto">
+
+                                <div class="w-100 p-2">
+                                    <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
+                                </div>
+                                <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
+                                </div>
                             </div>
                             
                         </div>
@@ -574,68 +613,39 @@ async function CreateModal(movie) {
     return modalHtml;
 }
 
-
-
-
-// Get references to the form and input for the first user
-const form_username1 = document.getElementById('usernameForm1');
-const inputUsername1 = document.getElementById('inputUsername1');
-
-// Get references to the form and input for the second user
-const form_username2 = document.getElementById('usernameForm2');
-const inputUsername2 = document.getElementById('inputUsername2');
-
-// Get reference to the compare button
-const compareButton = document.getElementById('compareButton');
-// Listen for the compare button click event
-compareButton.addEventListener('click', async function (event) {
-
-    const refresh = event.refresh ?? true; // Use event.refresh if available, otherwise default to true
-    console.log("Compare button clicked! Refresh: ", refresh);
-
-    if (refresh) {
-        hideElements();
-        await startTasks();
-    }
-    
-    const commonWatchlistContainer = document.getElementById('CommonWatchlistContainer');
-    const loadingPlaceholders = document.getElementById('loadingPlaceholders');
-    const realContent = document.getElementById('realContent');
+////////////////////////////////////////// Set Display Names //////////////////////////////////////////
+function setDisplayNames(user1_name, user2_name) {
     document.getElementById("commonWatchlistCount").textContent = '...';
-
-    const rewatchComboContainer = document.getElementById('RewatchComboContainer');
-    const placeholderRC1 = document.getElementById('placeholderRC1');
-    const placeholderRC2 = document.getElementById('placeholderRC2');
-    const carouselRC1 = document.getElementById('carousel1');
-    const carouselRC2 = document.getElementById('carousel2');
     document.getElementById("RC-name-1").textContent = "Rewatches for " + user1_name;
     document.getElementById("RC-name-2").textContent = "Rewatches for " + user2_name;
-    document.getElementById("RC-sub-1").textContent = "Movies seen by " + user1_name + " that " + user2_name + " might like!";
-    document.getElementById("RC-sub-2").textContent = "Movies seen by " + user2_name + " that " + user1_name + " might like!";
-
+    document.getElementById("RC-sub-1").textContent = "Movies watched by " + user1_name + " that " + user2_name + " might like!";
+    document.getElementById("RC-sub-2").textContent = "Movies watched by " + user2_name + " that " + user1_name + " might like!";
     document.getElementById(`SWL1_title`).textContent = `On ${user1_name}'s`;
     document.getElementById(`SWL1_subtitle`).textContent = `Movies on ${user1_name}'s watchlist that ${user2_name} might like!`;
     document.getElementById(`SWL2_title`).textContent = `On ${user2_name}'s`;
     document.getElementById(`SWL2_subtitle`).textContent = `Movies on ${user2_name}'s watchlist that ${user1_name} might like!`;
     document.getElementById(`RC_user1_name`).textContent = `${user1_name}`;
     document.getElementById(`RC_user2_name`).textContent = `${user2_name}`;
+}
 
-    // Show the container and placeholders, hide the real content
-    commonWatchlistContainer.classList.remove('d-none'); 
-    loadingPlaceholders.classList.remove('d-none'); 
 
-    rewatchComboContainer.classList.remove('d-none');
-    placeholderRC1.classList.remove('d-none');
-    placeholderRC2.classList.remove('d-none');
 
-    //document.getElementById('RecommendContainer').remove('d-none');
-    //document.getElementById('RecommendContainerPlaceholder').remove('d-none');
+////////////////////////////////////////// Compare Button //////////////////////////////////////////
+document.getElementById('compareButton').addEventListener('click', async function (event) {
 
-    realContent.classList.add('d-none'); 
-    carouselRC1.classList.add('d-none');
-    carouselRC2.classList.add('d-none');
+    const refresh = event.refresh ?? true; // Use event.refresh if available, otherwise default to true
+    if (refresh) {
+        ResetProgressBars();
+        document.getElementById("contentContainer").classList.add('d-none');
+        await startTasks();
+    }
 
-    // Get maximum runtime from the form
+    // Set display names
+    const user1_name = document.getElementById("name-1").textContent;
+    const user2_name = document.getElementById("name-2").textContent;
+    setDisplayNames(user1_name, user2_name);
+
+    // Get filter settings
     const minRating = document.getElementById('minRating').value;
     const maxRating = document.getElementById('maxRating').value;
     const minRuntime = document.getElementById('minRuntime').value;
@@ -643,97 +653,33 @@ compareButton.addEventListener('click', async function (event) {
     const minYear = document.getElementById('minYear').value;
     const maxYear = document.getElementById('maxYear').value;
 
-    let username1 = inputUsername1.value;
-    let username2 = inputUsername2.value;
-
-    // Fetch common watchlist and populate the DOM
+    // Fetch content data
+    const username1 = inputUsername1.value;
+    const username2 = inputUsername2.value;
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    // After loading finishes, hide placeholders and show real content
-    commonWatchlistContainer.classList.remove('d-none');
-    loadingPlaceholders.classList.add('d-none');
-    realContent.classList.remove('d-none');
-
-    // Fetch single watchlist 1 and populate the DOM
     await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    // Fetch single watchlist 2 and populate the DOM
     await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    document.getElementById("SingleWatchlistContainer1").classList.remove('d-none');
-    document.getElementById("SingleWatchlistContainer2").classList.remove('d-none');
-    document.getElementById("SWC1_RC").classList.remove('d-none');
-    document.getElementById("SWC2_RC").classList.remove('d-none');
-
-    console.log("Start fetching rewatch combo 1!");
-    
     const realRewatchCombo1 = document.querySelector('#carousel1 .carousel-inner');
     await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-
     const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
     await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
-    rewatchComboContainer.classList.remove('d-none');
-    placeholderRC1.classList.add('d-none');
-    placeholderRC2.classList.add('d-none');
-    carouselRC1.classList.remove('d-none');
-    carouselRC2.classList.remove('d-none');
-
-    document.getElementById("RecommendContainer").classList.remove('d-none');
-    document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
-
-    const weight = document.getElementById('weightRange').value; 
+    // Show the placeholders for recommendations, since it takes a while to load
+    document.getElementById('RecommendContainerPlaceholder').classList.remove('d-none');
+    document.getElementById('RecommendContainerReal').classList.add('d-none');
+    // Show the content container
+    document.getElementById("contentContainer").classList.remove('d-none');
+    
+    // Get the selected radio button's weight
+    const selectedRadio = document.querySelector('input[name="btnradio"]:checked');
+    const associatedLabel = document.querySelector(`label[for="${selectedRadio.id}"]`);
+    const weight = parseInt(associatedLabel.getAttribute("weight"), 10);
+    // Get Recommendations
     await FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     
-    //document.getElementById("RecommendContainer").classList.add('d-none');
+    // Show the real recommendations content
     document.getElementById("RecommendContainerReal").classList.remove('d-none');
     document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
 
 });
 
-// Track submission states
-let form1Submitted = false;
-let form2Submitted = false;
-
-// Listen for the form submit event
-form_username1.addEventListener('submit', function (event) {
-
-    console.log("Form submitted!");
-    // Prevent the form from submitting
-    event.preventDefault();
-
-    // Get the value of the input
-    const username = inputUsername1.value;
-
-    // Fetch user data and populate the DOM
-    fetchUserData(username, 1, 'name-1', 'avatar-1', 'stats-1', 'rewatches-name-1');
-});
-
-// Listen for the form submit event
-form_username2.addEventListener('submit', function (event) {
-
-    console.log("Form submitted!");
-    // Prevent the form from submitting
-    event.preventDefault();
-
-    // Get the value of the input
-    const username = inputUsername2.value;
-
-    // Fetch user data and populate the DOM
-    fetchUserData(username, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
-});
-
-// Enable the Compare button if both forms are submitted
-function checkIfBothSubmitted() {
-    if (form1Submitted && form2Submitted) {
-        document.getElementById('compareButton').disabled = false;
-        console.log("Both forms True!");
-    }
-    else {
-        document.getElementById('compareButton').disabled = true;
-        const commonWatchlistContainer = document.getElementById('CommonWatchlistContainer');
-        const rewatchComboContainer = document.getElementById('RewatchComboContainer');
-        const recommendContainer = document.getElementById('RecommendContainer');
-        commonWatchlistContainer.classList.add('d-none');
-        rewatchComboContainer.classList.add('d-none');
-        //recommendContainer.classList.add('d-none');
-
-    }
-}
