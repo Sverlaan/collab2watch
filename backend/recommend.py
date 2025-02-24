@@ -8,10 +8,12 @@ import numpy as np
 import pandas as pd
 from timeit import default_timer as timer
 from surprise import accuracy
+import sqlite3
+import pandas as pd
 
 
 class MovieRecommender:
-    def __init__(self, data_path):
+    def __init__(self, data_path, evaluate=False):
         self.data_path = data_path
         self.df = None
         self.user_mapping = None
@@ -20,6 +22,7 @@ class MovieRecommender:
         self.trainset = None
         self.testset = None
         self.loaded_df = None
+        self.eval = evaluate
 
     def get_movie_id(self, slug):
         """
@@ -49,39 +52,37 @@ class MovieRecommender:
         """
         Preprocess the data
         """
+        timer_start = timer()
 
         if self.loaded_df is None:
             # Load existing data
-            self.df = pd.read_csv(self.data_path, dtype={
-                'user_name': 'string',
-                'film_id': 'string',
-                'rating': 'float64'
-            }).rename(columns={'user_name': 'userId', 'film_id': 'movieId'})
+            self.df = pd.read_parquet(self.data_path, engine='pyarrow')
             self.loaded_df = self.df.copy()
         else:
             print("Using already loaded data")
             self.df = self.loaded_df.copy()
 
-        # Only keep movies with more than 1000 ratings and users with more than 10 ratings
-        self.df = self.df[self.df.groupby("movieId")["movieId"].transform("count") >= 1000]
-        self.df = self.df[self.df.groupby("userId")["userId"].transform("count") >= 10]
-
-        # Sample random users for faster training
-        # print(f"Sampling {num_users} random users")
-        # random_users = self.df['userId'].drop_duplicates().sample(n=num_users, replace=False)
-        # self.df = self.df[self.df['userId'].isin(random_users)]
+        # # Only keep movies with more than 1000 ratings and users with more than 10 ratings
+        # movie_counts = self.df["movieId"].value_counts()
+        # user_counts = self.df["userId"].value_counts()
+        # self.df = self.df[self.df["movieId"].isin(movie_counts[movie_counts >= 1000].index)]
+        # self.df = self.df[self.df["userId"].isin(user_counts[user_counts >= 10].index)]
+        # # Store to parquet
+        # self.df.to_parquet("data/ratings_filtered.parquet", engine='pyarrow')
 
         # Sample random rows for faster training
         if n_samples < len(self.df):
             print(f"Sampling {n_samples} random rows out of {len(self.df)}")
-            self.df = self.df.sample(n=n_samples, replace=False)
+            idx = np.random.choice(self.df.index, size=n_samples, replace=False)
+            self.df = self.df.loc[idx]
 
         # Add ratings from our app users
+        new_rows = []
         for username in usernames:
             user_profile = user_profiles[username]
-            rows = [(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items()]
-            new_df = pd.DataFrame(rows, columns=self.df.columns)
-            self.df = pd.concat([self.df, new_df], ignore_index=True)
+            new_rows.extend([(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items()])
+        new_df = pd.DataFrame(new_rows, columns=self.df.columns)
+        self.df = pd.concat([self.df, new_df], ignore_index=True)  # Single concat is faster
 
         # Factorize user and movie IDs
         self.df["userId"], self.user_mapping = pd.factorize(self.df["userId"])
@@ -92,32 +93,44 @@ class MovieRecommender:
         max_rating = self.df.rating.max()
         reader = Reader(rating_scale=(min_rating, max_rating))
         data = Dataset.load_from_df(self.df[["userId", "movieId", "rating"]], reader)
-        self.trainset, self.testset = train_test_split(data, test_size=0.1)
 
-    def train_model(self, n_factors=50, n_epochs=10, evaluate=True):
+        if self.eval:
+            self.trainset, self.testset = train_test_split(data, test_size=0.2)
+        else:
+            self.trainset = data.build_full_trainset()
+
+        print("Dataset loaded in", timer() - timer_start, "seconds")
+
+    def train_model(self, n_factors=50, n_epochs=10):
         """
         Train the model
         """
-        if self.trainset is None:
-            raise ValueError("Initialize training data before training the model.")
-        print(f"Train SVD model with {n_factors} factors and {n_epochs} epochs")
         timer_start = timer()
+
+        # Train the model
+        print(f"Train SVD model with {n_factors} factors for {n_epochs} epochs...")
         self.model = SVD(n_factors=n_factors, n_epochs=n_epochs, verbose=True)
         self.model.fit(self.trainset)
         print(f"Training took {timer() - timer_start} seconds")
 
-        if evaluate:
-            self.evaluate_model()
+        if self.eval:
+            print("RMSE on test set:", self.evaluate_model())
 
     def evaluate_model(self):
         """
         Evaluate the model
         """
+        timer_start = timer()
+
+        print("Evaluating model...")
         if self.model is None or self.testset is None:
             raise ValueError("Initialize test data before evaluating the model.")
+
         predictions = self.model.test(self.testset)
         rmse = accuracy.rmse(predictions)
-        print(f"Test RMSE: {rmse}")
+
+        print(f"Evaluation took {timer() - timer_start} seconds")
+
         return rmse
 
     def get_prediction(self, username, movie_slug):
@@ -294,3 +307,12 @@ def get_similar_movies(movie_slug, recommender, top_n=5):
         return True, similar_movie_slugs
     except:
         return False, None
+
+
+if __name__ == '__main__':
+    # Load CSV
+    timer_start = timer()
+    # Load Parquet file (much faster than CSV)
+    df = pd.read_parquet("data/ratings.parquet", engine='pyarrow')
+
+    print(f"Data loading {timer() - timer_start} seconds")

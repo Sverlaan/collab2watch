@@ -1,6 +1,7 @@
 # Imports
 from letterboxdpy import user
 import time
+from timeit import default_timer as timer
 
 
 class UserProfile:
@@ -59,9 +60,16 @@ class UserProfile:
         """
         Initialize watchlist, watched and ratings
         """
+        timer_start = timer()
         self.get_watchlist()
+        print(f"Watchlist: {timer() - timer_start}")
+        timer_start = timer()
         self.get_watched()
+        print(f"Watched: {timer() - timer_start}")
+        timer_start = timer()
         self.get_ratings()
+        print(f"Ratings: {timer() - timer_start}")
+
         self.initialize_complete = True
 
     def to_dict(self):

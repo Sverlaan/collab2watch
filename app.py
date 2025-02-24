@@ -6,6 +6,7 @@ from backend.database import db
 from backend.profile_user import UserProfile
 from backend.profile_movie import Movie, get_movie_data
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
+from sqlalchemy import case
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -73,7 +74,7 @@ def preprocess_data(task_number, usernames, num_samples):
     global task_status
 
     if recommender_instance is None:
-        recommender_instance = MovieRecommender(data_path="data/ratings.csv")
+        recommender_instance = MovieRecommender(data_path="data/ratings_filtered.parquet")
     recommender_instance.preprocess(usernames, user_profiles, n_samples=int(num_samples))
 
     task_status[task_number] = "complete"  # Mark as complete
@@ -238,26 +239,28 @@ def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRunt
             movie = Movie(**movie_data)
             db.session.add(movie)
     db.session.commit()
-    # print(f"Time taken: {timer() - start}")
 
     start = timer()
+
     retrieved_movies = Movie.query.filter(Movie.rating >= minRating, Movie.rating <= maxRating,
                                           Movie.runtime >= minRuntime, Movie.runtime <= maxRuntime,
                                           Movie.year >= minYear, Movie.year <= maxYear,
                                           Movie.slug.in_(movie_slugs)).all()
 
     # Sort the retrieved movies in the order of movie_slugs
+    # O(n) operation, faster than order-by in SQL
     movie_dict = {movie.slug: movie.to_dict() for movie in retrieved_movies}
     movies = [movie_dict[slug] for slug in movie_slugs if slug in movie_dict]
+
+    # Limit to top-k movies
+    movies = movies[:top_k] if top_k != -1 else movies
 
     # Add scores if available
     if scores is not None:
         for movie in movies:
             movie["score"] = round(scores[movie["slug"]] * 20, 1)
 
-    movies = movies[:top_k] if top_k != -1 else movies
-
-    # print(f"Time taken: {timer() - start}")
+    print(f"Retrieve movies from: {timer() - start}")
 
     return movies
 

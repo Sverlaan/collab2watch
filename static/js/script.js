@@ -391,7 +391,7 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
             const movieElement = document.createElement("div");
             movieElement.classList.add("row");
             movieElement.innerHTML = `
-                <div class="col-lg-1 align-items-center d-flex justify-content-end">
+                <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                     <h5 class="text-end">${index}.</h5>
                 </div>
 

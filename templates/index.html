@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -58,12 +58,14 @@
             <div class="col-md-4 text-center">
                 <h1 class="text-center"><b>Collab2Watch</b></h1>
                 <p class="text-center text-muted">Fill in two usernames and get recommendations!</p>
-                <button type="button" class="btn btn-outline-primary mb-2" id="filterButton" 
-                    style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#filtersModal">Filters</button>
-                <button type="button" class="btn btn-outline-primary mb-2" id="settingsButton" 
-                    style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#settingsModal">Settings</button>
-                <button type="button" class="btn btn-primary" id="compareButton" 
-                    style="width: 180pt; font-size: 18pt" disabled>Go!</button>
+                <div class="d-flex flex-column align-items-center">
+                    <button type="button" class="btn btn-outline-primary mb-2" id="filterButton" 
+                        style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#filtersModal">Filters</button>
+                    <button type="button" class="btn btn-outline-primary mb-2" id="settingsButton" 
+                        style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#settingsModal">Model</button>
+                    <button type="button" class="btn btn-primary" id="compareButton" 
+                        style="width: 180pt; font-size: 18pt" disabled>Go!</button>
+                </div>
 
                 <!-- Progress Bars -->
                 <div class="row mt-5 mx-auto text-start" id="loadingProgress" style="visibility:hidden; max-width: 500px;"> 
@@ -293,14 +295,14 @@
             </div>
 
             <div class="row justify-content-between align-items-top g-0" id="RecommendContainerPlaceholder">
-                <div class="col-md-2">
+                <div class="col-md-1">
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-9">
                             <!-- Placeholder Row -->
                     <div class="row justify-content-center align-items-top g-0">
 
                         <div class="row">
-                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                             </div>
                             <div class="col-lg-11 mb-3">
                                 <div class="placeholder placeholder-rec-card"></div>
@@ -308,7 +310,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                             </div>
                             <div class="col-lg-11 mb-3">
                                 <div class="placeholder placeholder-rec-card"></div>
@@ -316,7 +318,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                             </div>
                             <div class="col-lg-11 mb-3">
                                 <div class="placeholder placeholder-rec-card"></div>
@@ -324,7 +326,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                             </div>
                             <div class="col-lg-11 mb-3">
                                 <div class="placeholder placeholder-rec-card"></div>
@@ -332,7 +334,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-lg-1 align-items-center d-flex justify-content-center">
+                            <div class="col-auto align-items-center d-flex justify-content-end" style="width: 50px;">
                             </div>
                             <div class="col-lg-11 mb-3">
                                 <div class="placeholder placeholder-rec-card"></div>
@@ -342,20 +344,20 @@
                     </div>
                     
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                 </div>
             </div>
 
             <div class="row justify-content-between align-items-top hover-zoom-rec-card g-0">
-                <div class="col-md-2">
+                <div class="col-md-1">
                 </div>
-                <div class="col-md-7">
+                <div class="col-md-9">
                     <div class="row justify-content-center align-items-top g-0 overflow-auto d-none" 
                         id="RecommendContainerReal" 
                         style="max-height: 630px;">
                     </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                 </div>
             </div>
 
