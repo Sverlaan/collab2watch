@@ -43,39 +43,6 @@ document.getElementById('applyFilters').addEventListener('click', async function
     }
 });
 
-document.getElementById('fastSettings').addEventListener('click', function (event) {
-
-    document.getElementById('nsamples').value = 500000;
-    document.getElementById('nfactors').value = 10;
-    document.getElementById('nepochs').value = 5;
-});
-
-document.querySelectorAll('#defaultSettings, #resetSettings').forEach(button => {
-    button.addEventListener('click', function () {
-
-        document.getElementById('nsamples').value = 5000000;
-        document.getElementById('nfactors').value = 50;
-        document.getElementById('nepochs').value = 10;
-    });
-});
-
-document.getElementById('accurateSettings').addEventListener('click', function (event) {
-
-    document.getElementById('nsamples').value = 10000000;
-    document.getElementById('nfactors').value = 100;
-    document.getElementById('nepochs').value = 30;
-});
-
-document.getElementById('applySettings').addEventListener('click', async function (event) {
-
-    const compareButton = document.getElementById('compareButton');
-    if (!compareButton.disabled) {
-        const event = new Event('click', { bubbles: true });
-        event.refresh = true; // Add custom property
-        compareButton.dispatchEvent(event);
-    }
-});
-
 
 ////////////////////////////////////////// Radio Buttons //////////////////////////////////////////
 document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
@@ -93,10 +60,8 @@ document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
         const minYear = document.getElementById('minYear').value;
         const maxYear = document.getElementById('maxYear').value;
 
-        document.getElementById("RecommendContainerPlaceholder").classList.remove('d-none');
         document.getElementById("RecommendContainerReal").classList.add('d-none');
         await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-        document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
         document.getElementById("RecommendContainerReal").classList.remove('d-none');
         });
 });
@@ -178,14 +143,7 @@ function checkIfBothSubmitted() {
 function ResetProgressBars() {
 
     document.getElementById("progress1").textContent = `Fetching profile data from ${inputUsername1.value} and ${inputUsername2.value}`;
-    // Convert value to K or M int
-    num_of_samples = document.getElementById('nsamples').value;
-    if (num_of_samples >= 1000000) {
-        num_of_samples = (num_of_samples / 1000000).toFixed(1) + "M";
-    } else if (num_of_samples >= 1000) {
-        num_of_samples = (num_of_samples / 1000).toFixed(1) + "K";
-    }
-    document.getElementById("progress2").textContent = `Collecting ${num_of_samples} ratings from over 10K users`;
+    document.getElementById("progress2").textContent = `Adding to 9.8M ratings from 11.0K other users`;
 
     document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
     document.getElementById("circleImagePlaceholder2").style.display = "inline-block";
@@ -221,7 +179,7 @@ function startTasks() {
                             let nextTask = taskNumber + 1;
                             document.getElementById(`spinner${nextTask}`).style.display = "inline-block";
                             document.getElementById(`circleImagePlaceholder${nextTask}`).style.display = "none";
-                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}/${document.getElementById('nsamples').value}/${document.getElementById('nfactors').value}/${document.getElementById('nepochs').value}`)
+                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}`)
                                 .then(() => checkStatus(nextTask));
                         } else {
                             resolve();
@@ -235,11 +193,7 @@ function startTasks() {
         document.getElementById("spinner1").style.display = "inline-block";
         document.getElementById("circleImagePlaceholder1").style.display = "none";
         
-        n_samples = document.getElementById('nsamples').value;
-        n_factors = document.getElementById('nfactors').value;
-        n_epochs = document.getElementById('nepochs').value;
-        
-        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}/${n_samples}/${n_factors}/${n_epochs}`)
+        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}`)
             .then(() => checkStatus(1));
     });
 }
@@ -664,8 +618,6 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
     await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
-    // Show the placeholders for recommendations, since it takes a while to load
-    document.getElementById('RecommendContainerPlaceholder').classList.remove('d-none');
     document.getElementById('RecommendContainerReal').classList.add('d-none');
     // Show the content container
     document.getElementById("contentContainer").classList.remove('d-none');
@@ -679,7 +631,6 @@ document.getElementById('compareButton').addEventListener('click', async functio
     
     // Show the real recommendations content
     document.getElementById("RecommendContainerReal").classList.remove('d-none');
-    document.getElementById("RecommendContainerPlaceholder").classList.add('d-none');
 
 });
 

@@ -8,6 +8,6 @@ createdb.py
 .DS_Store
 templates/temp.html
 data/
-model/
+.vscode/
 .ipynb_checkpoints/
 surprise.ipynb

@@ -1,12 +1,16 @@
-from flask import Flask, render_template, jsonify, abort
+from flask import Flask, render_template, jsonify
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
 from backend.database import db
-from backend.profile_user import UserProfile
 from backend.profile_movie import Movie, get_movie_data
-from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_similar_movies, get_rewatchlist, get_recommendations
+from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
 from sqlalchemy import case
+from backend.user_profile import UserProfile
+
+# Ignore warnings
+import warnings
+warnings.filterwarnings("ignore")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -68,41 +72,41 @@ def get_user_data(task_number, usernames):
     task_status[task_number] = "complete"  # Mark as complete
 
 
-def preprocess_data(task_number, usernames, num_samples):
+def preprocess_data(task_number, usernames):
     """Simulate a task that takes a few seconds"""
     global recommender_instance
     global task_status
 
     if recommender_instance is None:
-        recommender_instance = MovieRecommender(data_path="data/ratings_filtered.parquet")
-    recommender_instance.preprocess(usernames, user_profiles, n_samples=int(num_samples))
+        recommender_instance = MovieRecommender(model_path="model/kernel_mf.pkl")
+    recommender_instance.preprocess(usernames, user_profiles)
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
-def train_model(task_number, n_factors, n_epochs):
+def train_model(task_number):
     """Simulate a task that takes a few seconds"""
     global task_status
 
     if recommender_instance is None:
         task_status[task_number] = "error: recommender not initialized"
         return
-    recommender_instance.train_model(n_factors=int(n_factors), n_epochs=int(n_epochs))
+    recommender_instance.train_model()
 
     task_status[task_number] = "complete"  # Mark as complete
 
 
-@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>/<int:n_samples>/<int:n_factors>/<int:n_epochs>")
-def start_task(task_number, username1, username2, n_samples, n_factors, n_epochs):
+@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>")
+def start_task(task_number, username1, username2):
     """Start a task in a new thread"""
     global task_status
     task_status[task_number] = "running"
     if task_number == 1:
         thread = threading.Thread(target=get_user_data, args=(task_number, [username1, username2]))
     if task_number == 2:
-        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2], n_samples))
+        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2]))
     if task_number == 3:
-        thread = threading.Thread(target=train_model, args=(task_number, n_factors, n_epochs))
+        thread = threading.Thread(target=train_model, args=(task_number,))
     thread.start()
     return jsonify({"message": f"Task {task_number} started"})
 
@@ -207,10 +211,10 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
 
     start = timer()
     print(f"Fetching recommendations")
-    slugs, scores_dict = get_recommendations(username1, username2, int(weight), user_profiles, recommender_instance)
+    slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], int(weight), amount=5000)
+    print(f"Time recommend: {timer() - start}")
 
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
-    print(f"Time taken: {timer() - start}")
     return jsonify(movies)
 
 
@@ -218,7 +222,7 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
 def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    hits, similar_movies = get_similar_movies(slug, recommender_instance, top_n=4)
+    hits, similar_movies = recommender_instance.get_similar_movies(slug, top_n=4)
     if hits == False:
         return jsonify({"success": False, "message": "No similar movies found", "movies": []})  # Return a valid response with a flag
     # print(f"Time taken: {timer() - start}")
@@ -231,16 +235,16 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
 def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=9999, minYear=1870, maxYear=2030, top_k=-1, scores=None):
 
     start = timer()
-    for slug in movie_slugs:
-        movie = Movie.query.filter_by(slug=slug).first()
-        if movie is None:
-            print(f"{slug} not in db. Resort to scraping.")
-            movie_data = get_movie_data(slug)
-            movie = Movie(**movie_data)
-            db.session.add(movie)
-    db.session.commit()
 
-    start = timer()
+    # Fetch movie details of movies not in db
+    slugs_in_db = {movie.slug for movie in Movie.query.filter(Movie.slug.in_(movie_slugs)).all()}
+    slugs_to_fetch = set(movie_slugs).difference(slugs_in_db)
+    for slug in slugs_to_fetch:
+        print(f"{slug} not in db. Resort to scraping.")
+        movie_data = get_movie_data(slug)
+        movie = Movie(**movie_data)
+        db.session.add(movie)
+    db.session.commit()
 
     retrieved_movies = Movie.query.filter(Movie.rating >= minRating, Movie.rating <= maxRating,
                                           Movie.runtime >= minRuntime, Movie.runtime <= maxRuntime,
