@@ -2,8 +2,7 @@ from flask import Flask, render_template, jsonify
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
-from backend.database import db
-from backend.profile_movie import Movie, get_movie_data
+from backend.movie_profile import db, Movie, get_movie_data
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
 from sqlalchemy import case
 from backend.user_profile import UserProfile

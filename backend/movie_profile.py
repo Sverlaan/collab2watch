@@ -2,8 +2,9 @@
 from letterboxdpy import movie
 import requests
 import time
-from sqlalchemy import Column, Integer, String, Float, Text
-from backend.database import db
+from flask_sqlalchemy import SQLAlchemy
+
+db = SQLAlchemy()  # Define db, initialize in app.py
 
 
 class Movie(db.Model):
