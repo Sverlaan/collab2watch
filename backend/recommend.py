@@ -3,12 +3,9 @@ from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 import pandas as pd
 from timeit import default_timer as timer
-import pandas as pd
-from sklearn.metrics import root_mean_squared_error
 import pickle
 # from user_profile import UserProfile
 
-# Get matrix factorization model
 from matrix_factorization import BaselineModel, KernelMF, train_update_test_split
 
 
@@ -145,9 +142,6 @@ class MovieRecommender:
             similar_indices = np.argsort(similarities)[::-1]
             similar_indices = [i for i in similar_indices if i != movie_index]
             similar_indices = similar_indices[:top_n]
-
-            similar_movies = [(items[i], similarities[i]) for i in similar_indices]
-            print(similar_movies)
             similar_slugs = [items[i] for i in similar_indices]
 
             return True, similar_slugs

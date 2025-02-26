@@ -2,10 +2,10 @@ from flask import Flask, render_template, jsonify
 from timeit import default_timer as timer
 from tqdm import tqdm
 import threading
-from backend.movie_profile import db, Movie, get_movie_data
+from backend.movie import db, Movie, get_movie_data, retrieve_movies
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
 from sqlalchemy import case
-from backend.user_profile import UserProfile
+from backend.user import UserProfile
 
 # Ignore warnings
 import warnings
@@ -209,11 +209,9 @@ def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, ma
 def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    print(f"Fetching recommendations")
     slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], int(weight), amount=5000)
-    print(f"Time recommend: {timer() - start}")
-
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
+    # print(f"Time taken: {timer() - start}")
     return jsonify(movies)
 
 
@@ -229,43 +227,6 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     movies = retrieve_movies(similar_movies, top_k=4)
 
     return jsonify({"success": True, "message": "Similar movies found", "movies": movies})
-
-
-def retrieve_movies(movie_slugs, minRating=0, maxRating=5, minRuntime=0, maxRuntime=9999, minYear=1870, maxYear=2030, top_k=-1, scores=None):
-
-    start = timer()
-
-    # Fetch movie details of movies not in db
-    slugs_in_db = {movie.slug for movie in Movie.query.filter(Movie.slug.in_(movie_slugs)).all()}
-    slugs_to_fetch = set(movie_slugs).difference(slugs_in_db)
-    for slug in slugs_to_fetch:
-        print(f"{slug} not in db. Resort to scraping.")
-        movie_data = get_movie_data(slug)
-        movie = Movie(**movie_data)
-        db.session.add(movie)
-    db.session.commit()
-
-    retrieved_movies = Movie.query.filter(Movie.rating >= minRating, Movie.rating <= maxRating,
-                                          Movie.runtime >= minRuntime, Movie.runtime <= maxRuntime,
-                                          Movie.year >= minYear, Movie.year <= maxYear,
-                                          Movie.slug.in_(movie_slugs)).all()
-
-    # Sort the retrieved movies in the order of movie_slugs
-    # O(n) operation, faster than order-by in SQL
-    movie_dict = {movie.slug: movie.to_dict() for movie in retrieved_movies}
-    movies = [movie_dict[slug] for slug in movie_slugs if slug in movie_dict]
-
-    # Limit to top-k movies
-    movies = movies[:top_k] if top_k != -1 else movies
-
-    # Add scores if available
-    if scores is not None:
-        for movie in movies:
-            movie["score"] = round(scores[movie["slug"]] * 20, 1)
-
-    print(f"Retrieve movies from: {timer() - start}")
-
-    return movies
 
 
 def put_movies_in_db(movie_slugs):
