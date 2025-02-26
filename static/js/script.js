@@ -63,6 +63,7 @@ document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
         document.getElementById("RecommendContainerReal").classList.add('d-none');
         await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
         document.getElementById("RecommendContainerReal").classList.remove('d-none');
+        document.getElementById("RecommendContainerReal").scrollTop = 0;
         });
 });
 
@@ -594,6 +595,9 @@ document.getElementById('compareButton').addEventListener('click', async functio
         await startTasks();
     }
 
+    // Set id="btnradio2" checked
+    document.getElementById('btnradio2').checked = true;
+
     // Set display names
     const user1_name = document.getElementById("name-1").textContent;
     const user2_name = document.getElementById("name-2").textContent;
@@ -631,6 +635,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     
     // Show the real recommendations content
     document.getElementById("RecommendContainerReal").classList.remove('d-none');
+    document.getElementById("RecommendContainerReal").scrollTop = 0;
 
 });
 
