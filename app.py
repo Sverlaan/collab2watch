@@ -4,7 +4,6 @@ from tqdm import tqdm
 import threading
 from backend.movie import db, Movie, get_movie_data, retrieve_movies
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
-from sqlalchemy import case
 from backend.user import UserProfile
 
 # Ignore warnings
@@ -23,6 +22,16 @@ db.init_app(app)
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@app.route('/how')
+def how():
+    return render_template('how.html')
+
+
+@app.route('/credits')
+def credits():
+    return render_template('credits.html')
 
 
 ################ Initialization ################

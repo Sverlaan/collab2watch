@@ -97,9 +97,9 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
     } catch (error) {
         console.error(error);
 
-        document.getElementById(NameElement).textContent = "User not found. Try again:";
+        document.getElementById(NameElement).textContent = "User not found";
         document.getElementById(AvatarElement).src = "https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png";
-        document.getElementById(StatsElement1).textContent = "Only Letterboxd accounts are supported.";
+        document.getElementById(StatsElement1).textContent = "Only Letterboxd accounts are supported";
         document.getElementById("loadingProgress").style.visibility = "hidden";
 
         if (user_id == 1) {
