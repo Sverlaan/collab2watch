@@ -138,7 +138,7 @@ def fetch_movie_data_for_modal(slug, username1, username2):
         movie_data["score_1"] = f"{rating_1}"
         movie_data["score_1_color"] = "text-muted"
     else:
-        pred_1 = recommender_instance.get_prediction(username1, slug)
+        pred_1 = recommender_instance.predict_user_rating(username1, slug)
         if pred_1 is not None:
             movie_data["score_1"] = f"{round(pred_1 * 20, 1)}%"
             movie_data["score_1_color"] = "text-score"
@@ -151,7 +151,7 @@ def fetch_movie_data_for_modal(slug, username1, username2):
         movie_data["score_2"] = f"{rating_2}"
         movie_data["score_2_color"] = "text-muted"
     else:
-        pred_2 = recommender_instance.get_prediction(username2, slug)
+        pred_2 = recommender_instance.predict_user_rating(username2, slug)
         if pred_2 is not None:
             movie_data["score_2"] = f"{round(pred_2 * 20, 1)}%"
             movie_data["score_2_color"] = "text-score"

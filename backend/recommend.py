@@ -18,6 +18,7 @@ class MovieRecommender:
         self.model = None
         self.X_update = None
         self.y_update = None
+        self.movies_trained_on = None
 
         self.recs_dict = dict()
 
@@ -28,6 +29,7 @@ class MovieRecommender:
         timer_start = timer()
 
         self.model = pickle.load(open(self.model_path, "rb"))
+        self.movies_trained_on = {slug for slug in self.model.item_id_map.keys()}
         self.recs_dict = dict()
 
         # Add ratings from our app users
@@ -46,7 +48,7 @@ class MovieRecommender:
 
         print("Update dataset generated in", timer() - timer_start, "seconds")
 
-    def train_model(self, n_epochs=50, lr=0.001):
+    def train_model(self, n_epochs=30, lr=0.01):
         """
         Train the model
         """
@@ -57,7 +59,7 @@ class MovieRecommender:
         )
         print(f"Retraining took {timer() - timer_start} seconds")
 
-    def get_prediction(self, username, movie_slug):
+    def predict_user_rating(self, username, movie_slug):
         """
         Get the predicted user rating for a specific movie
         """
@@ -191,7 +193,9 @@ def get_single_watchlist(username1, username2, user_profiles, recommender):
     # Get all movies of user2 that user1 has not seen yet
     diff_slugs = user1_watchlist_slugs.difference(user2_seen_slugs)
     diff_slugs = diff_slugs.difference(user2_watchlist_slugs)
-    # diff_slugs = [slug for slug in diff_slugs if slug in recommender.item_mapping]
+
+    # Only get the slugs that are in the model
+    diff_slugs = [slug for slug in diff_slugs if slug in recommender.movies_trained_on]
 
     # Get predicted ratings for common movies
     preds_user2 = recommender.get_predictions(username2, diff_slugs, sorted=False)
@@ -216,7 +220,9 @@ def get_rewatchlist(username1, username2, user_profiles, recommender):
 
     # Get all movies of user2 that user1 has not seen yet
     diff_slugs = list(user1_seen_slugs.difference(user2_seen_slugs))
-    # diff_slugs = [slug for slug in diff_slugs if slug in recommender.item_mapping]
+
+    # Only get the slugs that are in the model
+    diff_slugs = [slug for slug in diff_slugs if slug in recommender.movies_trained_on]
 
     # Get predicted ratings for common movies
     preds_user2 = recommender.get_predictions(username2, diff_slugs, sorted=False)
