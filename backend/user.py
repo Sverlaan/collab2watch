@@ -18,8 +18,22 @@ class UserProfile:
 
         self.initialize_complete = False
         self.watchlist = None
+        self.blacklist = None
         self.ratings = None
         self.watched = None
+
+    def get_blacklist(self):
+        """
+        Get blacklist of user from db
+        """
+        if self.blacklist is None:
+            # Get blacklist slugs from db
+            if self.username == 'liannehr':
+                self.blacklist = ["the-dark-knight", "come-and-see"]
+            else:
+                self.blacklist = []
+
+        return self.blacklist
 
     def get_watchlist(self):
         """

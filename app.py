@@ -219,7 +219,7 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
 
     start = timer()
     slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], int(weight), amount=5000)
-    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=100, scores=scores_dict)
     # print(f"Time taken: {timer() - start}")
     return jsonify(movies)
 
@@ -236,6 +236,21 @@ def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, min
     movies = retrieve_movies(similar_movies, top_k=4)
 
     return jsonify({"success": True, "message": "Similar movies found", "movies": movies})
+
+
+@app.route('/fetch_explanation/<string:username>/<string:slug>', methods=['GET'])
+def fetch_explanation(username, slug):
+    start = timer()
+    hits, influential_movies = recommender_instance.get_influential_movies(username, user_profiles, slug)
+    if hits == False:
+        return jsonify({"success": False, "message": "No similar movies found", "movies": []})  # Return a valid response with a flag
+    # print(f"Time taken: {timer() - start}")
+
+    # Append slug to influential movies
+    influential_movies.append(slug)
+    movies = retrieve_movies(influential_movies, top_k=-1)
+
+    return jsonify({"success": True, "message": "Influential movies found", "username": username, "main_movie": movies[-1], "movies": movies[:-1]})
 
 
 def put_movies_in_db(movie_slugs):

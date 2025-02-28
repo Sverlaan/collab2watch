@@ -371,6 +371,18 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
                                     ${avatarHTML}
                                 </div>
                             </div>
+
+                            <div class="col-auto p-2 align-items-center  d-flex flex-column justify-content-center">
+                                <button type="button" class="btn btn-outline-warning mb-2 explain-btn" 
+                                    id="explain_${movie.slug}_${weight}_${index}" data-slug="${movie.slug}" data-weight="${weight}">?
+                                </button>
+                            </div>
+                            <div class="col-auto p-2 align-items-center  d-flex flex-column justify-content-center" style="margin-right: 20px;">
+                                <button type="button" class="btn btn-outline-danger mb-2" 
+                                    id="blacklist_${movie.slug}_${weight}_${index}" data-slug="${movie.slug}" data-weight="${weight}">&#10005;
+                                </button>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -390,6 +402,77 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
 
 
 
+// Function to handle explanation logic
+async function explainMovie(slug, weight) {
+    weight = parseInt(weight, 10);
+    console.log("Explain movie with slug:", slug, weight);
+
+    explainModalTitle.textContent = "Why did we recommend this movie?";
+    let description = "";
+
+    // Fetch explanation from Flask backend for user1
+    if (weight === 0 || weight === -1) {
+        let response = await fetch(`/fetch_explanation/${inputUsername1.value}/${slug}`);
+        if (!response.ok) throw new Error("Something went wrong getting explanation");
+        let data = await response.json();
+        if (data.success){
+
+            description += `<h5>We recommend ${data.main_movie.title} (${data.main_movie.year})</h5>`;
+            description += `<h6>Since ${document.getElementById("name-1").textContent} liked:</h6>`;
+            description += "<ul>"; // Start an unordered list
+            // Loop over all movies and append title and year as list items
+            for (let i = 0; i < data.movies.length; i++) {
+                let movie = data.movies[i];
+                description += `<li>${movie.title} (${movie.year})</li>`;
+            }
+            description += "</ul>"; // Close the unordered list
+        }
+    }
+    if (weight === 0 || weight === 1) {
+        let response = await fetch(`/fetch_explanation/${inputUsername2.value}/${slug}`);
+        if (!response.ok) throw new Error("Something went wrong getting explanation");
+        let data = await response.json();
+        if (data.success){
+
+            if (weight === 1){
+                description += `<h5>We recommend ${data.main_movie.title} (${data.main_movie.year})</h5>`;
+            }
+            description += `<h6>Since ${document.getElementById("name-2").textContent} liked:</h6>`;
+            description += "<ul>"; // Start an unordered list
+            // Loop over all movies and append title and year as list items
+            for (let i = 0; i < data.movies.length; i++) {
+                let movie = data.movies[i];
+                description += `<li>${movie.title} (${movie.year})</li>`;
+            }
+            description += "</ul>"; // Close the unordered list
+        }
+    }
+
+    // Set the modal text using innerHTML to preserve formatting
+    explainModalText.innerHTML = description;
+
+    // Show the modal
+    let modal = new bootstrap.Modal(document.getElementById("explainModal"));
+    modal.show();
+
+}
+
+// Function to handle blacklist logic
+async function blacklistMovie(slug, weight) {
+    console.log("Blacklist movie with slug:", slug, weight);
+
+    // Open modal to confirm blacklist for specific user
+    // Update model through python
+
+    console.log(inputUsername1.value, inputUsername2.value, slug, weight);
+
+    // const response = await fetch(`/fetch_explanation/${inputUsername1.value}/${inputUsername2.value}/${slug}/${weight}`);
+    // //if (!response.ok) throw new Error("Something went wrong getting explanation");
+    // const data = await response.json();
+
+    // console.log(data.explanation);
+}
+
 
 ////////////////////////////////////////// Movie Modal //////////////////////////////////////////
 // Listen for click events on the body
@@ -397,7 +480,17 @@ document.body.addEventListener("click", async function (event) {
 
     let modalTrigger = event.target.closest(".open-movie-modal");
 
-    if (modalTrigger) {
+    if (event.target.matches("button[id^='explain_']")) {
+        const slug = event.target.getAttribute("data-slug");
+        const weight = event.target.getAttribute("data-weight");
+        explainMovie(slug, weight);
+    }
+    else if (event.target.matches("button[id^='blacklist_']")) {
+        const slug = event.target.getAttribute("data-slug");
+        const weight = event.target.getAttribute("data-weight");
+        blacklistMovie(slug, weight);
+    }
+    else if (modalTrigger) {
 
         // Remove existing modal if it exists
         let existingModal = document.getElementById("dynamicModal");

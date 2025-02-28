@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from timeit import default_timer as timer
 import pickle
-# from user_profile import UserProfile
+# from user import UserProfile
 
 from matrix_factorization import BaselineModel, KernelMF, train_update_test_split
 
@@ -19,7 +19,7 @@ class MovieRecommender:
 
         self.recs_dict = dict()
 
-    def preprocess(self, usernames, user_profiles):
+    def preprocess(self, usernames, user_profiles, use_blacklist=True):
         """
         Preprocess the data
         """
@@ -35,8 +35,12 @@ class MovieRecommender:
             user_profile = user_profiles[username]
             new_rows.extend([(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items()])
 
-        # Add blacklist movies
-        # new_rows.extend([('liannehr', 'twin-peaks-the-return', 1.0)])
+            # Add blacklisted movies
+            if use_blacklist:
+                blacklisted_slugs = user_profile.get_blacklist()
+                virtual_rating = 1
+                print(f"Blacklisted movies for {username} rated {virtual_rating}: {blacklisted_slugs}")
+                new_rows.extend([(username, movie_slug, virtual_rating) for movie_slug in blacklisted_slugs])
 
         new_df = pd.DataFrame(new_rows, columns=['user_id', 'item_id', 'rating'])
 
@@ -148,6 +152,51 @@ class MovieRecommender:
         except:
             return False, None
 
+    def get_influential_movies(self, username, userprofile, movie_slug, top_k=5):
+        """
+        Explain the prediction of a movie
+        """
+
+        # Check if movie is in the model
+        if movie_slug not in self.model.item_id_map:
+            return False, None
+
+        # Get highly rated movies of user
+        user_ratings = userprofile[username].get_ratings()
+        rated_slugs = list(user_ratings.keys())
+        user_ratings = list(user_ratings.values())
+
+        # Get embeddings of the higly rated movies
+        embs = self.model.item_features
+        items = list(self.model.item_id_map.keys())
+        movie_index = self.model.item_id_map.get(movie_slug)
+        highly_rated_indices = [self.model.item_id_map.get(slug) for slug in rated_slugs if slug in self.model.item_id_map]
+        user_ratings = [user_ratings[i] for i, slug in enumerate(rated_slugs) if slug in self.model.item_id_map]
+
+        # Compute cosine similarity between movie and highly rated movies
+        movie_emb = embs[movie_index].reshape(1, -1)
+        highly_rated_embs = embs[highly_rated_indices]
+        similarities = cosine_similarity(movie_emb, highly_rated_embs)[0]
+
+        # Normalize user ratings
+        # def normalize_ratings(ratings, min_rating=1, max_rating=5):
+        #     return (ratings - min_rating) / (max_rating - min_rating)
+
+        def log_normalization(ratings):
+            return np.log1p(ratings)  # log(x + 1)
+
+        user_ratings = log_normalization(np.array(user_ratings))
+
+        similarities = similarities * user_ratings
+
+        # Sort and get top N
+        similar_indices = np.argsort(similarities)[::-1]
+        similar_indices = similar_indices[:top_k]
+        influential_movies = [items[highly_rated_indices[i]] for i in similar_indices]
+        similarity_scores = [round(similarities[i], 3) for i in similar_indices]
+
+        return True, influential_movies
+
 
 def get_common_watchlist(username1, username2, user_profiles, recommender):
     """
@@ -232,13 +281,17 @@ def get_rewatchlist(username1, username2, user_profiles, recommender):
 
 # if __name__ == '__main__':
 
-    # user_profiles = {
-    #     "liannehr": UserProfile("liannehr")
-    # }
+#     username = "flrz"
 
-    # recommender = MovieRecommender(model_path="model/kernelmf.pkl")
-    # recommender.preprocess(["liannehr"], user_profiles)
-    # recommender.train_model(n_epochs=30, lr=0.001)
+#     user_profiles = {
+#         username: UserProfile(username)
+#     }
+
+#     recommender = MovieRecommender(model_path="model/kernel_mf.pkl")
+#     recommender.preprocess([username], user_profiles)
+#     recommender.train_model(n_epochs=30, lr=0.001)
+
+#     print(recommender.explain([username], user_profiles, "witness-for-the-prosecution-1957", 0))
 
     # print(get_similar_movies("kikis-delivery-service", recommender))
 
