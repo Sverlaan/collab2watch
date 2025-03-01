@@ -138,3 +138,15 @@ def get_TMDb_backdrop(tmdb_link):
     response = r.json()
     result = response.get('backdrop_path')
     return "https://image.tmdb.org/t/p/original/" + result
+
+
+# def put_movies_in_db(movie_slugs):
+
+#     with app.app_context():
+#         for slug in tqdm(movie_slugs):
+#             movie = Movie.query.filter_by(slug=slug).first()
+#             if movie is None:
+#                 movie_data = get_movie_data(slug)
+#                 movie = Movie(**movie_data)
+#                 db.session.add(movie)
+#         db.session.commit()
