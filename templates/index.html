@@ -275,22 +275,38 @@
 
             <div class="row justify-content-center align-items-top g-0 mb-5">
                 <h1 class="text-center">Recommendations</h1>
-                <p class="text-center text-muted mb-3">Combined and personalized recommendations for movies you have not seen!</p>
-                <!-- slider -->
-                <div class="d-flex flex-column align-items-center">
-                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-                        <label class="btn btn-outline-warning" for="btnradio1" weight="-1" id="RC_user1_name">User 1</label>
+                <p class="text-center text-muted no-spacing">Combined and personalized recommendations for movies you have not seen!</p>
+                <p class="text-center text-muted mb-3">Use the blacklist functionality to correct the recommendations to your liking.</p>
 
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
-                        <label class="btn btn-outline-warning" for="btnradio2" weight="0">Combined</label>
-
-                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-                        <label class="btn btn-outline-warning" for="btnradio3" weight="1" id="RC_user2_name">User 2</label>
+                <!-- Flexbox wrapper to control alignment -->
+                <div class="row justify-content-center align-items-top">
+                    <!-- Centered button group -->
+                    <div class="col-md-2">
+                        <!-- Empty div for spacing -->
                     </div>
-                </div>
+                    <div class="col-md-5 d-flex justify-content-center align-items-center">
+                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="btnradio1" weight="-1" id="RC_user1_name">User 1</label>
 
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
+                            <label class="btn btn-outline-warning" for="btnradio2" weight="0">Combined</label>
+
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="btnradio3" weight="1" id="RC_user2_name">User 2</label>
+                        </div>
+                    </div>
+                    <div class="col-md-2 d-flex justify-content-center align-items-center">
+                        <!-- Edit Blacklist button pushed to the right -->
+                        <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">
+                            Edit Blacklists
+                        </a>
+                    </div>
+
+                </div>
             </div>
+
+
 
             <div class="row justify-content-between align-items-top hover-zoom-rec-card g-0">
                 <div class="col-md-1">
@@ -315,7 +331,7 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="explainModalTitle">Movie Explanation</h5>
+                    <h5 class="modal-title" id="explainModalTitle">Why did we recommend this movie?</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -327,6 +343,82 @@
             </div>
         </div>
     </div>
+
+
+    <!-- Blacklist Modal -->
+    <div class="modal fade" id="blacklistModal" tabindex="-1" aria-labelledby="blacklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="blacklistModalTitle">Add To Blacklist</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="blacklistModalText">Select which user(s) should blacklist this movie:</p>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="user1BlacklistCheckbox">
+                        <label class="form-check-label" for="user1Checkbox" id="user1BlacklistCheckboxText">User 1</label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="user2BlacklistCheckbox">
+                        <label class="form-check-label" for="user2Checkbox" id="user2BlacklistCheckboxText">User 2</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="blacklistLoading" class="spinner-border text-primary" role="status" style="display: none;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="addToBlacklistBtn">Add to Blacklist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Edit Blacklist Modal -->
+    <div class="modal fade" id="editBlacklistModal" tabindex="-1" aria-labelledby="editBlacklistModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Blacklists</h5>
+                    <!-- Loading Spinner in Modal Header -->
+                    <div id="blacklistLoadingSpinner" class="spinner-border text-primary ms-3" role="status" style="display: none; width: 1.5rem; height: 1.5rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tabs Navigation -->
+                    <ul class="nav nav-tabs" id="blacklistTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="user1-tab" data-bs-toggle="tab" data-bs-target="#user1-blacklist" type="button" role="tab">User 1</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="user2-tab" data-bs-toggle="tab" data-bs-target="#user2-blacklist" type="button" role="tab">User 2</button>
+                        </li>
+                    </ul>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content mt-3" id="blacklistContent">
+                        <div class="tab-pane fade show active" id="user1-blacklist" role="tabpanel">
+                            <ul id="user1BlacklistMovies" class="list-group"></ul>
+                            <!-- Reset Button for User 1 -->
+                            <button type="button" id="resetUser1Blacklist" class="btn btn-danger mt-3">Reset Blacklist</button>
+                        </div>
+                        <div class="tab-pane fade" id="user2-blacklist" role="tabpanel">
+                            <ul id="user2BlacklistMovies" class="list-group"></ul>
+                            <!-- Reset Button for User 2 -->
+                            <button type="button" id="resetUser2Blacklist" class="btn btn-danger mt-3">Reset Blacklist</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
 
 
 

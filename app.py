@@ -219,7 +219,7 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
 
     start = timer()
     slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], int(weight), amount=5000)
-    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=100, scores=scores_dict)
+    movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
     # print(f"Time taken: {timer() - start}")
     return jsonify(movies)
 
@@ -247,22 +247,39 @@ def fetch_explanation(username, slug):
     # print(f"Time taken: {timer() - start}")
 
     # Append slug to influential movies
-    influential_movies.append(slug)
     movies = retrieve_movies(influential_movies, top_k=-1)
 
-    return jsonify({"success": True, "message": "Influential movies found", "username": username, "main_movie": movies[-1], "movies": movies[:-1]})
+    return jsonify({"success": True, "message": "Influential movies found", "username": username, "movies": movies})
 
 
-def put_movies_in_db(movie_slugs):
+@app.route('/fetch_blacklists/<string:username1>/<string:username2>', methods=['GET'])
+def get_blacklists(username1, username2):
+    blacklist_1 = list(user_profiles[username1].get_blacklist())
+    movies_bl1 = retrieve_movies(blacklist_1, top_k=-1)
+    blacklist_2 = list(user_profiles[username2].get_blacklist())
+    movies_bl2 = retrieve_movies(blacklist_2, top_k=-1)
+    return jsonify({"user1": movies_bl1, "user2": movies_bl2})
 
-    with app.app_context():
-        for slug in tqdm(movie_slugs):
-            movie = Movie.query.filter_by(slug=slug).first()
-            if movie is None:
-                movie_data = get_movie_data(slug)
-                movie = Movie(**movie_data)
-                db.session.add(movie)
-        db.session.commit()
+
+@app.route('/add_to_blacklist/<string:username>/<string:slug>', methods=['POST'])
+def add_to_blacklist(username, slug):
+    user_profiles[username].add_to_blacklist(slug)
+    print(f"Blacklist for {username} is updated: {user_profiles[username].blacklist}")
+    return jsonify({"message": "Blacklist updated"})
+
+
+@app.route('/remove_from_blacklist/<string:username>/<string:slug>', methods=['DELETE'])
+def remove_from_blacklist(username, slug):
+    user_profiles[username].remove_from_blacklist(slug)
+    print(f"Blacklist for {username} is updated: {user_profiles[username].blacklist}")
+    return jsonify({"message": "Blacklist updated"})
+
+
+@app.route('/reset_blacklist/<string:username>', methods=['DELETE'])
+def reset_blacklist(username):
+    user_profiles[username].reset_blacklist()
+    print(f"Blacklist for {username} is reset")
+    return jsonify({"message": "Blacklist reset"})
 
 
 if __name__ == '__main__':

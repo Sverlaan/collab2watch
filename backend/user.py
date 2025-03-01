@@ -18,22 +18,35 @@ class UserProfile:
 
         self.initialize_complete = False
         self.watchlist = None
-        self.blacklist = None
+        self.blacklist = set()
         self.ratings = None
         self.watched = None
 
     def get_blacklist(self):
         """
-        Get blacklist of user from db
+        Get user's blacklist
         """
-        if self.blacklist is None:
-            # Get blacklist slugs from db
-            if self.username == 'liannehr':
-                self.blacklist = ["the-dark-knight", "come-and-see"]
-            else:
-                self.blacklist = []
-
         return self.blacklist
+
+    def add_to_blacklist(self, slug):
+        """
+        Add slug to user's blacklist
+        """
+        if slug not in self.blacklist:
+            self.blacklist.add(slug)
+
+    def remove_from_blacklist(self, slug):
+        """
+        Remove slug from user's blacklist
+        """
+        if slug in self.blacklist:
+            self.blacklist.remove(slug)
+
+    def reset_blacklist(self):
+        """
+        Reset user's blacklist
+        """
+        self.blacklist = set()
 
     def get_watchlist(self):
         """
@@ -83,6 +96,9 @@ class UserProfile:
         timer_start = timer()
         self.get_ratings()
         print(f"Ratings: {timer() - timer_start}")
+        timer_start = timer()
+        self.get_blacklist()
+        print(f"Blacklist: {timer() - timer_start}")
 
         self.initialize_complete = True
 

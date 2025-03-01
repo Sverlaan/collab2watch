@@ -55,6 +55,11 @@
     transform: scale(1.10);
 }
 
+/* For the edit blacklist button */
+.edit-blacklist-link:hover {
+    text-decoration: underline !important;
+}
+
 
 /* For movie banners on movie page */
 .card-img-wrap {
