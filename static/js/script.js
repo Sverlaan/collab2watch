@@ -591,7 +591,7 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
                 let li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-1").textContent}" data-user="${inputUsername1.value}" data-movie="${movie.slug}">Remove</button>`;
+                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-1").textContent}" data-user="${inputUsername1.value}" data-movie="${movie.slug}">&#10005;</button>`;
                 user1BlacklistMovies.appendChild(li);
             });
         } else {
@@ -605,7 +605,7 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
                 let li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-2").textContent}" data-user="${inputUsername2.value}" data-movie="${movie.slug}">Remove</button>`;
+                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-2").textContent}" data-user="${inputUsername2.value}" data-movie="${movie.slug}">&#10005;</button>`;
                 user2BlacklistMovies.appendChild(li);
             });
         } else {

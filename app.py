@@ -218,7 +218,7 @@ def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, ma
 def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], int(weight), amount=5000)
+    slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], user_profiles, int(weight), amount=5000)
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
     # print(f"Time taken: {timer() - start}")
     return jsonify(movies)

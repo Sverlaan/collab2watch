@@ -33,7 +33,7 @@ class MovieRecommender:
         new_rows = []
         for username in usernames:
             user_profile = user_profiles[username]
-            new_rows.extend([(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items()])
+            new_rows.extend([(username, movie_slug, rating) for movie_slug, rating in user_profile.get_ratings().items() if movie_slug in self.movies_trained_on])
 
             # Add blacklisted movies
             if use_blacklist:
@@ -94,7 +94,7 @@ class MovieRecommender:
         preds.sort(key=lambda x: x[1], reverse=True)
         return preds
 
-    def get_recommendations(self, usernames, weight=-1, amount=10):
+    def get_recommendations(self, usernames, user_profiles, weight=-1, amount=10, filter_watchlist=False):
         """
         Get recommendations based on two users
         """
@@ -110,7 +110,16 @@ class MovieRecommender:
         for username in usernames:
             if username not in self.recs_dict:
                 items_known = self.X_update.query("user_id == @username")["item_id"]
-                self.recs_dict[username] = self.model.recommend(user=username, items_known=items_known, amount=amount)
+                recs = self.model.recommend(user=username, items_known=items_known, amount=amount)
+
+                # Remove rows where item_id is in the user's watched (to filter watched but not rated movies)
+                recs = recs[~recs["item_id"].isin(user_profiles[username].get_watched())]
+
+                # Remove rows where item_id is in the user's watchlist
+                if filter_watchlist:
+                    recs = recs[~recs["item_id"].isin(user_profiles[username].get_watchlist())]
+
+                self.recs_dict[username] = recs
 
         if weight == -1:
             return repack(self.recs_dict[usernames[0]].drop(columns=["user_id"]))
