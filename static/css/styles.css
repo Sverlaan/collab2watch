@@ -7,6 +7,31 @@
   color: gold !important;
 }
 
+/* Change scrollbar color with light/dark theme */
+:root {
+    --scrollbar-bg: #f0f0f0; /* Light mode scrollbar background */
+    --scrollbar-thumb: #b0b0b0; /* Light mode scrollbar thumb */
+}
+[data-bs-theme="dark"] {
+    --scrollbar-bg: #2c2c2c; /* Dark mode scrollbar background */
+    --scrollbar-thumb: #888; /* Dark mode scrollbar thumb */
+}
+/* Apply the scrollbar styles */
+::-webkit-scrollbar {
+    width: 8px;
+}
+::-webkit-scrollbar-track {
+    background: var(--scrollbar-bg);
+}
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 10px;
+}
+/* Firefox scrollbar support */
+html {
+    scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
+}
+
 /* For overlapping avatar images */
 .avatar-group {
     position: relative;

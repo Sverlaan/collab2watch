@@ -1,26 +1,6 @@
 
 
-////////////////////////////////////////// Dark/Light Mode //////////////////////////////////////////
-// Toggle the theme between dark and light
-function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute("data-bs-theme");
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
-    document.documentElement.setAttribute("data-bs-theme", newTheme);
 
-    // Update the icon
-    updateIcon(newTheme);
-}
-// Update the icon based on the current theme
-function updateIcon(theme) {
-    const icon = document.getElementById("theme-icon");
-    if (theme === "dark") {
-        icon.classList.remove("bi-sun");
-        icon.classList.add("bi-moon");
-    } else {
-        icon.classList.remove("bi-moon");
-        icon.classList.add("bi-sun");
-    }
-}
 
 ////////////////////////////////////////// Filter and Settings //////////////////////////////////////////
 document.getElementById('resetFilters').addEventListener('click', function (event) {
@@ -82,7 +62,8 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
         const data = await response.json();
         
         // Update the DOM with fetched data
-        document.getElementById(NameElement).innerHTML =  `<a href="${data.user_url}" class="text-decoration-none" style="font-weight: bolder;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
+        document.getElementById(NameElement).innerHTML = `<a href="${data.url}" class="text-decoration-none edit-blacklist-link" style="font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
+
         document.getElementById(AvatarElement).src = data.avatar;
         document.getElementById(StatsElement1).textContent = "Watched: " + data.num_movies_watched + "  |  " + "Watchlist: " + data.watchlist_length;
 
@@ -407,7 +388,6 @@ async function explainMovie(slug, title, year, weight) {
     weight = parseInt(weight, 10);
     console.log("Explain movie with slug:", slug, weight);
 
-    explainModalTitle.textContent = "Why did we recommend this movie?";
     let description = "";
 
     // Fetch explanation from Flask backend for user1
@@ -417,7 +397,7 @@ async function explainMovie(slug, title, year, weight) {
         let data = await response.json();
         if (data.success){
 
-            description += `<h5>We recommend ${title} (${year})</h5>`;
+            explainModalTitle.textContent = `We recommend ${title} (${year})`
             description += `<h6>Since ${document.getElementById("name-1").textContent} liked:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
@@ -434,9 +414,7 @@ async function explainMovie(slug, title, year, weight) {
         let data = await response.json();
         if (data.success){
 
-            if (weight === 1){
-                description += `<h5>We recommend ${title} (${year})</h5>`;
-            }
+            explainModalTitle.textContent = `We recommend ${title} (${year})`
             description += `<h6>Since ${document.getElementById("name-2").textContent} liked:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
@@ -461,7 +439,8 @@ async function explainMovie(slug, title, year, weight) {
 async function blacklistMovie(slug, title, year, weight) {
     weight = parseInt(weight, 10);
 
-    document.getElementById("blacklistModalText").textContent = `Add ${title} (${year}) to blacklist for user:`;
+    document.getElementById("blacklistModalTitle").textContent = `Add ${title} (${year}) To Blacklist`;
+    document.getElementById("blacklistModalText").innerHTML = `For which user would you like to add <b>${title} (${year})</b> to the blacklist?`;
     document.getElementById("user1BlacklistCheckboxText").textContent = document.getElementById("name-1").textContent;
     document.getElementById("user2BlacklistCheckboxText").textContent = document.getElementById("name-2").textContent;
 
@@ -576,6 +555,8 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
     // Clear previous entries before fetching
     user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
     user2BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
+    document.getElementById("resetUser1Blacklist").style.display = "block";
+    document.getElementById("resetUser2Blacklist").style.display = "block";
 
     try {
         // Fetch data from backend
@@ -596,6 +577,8 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
             });
         } else {
             user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
+            // hide clear button
+            document.getElementById("resetUser1Blacklist").style.display = "none";
         }
 
         // Populate User 2 Blacklist
@@ -610,6 +593,8 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
             });
         } else {
             user2BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
+            // hide clear button
+            document.getElementById("resetUser2Blacklist").style.display = "none";
         }
 
     } catch (error) {
@@ -681,6 +666,8 @@ document.getElementById("resetUser1Blacklist").addEventListener("click", async f
 
     // Clear the list on the frontend
     user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
+    // Remove clear button
+    document.getElementById("resetUser1Blacklist").style.display = "none";
 
     const loadingSpinner = document.getElementById("blacklistLoadingSpinner");
     // Show loading spinner and clear previous lists
@@ -729,6 +716,8 @@ document.getElementById("resetUser2Blacklist").addEventListener("click", async f
 
     // Clear the list on the frontend
     user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
+    // Remove clear button
+    document.getElementById("resetUser2Blacklist").style.display = "none";
 
     const loadingSpinner = document.getElementById("blacklistLoadingSpinner");
     // Show loading spinner and clear previous lists
@@ -910,7 +899,7 @@ async function CreateModal(movie) {
                                         alt="${movie.title}">
                                 </div>
                                 <div class="col-lg-10">
-                                    <a href="${movie.letterboxd_link}" class="text-decoration-none" style="font-size: 1.5em; font-weight: bolder;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
+                                    <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.5em; font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
                                     <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
                                     <p class="card-text">${movie.description}</p>
                                     <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>

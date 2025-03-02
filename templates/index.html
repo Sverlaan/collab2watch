@@ -12,7 +12,7 @@
   <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-warning-subtle">
+    <nav class="navbar navbar-expand-lg bg-secondary-subtle">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('home') }}">collab2watch.com</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,7 +21,7 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
                     <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Collab2Watch</a>
-                    <a class="nav-link" href="{{ url_for('how') }}">HOW IT WORKS</a>
+                    <a class="nav-link" href="{{ url_for('how_it_works') }}">HOW IT WORKS</a>
                     <a class="nav-link" href="{{ url_for('credits') }}">CREDITS</a>
                 </div>
             </div>
@@ -50,7 +50,7 @@
                     <input type="text" class="form-control" id="inputUsername1" 
                         value="sverlaan" placeholder="Username" autocomplete="off" style="width: 150px;">
                     
-                    <button type="submit" class="btn btn-primary" id="submitButton1">Add</button>
+                    <button type="submit" class="btn btn-secondary" id="submitButton1">Add</button>
                 </form>
             </div>
 
@@ -112,7 +112,7 @@
                     <input type="text" class="form-control" id="inputUsername2" 
                         value="liannehr" placeholder="Username" autocomplete="off" style="width: 150px;">
                     
-                    <button type="submit" class="btn btn-primary" id="submitButton2">Add</button>
+                    <button type="submit" class="btn btn-secondary" id="submitButton2">Add</button>
                 </form>
             </div>
         </div>
@@ -271,12 +271,12 @@
         <hr class="my-3 w-75 mx-auto">
 
 
-        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3" style="min-height: 900px;" id="RecommendContainer">
+        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3" style="min-height: 870px;" id="RecommendContainer">
 
             <div class="row justify-content-center align-items-top g-0 mb-5">
                 <h1 class="text-center">Recommendations</h1>
                 <p class="text-center text-muted no-spacing">Combined and personalized recommendations for movies you have not seen!</p>
-                <p class="text-center text-muted mb-3">Use the blacklist functionality to dismiss any suggestions and tune the recommendations to your liking.</p>
+                <p class="text-center text-muted mb-3">Use the blacklist functionality to dismiss any suggestions and tune the recommendations.</p>
 
                 <!-- Flexbox wrapper to control alignment -->
                 <div class="row justify-content-center align-items-top">
@@ -298,8 +298,7 @@
                     </div>
                     <div class="col-md-2 d-flex justify-content-center align-items-center">
                         <!-- Edit Blacklist button pushed to the right -->
-                        <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">
-                            Edit Blacklists
+                        <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">  Edit Blacklist
                         </a>
                     </div>
 
@@ -328,10 +327,10 @@
 
     <!-- Recommendation explanation Modal -->
     <div class="modal fade" id="explainModal" tabindex="-1" aria-labelledby="explainModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="explainModalTitle">Why did we recommend this movie?</h5>
+                    <h5 class="modal-title" id="explainModalTitle">Why Did We Recommend This Movie?</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
@@ -359,13 +358,14 @@
                         <input class="form-check-input" type="checkbox" id="user1BlacklistCheckbox">
                         <label class="form-check-label" for="user1Checkbox" id="user1BlacklistCheckboxText">User 1</label>
                     </div>
-                    <div class="form-check">
+                    <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" id="user2BlacklistCheckbox">
                         <label class="form-check-label" for="user2Checkbox" id="user2BlacklistCheckboxText">User 2</label>
                     </div>
+                    <p id="blacklistModalText2">Adding it will update the recommendation engine for the selected users. You can revert this later by editting the blacklist.</p>
                 </div>
                 <div class="modal-footer">
-                    <div id="blacklistLoading" class="spinner-border text-primary" role="status" style="display: none;">
+                    <div id="blacklistLoading" class="spinner-border text-secondary" role="status" style="display: none;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -381,9 +381,9 @@
         <div class="modal-dialog modal-md">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Blacklists</h5>
+                    <h5 class="modal-title">Edit User Blacklist</h5>
                     <!-- Loading Spinner in Modal Header -->
-                    <div id="blacklistLoadingSpinner" class="spinner-border text-primary ms-3" role="status" style="display: none; width: 1.5rem; height: 1.5rem;">
+                    <div id="blacklistLoadingSpinner" class="spinner-border text-secondary ms-3" role="status" style="display: none; width: 1.5rem; height: 1.5rem;">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -404,12 +404,16 @@
                         <div class="tab-pane fade show active" id="user1-blacklist" role="tabpanel">
                             <ul id="user1BlacklistMovies" class="list-group"></ul>
                             <!-- Reset Button for User 1 -->
-                            <button type="button" id="resetUser1Blacklist" class="btn btn-danger mt-3">Reset Blacklist</button>
+                            <div class="d-flex justify-content-center">
+                                <button type="button" id="resetUser1Blacklist" class="btn btn-danger w-100 mt-3">Clear Blacklist</button>
+                            </div>
                         </div>
                         <div class="tab-pane fade" id="user2-blacklist" role="tabpanel">
                             <ul id="user2BlacklistMovies" class="list-group"></ul>
                             <!-- Reset Button for User 2 -->
-                            <button type="button" id="resetUser2Blacklist" class="btn btn-danger mt-3">Reset Blacklist</button>
+                            <div class="d-flex justify-content-center">
+                                <button type="button" id="resetUser2Blacklist" class="btn btn-danger w-100 mt-3">Clear Blacklist</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -552,6 +556,7 @@
 
 
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 </body>
 </html>
