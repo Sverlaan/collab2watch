@@ -16,8 +16,9 @@ app = Flask(__name__)
 
 # Configure the database path
 # Detect if running on Azure by checking for an Azure App Service-specific variable
-if 'WEBSITE_HOSTNAME' in os.environ:  # 'WEBSITE_HOSTNAME' exists only in Azure App Service
-    db_path = os.path.join(os.environ['HOME'], 'instance/movies.db')  # Store in Azure persistent storage
+# Detect if running on Railway
+if 'RAILWAY_ENVIRONMENT' in os.environ:  # This variable exists only in Railway
+    db_path = os.path.join("/data", 'movies.db')  # Persistent storage in Railway
 else:
     db_path = os.path.join(os.path.dirname(__file__), 'instance/movies.db')  # Use local directory
 print(f"Database path: {db_path}")
@@ -28,8 +29,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
 # Configure the model path
-if 'WEBSITE_HOSTNAME' in os.environ:  # 'WEBSITE_HOSTNAME' exists only in Azure App Service
-    model_path = os.path.join(os.environ['HOME'], 'model/kernel_mf.pkl')  # Store in Azure persistent storage
+if 'RAILWAY_ENVIRONMENT' in os.environ:  # This variable exists only in Railway
+    model_path = os.path.join("/data", 'kernel_mf.pkl')  # Store in Azure persistent storage
 else:
     model_path = os.path.join(os.path.dirname(__file__), 'model/kernel_mf.pkl')
 print(f"Model path: {model_path}")
