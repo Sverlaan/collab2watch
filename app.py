@@ -5,6 +5,7 @@ import threading
 from backend.movie import db, Movie, get_movie_data, retrieve_movies
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
 from backend.user import UserProfile
+import os
 
 # Ignore warnings
 import warnings
@@ -12,11 +13,26 @@ warnings.filterwarnings("ignore")
 
 # Initialize Flask app
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///movies.db'
+
+# Configure the database path
+# Detect if running on Azure by checking for an Azure App Service-specific variable
+if 'WEBSITE_HOSTNAME' in os.environ:  # 'WEBSITE_HOSTNAME' exists only in Azure App Service
+    db_path = os.path.join(os.environ['HOME'], 'instance/movies.db')  # Store in Azure persistent storage
+else:
+    db_path = os.path.join(os.path.dirname(__file__), 'instance/movies.db')  # Use local directory
+print(f"Database path: {db_path}")
+app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize db with the Flask app
 db.init_app(app)
+
+# Configure the model path
+if 'WEBSITE_HOSTNAME' in os.environ:  # 'WEBSITE_HOSTNAME' exists only in Azure App Service
+    model_path = os.path.join(os.environ['HOME'], 'model/kernel_mf.pkl')  # Store in Azure persistent storage
+else:
+    model_path = os.path.join(os.path.dirname(__file__), 'model/kernel_mf.pkl')
+print(f"Model path: {model_path}")
 
 
 @app.route('/')
@@ -86,7 +102,7 @@ def preprocess_data(task_number, usernames):
     global task_status
 
     if recommender_instance is None:
-        recommender_instance = MovieRecommender(model_path="model/kernel_mf.pkl")
+        recommender_instance = MovieRecommender(model_path=model_path)
     recommender_instance.preprocess(usernames, user_profiles)
 
     task_status[task_number] = "complete"  # Mark as complete

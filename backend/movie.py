@@ -4,8 +4,14 @@ import requests
 import time
 from flask_sqlalchemy import SQLAlchemy
 from timeit import default_timer as timer
+import os
 
 db = SQLAlchemy()  # Define db, initialize in app.py
+
+API_KEY = os.getenv("API_KEY")  # Retrieves API_KEY from environment variables
+
+if not API_KEY:
+    raise ValueError("Missing API_KEY environment variable!")
 
 
 class Movie(db.Model):
@@ -128,8 +134,6 @@ def get_TMDb_backdrop(tmdb_link):
     In case the movie banner is not available through the letterboxd scraper, we use TMDb API to retrieve the backdrop
     """
     movie_tmdb_id = tmdb_link[33:-1]
-
-    api_key = "REDACTED"
 
     time.sleep(0.2)  # Sleep for 0.1 seconds to avoid api rate limit?
     request = f"https://api.themoviedb.org/3/movie/{movie_tmdb_id}?api_key={api_key}"
