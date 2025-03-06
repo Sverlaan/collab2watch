@@ -17,10 +17,7 @@ app = Flask(__name__)
 # Configure the database path
 # Detect if running on Azure by checking for an Azure App Service-specific variable
 # Detect if running on Railway
-if 'RAILWAY_ENVIRONMENT' in os.environ:  # This variable exists only in Railway
-    db_path = "movies.db"  # Use the default path
-else:
-    db_path = os.path.join(os.path.dirname(__file__), 'instance/movies.db')  # Use local directory
+db_path = os.path.join(os.path.dirname(__file__), 'database/movies.db')  # Use local directory
 print(f"Database path: {db_path}")
 app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
