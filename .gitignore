@@ -1,13 +1,13 @@
 # Ignore the following files and folders
 node_modules/
-instance/
-overig/
+_instance/
+_overig/
 .venv/
 __pycache__/
 createdb.py
 .DS_Store
 templates/temp.html
-data/
+_data/
 .vscode/
 .ipynb_checkpoints/
 surprise.ipynb

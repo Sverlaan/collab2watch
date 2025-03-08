@@ -9,7 +9,6 @@ import os
 db = SQLAlchemy()  # Define db, initialize in app.py
 
 API_KEY = os.getenv("API_KEY")  # Retrieves API_KEY from environment variables
-
 if not API_KEY:
     raise ValueError("Missing API_KEY environment variable!")
 

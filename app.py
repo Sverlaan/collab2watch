@@ -1,8 +1,7 @@
 from flask import Flask, render_template, jsonify
 from timeit import default_timer as timer
-from tqdm import tqdm
 import threading
-from backend.movie import db, Movie, get_movie_data, retrieve_movies
+from backend.movie import db, Movie, retrieve_movies
 from backend.recommend import MovieRecommender, get_common_watchlist, get_single_watchlist, get_rewatchlist
 from backend.user import UserProfile
 import os
@@ -24,6 +23,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize db with the Flask app
 db.init_app(app)
+
+
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.session.remove()  # Ensure DB connections close after each request
+
 
 # Configure the model path
 if 'RAILWAY_ENVIRONMENT' in os.environ:  # This variable exists only in Railway
@@ -234,7 +239,7 @@ def fetch_recommendations(username1, username2, weight, minRating, maxRating, mi
     start = timer()
     slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], user_profiles, int(weight), amount=5000)
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
-    # print(f"Time taken: {timer() - start}")
+    print(f"Time taken getting recommendations and retrieving: {timer() - start}")
     return jsonify(movies)
 
 
@@ -297,4 +302,4 @@ def reset_blacklist(username):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)

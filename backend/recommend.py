@@ -5,8 +5,7 @@ import pandas as pd
 from timeit import default_timer as timer
 import pickle
 # from user import UserProfile
-
-from matrix_factorization import BaselineModel, KernelMF, train_update_test_split
+# import matrix_factorization
 
 
 class MovieRecommender:
