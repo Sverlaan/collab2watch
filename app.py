@@ -70,6 +70,7 @@ def get_user(username):
         start = timer()
         if username in user_profiles:
             user_data = user_profiles[username].to_dict()
+            user_profiles[username].initialize_complete = False  # Reset initialization
         else:
             profile = UserProfile(username)
             user_profiles[username] = profile
@@ -89,12 +90,10 @@ def get_user_data(task_number, usernames):
         print(f"Initializing {username}")
         start = timer()
         user_inst = user_profiles[username]
-        # For now, initialize complete profile every time
-        user_inst.initialize_complete_profile()
-        # if not user_inst.initialize_complete:
-        #     user_inst.initialize_complete_profile()
-        # else:
-        #     print(f"{username} already initialized")
+        if not user_inst.initialize_complete:
+            user_inst.initialize_complete_profile()
+        else:
+            print(f"{username} already initialized")
         print(f"Time taken: {timer() - start}")
 
     task_status[task_number] = "complete"  # Mark as complete
