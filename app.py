@@ -14,7 +14,6 @@ warnings.filterwarnings("ignore")
 app = Flask(__name__)
 
 # Configure the database path
-# Detect if running on Azure by checking for an Azure App Service-specific variable
 # Detect if running on Railway
 db_path = os.path.join(os.path.dirname(__file__), 'database/movies.db')  # Use local directory
 print(f"Database path: {db_path}")
