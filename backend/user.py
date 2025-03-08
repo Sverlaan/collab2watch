@@ -52,7 +52,7 @@ class UserProfile:
         """
         Get watchlist of user
         """
-        if self.watchlist is None:
+        if self.watchlist is None or self.initialize_complete is False:
             self.watchlist = {movie['slug'] for movie in self.user_instance.get_watchlist()['data'].values()}
         return self.watchlist
 
@@ -60,7 +60,7 @@ class UserProfile:
         """
         Get watched movies of user
         """
-        if self.watched is None:
+        if self.watched is None or self.initialize_complete is False:
             self.watched = {slug for slug in self.user_instance.get_films()['movies'].keys()}
         return self.watched
 
@@ -68,7 +68,7 @@ class UserProfile:
         """
         Get all ratings of user
         """
-        if self.ratings is None:
+        if self.ratings is None or self.initialize_complete is False:
             all_user_ratings = {key: value['rating']/2.0 for key, value in self.user_instance.get_films()['movies'].items() if value['rating'] is not None}
             self.ratings = all_user_ratings
         return self.ratings
@@ -77,7 +77,7 @@ class UserProfile:
         """
         Get rating of user for a specific movie
         """
-        if self.ratings is None:
+        if self.ratings is None or self.initialize_complete is False:
             self.get_ratings()
         if movie_slug in self.ratings:
             return self.ratings[movie_slug]
