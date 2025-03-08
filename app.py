@@ -89,10 +89,12 @@ def get_user_data(task_number, usernames):
         print(f"Initializing {username}")
         start = timer()
         user_inst = user_profiles[username]
-        if not user_inst.initialize_complete:
-            user_inst.initialize_complete_profile()
-        else:
-            print(f"{username} already initialized")
+        # For now, initialize complete profile every time
+        user_inst.initialize_complete_profile()
+        # if not user_inst.initialize_complete:
+        #     user_inst.initialize_complete_profile()
+        # else:
+        #     print(f"{username} already initialized")
         print(f"Time taken: {timer() - start}")
 
     task_status[task_number] = "complete"  # Mark as complete
