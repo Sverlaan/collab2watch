@@ -18,7 +18,7 @@ To run the Flask app, simply run `app.py`
 We want to highlight the following two libraries:
 
 - [letterboxdpy](https://github.com/nmcassa/letterboxdpy), for webscraping the public letterboxd profiles of the users.
-- [matrix-factorization](https://github.com/Quang-Vinh/matrix-factorization), a short and simple implementation of kernel matrix factorization with online-updating.
+- [matrix-factorization](https://github.com/Quang-Vinh/matrix-factorization), a short and simple implementation of kernel matrix factorization with online-updating. Implements this [paper](https://dl.acm.org/doi/10.1145/1454008.1454047) by Rendle & Schmidt-Thieme.
 
 The Kaggle dataset initially used can be found [here](https://www.kaggle.com/datasets/freeth/letterboxd-film-ratings?resource=download&select=ratings.csv). It contains over 18M ratings from over 11K popular Letterboxd users and was scraped using [letterboxd-scraper](https://github.com/adamjhf/letterboxd-scraper).
 
