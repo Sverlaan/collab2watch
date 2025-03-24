@@ -1,3 +1,4 @@
+import warnings
 from flask import Flask, render_template, jsonify
 from timeit import default_timer as timer
 import threading
@@ -6,9 +7,9 @@ from backend.recommend import MovieRecommender, get_common_watchlist, get_single
 from backend.user import UserProfile
 import os
 
+
 # Ignore warnings
-import warnings
-warnings.filterwarnings("ignore")
+# warnings.filterwarnings("ignore")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -22,12 +23,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # Initialize db with the Flask app
 db.init_app(app)
-
-
-@app.teardown_appcontext
-def shutdown_session(exception=None):
-    db.session.remove()  # Ensure DB connections close after each request
-
 
 # Configure the model path
 if 'RAILWAY_ENVIRONMENT' in os.environ:  # This variable exists only in Railway
@@ -53,7 +48,6 @@ def credits():
 
 
 ################ Initialization ################
-
 # Store user profiles
 user_profiles = dict()
 
@@ -95,6 +89,11 @@ def get_user_data(task_number, usernames):
         else:
             print(f"{username} already initialized")
         print(f"Time taken: {timer() - start}")
+
+    # Delete userdata for all users in user_profiles that are not in usernames
+    for username in user_profiles:
+        if username not in usernames:
+            del user_profiles[username]
 
     task_status[task_number] = "complete"  # Mark as complete
 
@@ -302,4 +301,5 @@ def reset_blacklist(username):
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    print("Starting Flask App...")
+    app.run(debug=True)

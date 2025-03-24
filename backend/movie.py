@@ -5,6 +5,8 @@ import time
 from flask_sqlalchemy import SQLAlchemy
 from timeit import default_timer as timer
 import os
+# from dotenv import load_dotenv
+# load_dotenv()
 
 db = SQLAlchemy()  # Define db, initialize in app.py
 

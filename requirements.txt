@@ -16,7 +16,6 @@ letterboxdpy @ git+https://github.com/nmcassa/letterboxdpy.git@43f5c424ddec9404b
 llvmlite==0.44.0
 lxml==5.3.0
 MarkupSafe==3.0.2
-matrix_factorization @ git+https://github.com/Quang-Vinh/matrix-factorization@e4398f500e002fc22f24c296f0bf1775c4e281a0
 numba==0.61.0
 numpy==2.1.3
 packaging==24.2
@@ -35,3 +34,4 @@ typing_extensions==4.12.2
 tzdata==2025.1
 urllib3==2.3.0
 Werkzeug==3.1.3
+matrix_factorization @ git+https://github.com/Quang-Vinh/matrix-factorization.git

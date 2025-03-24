@@ -398,7 +398,7 @@ async function explainMovie(slug, title, year, weight) {
         if (data.success){
 
             explainModalTitle.textContent = `We recommend ${title} (${year})`
-            description += `<h6>Since ${document.getElementById("name-1").textContent} liked:</h6>`;
+            description += `<h6>Since ${document.getElementById("name-1").textContent} likes:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
             for (let i = 0; i < data.movies.length; i++) {
@@ -415,7 +415,7 @@ async function explainMovie(slug, title, year, weight) {
         if (data.success){
 
             explainModalTitle.textContent = `We recommend ${title} (${year})`
-            description += `<h6>Since ${document.getElementById("name-2").textContent} liked:</h6>`;
+            description += `<h6>Since ${document.getElementById("name-2").textContent} likes:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
             for (let i = 0; i < data.movies.length; i++) {

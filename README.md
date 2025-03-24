@@ -6,11 +6,18 @@ The website is currently hosted through Railway [here](https://collab2watch-prod
 Due to costs, it may not always be available.
 
 ## Run locally
-Everything needed, including the recommendation model and a movie details database, are available in this repository. Simply clone or download the repo and install the dependencies using
+Everything needed, including the recommendation model and a movie details database, are available in this repository. simply clone or download the repo.
+
+It is recommended to install the dependencies inside a virtual environment (example for Mac):
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+Then, install the dependencies using
 ```
 pip install -r requirements.txt
 ```
-It is recommended to install the dependencies inside a virtual environment.
 
 To run the Flask app, simply run `app.py`
 
