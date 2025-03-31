@@ -48,7 +48,7 @@
 
                 <form class="d-flex mt-3 justify-content-center align-items-center gap-2" id="usernameForm1">
                     <input type="text" class="form-control" id="inputUsername1" 
-                        placeholder="Username" autocomplete="off" style="width: 150px;">
+                        placeholder="Username" autocomplete="off" style="width: 150px;" value="Sverlaan">
                     
                     <button type="submit" class="btn btn-secondary" id="submitButton1">Add</button>
                 </form>
@@ -107,7 +107,7 @@
 
                 <form class="d-flex mt-3 justify-content-center align-items-center gap-2" id="usernameForm2">
                     <input type="text" class="form-control" id="inputUsername2" 
-                        placeholder="Username" autocomplete="off" style="width: 150px;">
+                        placeholder="Username" autocomplete="off" style="width: 150px;" value="flrz">
                     
                     <button type="submit" class="btn btn-secondary" id="submitButton2">Add</button>
                 </form>
@@ -209,63 +209,70 @@
         <hr class="my-5 w-75 mx-auto">
 
 
-        <div class="container hover-zoom bg-tertiary-subtle w-75 p-3" id="RewatchComboContainer"">
+        <div class="container hover-zoom bg-tertiary-subtle mb-5 mt-5" id="RewatchComboContainer"">
 
             <!-- Title -->
-            <div class="row justify-content-between align-items-top">
+            <div class="container overflow-auto" style="white-space: nowrap;" id="RewatchContainer">
+                <div class="d-inline-block" style="width: 100%;">
+                    <div class="row flex-nowrap justify-content-between">
 
-                <div class="col-md-5">
-
-                    <!-- Header -->
-                    <h1 id="RC-name-1" class="text-center">Rewatches for user1</h1>
-                    <p id="RC-sub-1" class="text-center text-muted mb-3">Movies on user2's watchlist that are highly rated by user1</p>
-                    
-                    <!-- Placeholder -->
-                    <div class="placeholder placeholder-img2 d-none" id="placeholderRC1"></div>
-
-                    <!-- Carousel -->
-                    <div id="carousel1" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
+                        <!-- First Carousel -->
+                        <div class="col-md-6">
+                            <h1 id="RC-name-1" class="text-center">Rewatches for user1</h1>
+                            <p id="RC-sub-1" class="text-center text-muted mb-3">Movies on user2's watchlist that are highly rated by user1</p>
+                            <div id="carousel1" class="carousel slide p-3" data-bs-ride="carousel">
+                                <div class="carousel-inner"></div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel1" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carousel1" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel1" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carousel1" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="col-md-5">
-
-                    <!-- Header -->
-                    <h1 id="RC-name-2" class="text-center">Rewatches for user2</h1>
-                    <p id="RC-sub-2" class="text-center text-muted mb-3">Movies on user1's watchlist that are highly rated by user2</p>
-                    
-                    <!-- Placeholder -->
-                    <div class="placeholder placeholder-img2 d-none" id="placeholderRC2"></div>
-
-                    <!-- Carousel -->
-                    <div id="carousel2" class="carousel slide" data-bs-ride="carousel">
-                        <div class="carousel-inner">
+                        
+                        <!-- Second Carousel -->
+                        <div class="col-md-6">
+                            <h1 id="RC-name-2" class="text-center">Rewatches for user2</h1>
+                            <p id="RC-sub-2" class="text-center text-muted mb-3">Movies on user1's watchlist that are highly rated by user2</p>
+                            <div id="carousel2" class="carousel slide p-3" data-bs-ride="carousel">
+                                <div class="carousel-inner"></div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel2" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carousel2" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
                         </div>
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carousel2" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                        </button>
-                        <button class="carousel-control-next" type="button" data-bs-target="#carousel2" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                        </button>
+                        
+                        <!-- Third Carousel -->
+                        <div class="col-md-6">
+                            <h1 id="RC-name-3" class="text-center">Rewatches for user3</h1>
+                            <p id="RC-sub-3" class="text-center text-muted mb-3">Movies on user1 & user2's watchlist that are highly rated by user3</p>
+                            <div id="carousel3" class="carousel slide p-3" data-bs-ride="carousel">
+                                <div class="carousel-inner"></div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#carousel3" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#carousel3" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!--divider-->
-        <hr class="my-3 w-75 mx-auto">
+        <hr class="my-5 w-75 mx-auto">
 
 
         <div class="container bg-tertiary-subtle mt-5 mb-5 p-3" style="min-height: 870px;" id="RecommendContainer">

@@ -16,6 +16,8 @@
     --scrollbar-bg: #2c2c2c; /* Dark mode scrollbar background */
     --scrollbar-thumb: #888; /* Dark mode scrollbar thumb */
 }
+
+
 /* Apply the scrollbar styles */
 ::-webkit-scrollbar {
     width: 8px;
@@ -27,6 +29,11 @@
     background: var(--scrollbar-thumb);
     border-radius: 10px;
 }
+
+
+
+
+
 /* Firefox scrollbar support */
 html {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
@@ -105,7 +112,7 @@ html {
 }
 
 /* Carousel */
-.carousel-control-prev,
+/* .carousel-control-prev,
 .carousel-control-next {
     position: absolute;
     top: 50%;
@@ -118,7 +125,7 @@ html {
 }
 .carousel-control-next {
     right: -70px;
-}
+} */
 .carousel-caption {  /* not used currently */
     position: absolute;
     bottom: 0;
@@ -164,6 +171,21 @@ html {
     background: #555;
 }
 #RecommendContainerReal::-webkit-scrollbar-track {
+    background: var(--bs-secondary-bg);
+
+}
+
+#RewatchContainer::-webkit-scrollbar {
+    height: 8px;
+}
+#RewatchContainer::-webkit-scrollbar-thumb {
+    background: #888; 
+    border-radius: 4px;
+}
+#RewatchContainer::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+#RewatchContainer::-webkit-scrollbar-track {
     background: var(--bs-secondary-bg);
 
 }

@@ -64,7 +64,7 @@ def get_user(username):
         start = timer()
         if username in user_profiles:
             user_data = user_profiles[username].to_dict()
-            user_profiles[username].initialize_complete = False  # Reset initialization
+            # user_profiles[username].initialize_complete = False  # Reset initialization
         else:
             profile = UserProfile(username)
             user_profiles[username] = profile

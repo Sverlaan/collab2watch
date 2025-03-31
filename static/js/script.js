@@ -1012,6 +1012,8 @@ document.getElementById('compareButton').addEventListener('click', async functio
     await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
     await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    const realRewatchCombo3 = document.querySelector('#carousel3 .carousel-inner');
+    await FetchRewatchlist(username1, username2, realRewatchCombo3, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     document.getElementById('RecommendContainerReal').classList.add('d-none');
     // Show the content container
