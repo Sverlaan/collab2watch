@@ -10,7 +10,7 @@ Everything needed, including the recommendation model and a movie details databa
 
 It is recommended to install the dependencies inside a virtual environment (example for Mac):
 ```
-python3 -m venv .venv
+python3.13 -m venv .venv
 source .venv/bin/activate
 ```
 
