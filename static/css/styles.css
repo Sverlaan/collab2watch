@@ -1,4 +1,38 @@
 
+
+
+/* Initially hide the buttons */
+.carousel-control-prev,
+.carousel-control-next {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+/* Show buttons when hovering over the carousel */
+.carousel:hover .carousel-control-prev,
+.carousel:hover .carousel-control-next {
+    opacity: 1;
+}
+
+
+/* Image zoom effect */
+.carousel-inner img {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Keep image zoomed when hovering over the carousel or the buttons */
+.carousel:hover .carousel-inner img,
+.carousel-control-prev:hover ~ .carousel-inner img,
+.carousel-control-next:hover ~ .carousel-inner img {
+    transform: scale(1.1);
+}
+
+
+
+
+
+
+
 /* Custom color for scores */
 .text-score {
   color: goldenrod !important;

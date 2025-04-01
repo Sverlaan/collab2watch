@@ -35,6 +35,3 @@ This project is built using Flask, a lightweight Python web framework, and style
 
 
 
-
-
-
