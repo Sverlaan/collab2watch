@@ -41,7 +41,7 @@ document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
         const maxYear = document.getElementById('maxYear').value;
 
         document.getElementById("RecommendContainerReal").classList.add('d-none');
-        await FetchRecommendations(inputUsername1.value, inputUsername2.value, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+        await FetchRecommendations(allUsers[0].username, allUsers[1].username, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
         document.getElementById("RecommendContainerReal").classList.remove('d-none');
         document.getElementById("RecommendContainerReal").scrollTop = 0;
         });
@@ -94,20 +94,20 @@ async function fetchUserData(username, user_id, NameElement, AvatarElement, Stat
 }
 
 ////////////////////////////////////////// User Profile Form Submission //////////////////////////////////////////
-const inputUsername1 = document.getElementById('inputUsername1');
-const inputUsername2 = document.getElementById('inputUsername2');
+// const inputUsername1 = document.getElementById('inputUsername1');
+// const inputUsername2 = document.getElementById('inputUsername2');
 
-// Listen for the form submit event
-document.getElementById('usernameForm1').addEventListener('submit', function (event) {
-    event.preventDefault();
-    fetchUserData(inputUsername1.value, 1, 'name-1', 'avatar-1', 'stats-1', 'rewatches-name-1');
-});
+// // Listen for the form submit event
+// document.getElementById('usernameForm1').addEventListener('submit', function (event) {
+//     event.preventDefault();
+//     fetchUserData(allUsers[0].username, 1, 'name-1', 'avatar-1', 'stats-1', 'rewatches-name-1');
+// });
 
-// Listen for the form submit event
-document.getElementById('usernameForm2').addEventListener('submit', function (event) {
-    event.preventDefault();
-    fetchUserData(inputUsername2.value, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
-});
+// // Listen for the form submit event
+// document.getElementById('usernameForm2').addEventListener('submit', function (event) {
+//     event.preventDefault();
+//     fetchUserData(allUsers[1].username, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
+// });
 
 // Listen for the form submit event
 document.getElementById('usernameForm').addEventListener('submit', function (event) {
@@ -115,22 +115,70 @@ document.getElementById('usernameForm').addEventListener('submit', function (eve
     fetchUserDataNEW(inputUsername.value);
 });
 
+
+
+
+// global list of all users
+let allUsers = [];
+
 ////////////////////////////////////////// Fetch User Data //////////////////////////////////////////
 async function fetchUserDataNEW(username) {
     try {
+        // Fetch the initial user info
         const response = await fetch(`/get_user/${username}`);
         if (!response.ok) throw new Error("User not found");
         const data = await response.json();
+        const current_user = data.current_user;
 
-        console.log(data);
-        
-        // Update the DOM with fetched data
-        // document.getElementById(NameElement).innerHTML = `<a href="${data.url}" class="text-decoration-none edit-blacklist-link" style="font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
-        // document.getElementById(AvatarElement).src = data.avatar;
-        // document.getElementById(StatsElement1).textContent = "Watched: " + data.num_movies_watched + "  |  " + "Watchlist: " + data.watchlist_length;
+        // Update global list and enable compare button if needed
+        allUsers = data.all_users;
+        console.log(allUsers);
 
-        // If at least two submitted
-        // document.getElementById('compareButton').disabled = false;
+        // Create a new column with the basic info and a loading spinner inside
+        const col = document.createElement("div");
+        col.className = "col-md-3 mb-4";
+        col.id = `user-${username}`;
+
+        col.innerHTML = `
+            <div class="card text-center shadow-sm h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <img src="${current_user.avatar}" class="card-img-top img-fluid rounded-circle mt-3 mx-auto" style="width: 80px; height: 80px;" alt="${current_user.name}'s avatar">
+                    <div class="card-body">
+                        <h5 class="card-title">${current_user.name}</h5>
+                        <p id="user-stats-${username}" class="card-text text-muted">Loading stats...</p>
+                        <a href="${current_user.url}" target="_blank" class="btn btn-outline-primary btn-sm">View Profile</a>
+                    </div>
+                </div>
+                <div class="pb-3">
+                    <div class="spinner-border text-primary" role="status" id="spinner-${username}">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Append to the row
+        document.getElementById("userRow").appendChild(col);
+
+        // Proceed with second request
+        const response2 = await fetch(`/get_user_data/${username}`);
+        if (!response2.ok) throw new Error("Could not fetch user data");
+        const data2 = await response2.json();
+        console.log(data2);
+
+        // Update stats text
+        const statsEl = document.getElementById(`user-stats-${username}`);
+        statsEl.style.whiteSpace = "pre-line";
+        statsEl.textContent = `Watched: ${current_user.num_movies_watched}\nWatchlist: ${current_user.watchlist_length}`;
+
+        // Remove spinner
+        const spinner = document.getElementById(`spinner-${username}`);
+        if (spinner) spinner.remove();
+
+
+        if (data.total_users >= 2) {
+            document.getElementById('compareButton').disabled = false;
+        }
 
     } catch (error) {
         console.error(error);
@@ -138,22 +186,12 @@ async function fetchUserDataNEW(username) {
     }
 }
 
-// Enable the Compare button if both forms are submitted
-function checkIfBothSubmitted() {
-    if (form1Submitted && form2Submitted) {
-        document.getElementById('compareButton').disabled = false;
-    }
-    else {
-        document.getElementById('compareButton').disabled = true;
-        document.getElementById("contentContainer").classList.add('d-none');
-    }
-}
 
 
 ////////////////////////////////////////// Progress Bars //////////////////////////////////////////
 function ResetProgressBars() {
 
-    document.getElementById("progress1").textContent = `Fetching profile data from ${inputUsername1.value} and ${inputUsername2.value}`;
+    document.getElementById("progress1").textContent = `Fetching profile data from ${allUsers[0].username} and ${allUsers[1].username}`;
     document.getElementById("progress2").textContent = `Adding to 9.8M ratings from 11.0K other users`;
 
     document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
@@ -190,7 +228,7 @@ function startTasks() {
                             let nextTask = taskNumber + 1;
                             document.getElementById(`spinner${nextTask}`).style.display = "inline-block";
                             document.getElementById(`circleImagePlaceholder${nextTask}`).style.display = "none";
-                            fetch(`/start_task/${nextTask}/${inputUsername1.value}/${inputUsername2.value}`)
+                            fetch(`/start_task/${nextTask}/${allUsers[0].username}/${allUsers[1].username}`)
                                 .then(() => checkStatus(nextTask));
                         } else {
                             resolve();
@@ -204,7 +242,7 @@ function startTasks() {
         document.getElementById("spinner1").style.display = "inline-block";
         document.getElementById("circleImagePlaceholder1").style.display = "none";
         
-        fetch(`/start_task/1/${inputUsername1.value}/${inputUsername2.value}`)
+        fetch(`/start_task/1/${allUsers[0].username}/${allUsers[1].username}`)
             .then(() => checkStatus(1));
     });
 }
@@ -337,18 +375,18 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
             if (weight === 0) {
                 avatarHTML = `
                     <div class="avatar-group-B">
-                        <img src="${document.getElementById('avatar-1').src}" class="avatar-img-B avatar-img-1">
-                        <img src="${document.getElementById('avatar-2').src}" class="avatar-img-B avatar-img-2">
+                        <img src="${allUsers[0].avatar}" class="avatar-img-B avatar-img-1">
+                        <img src="${allUsers[1].avatar}" class="avatar-img-B avatar-img-2">
                     </div>`;
             } else if (weight === -1) {
                 avatarHTML = `
                     <div>
-                        <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
+                        <img src="${allUsers[0].avatar}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
                     </div>`;
             } else if (weight === 1) {
                 avatarHTML = `
                     <div>
-                        <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
+                        <img src="${allUsers[1].avatar}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
                     </div>`;
             }
 
@@ -421,13 +459,13 @@ async function explainMovie(slug, title, year, weight) {
 
     // Fetch explanation from Flask backend for user1
     if (weight === 0 || weight === -1) {
-        let response = await fetch(`/fetch_explanation/${inputUsername1.value}/${slug}`);
+        let response = await fetch(`/fetch_explanation/${allUsers[0].username}/${slug}`);
         if (!response.ok) throw new Error("Something went wrong getting explanation");
         let data = await response.json();
         if (data.success){
 
             explainModalTitle.textContent = `We recommend ${title} (${year})`
-            description += `<h6>Since ${document.getElementById("name-1").textContent} likes:</h6>`;
+            description += `<h6>Since ${allUsers[0]} likes:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
             for (let i = 0; i < data.movies.length; i++) {
@@ -438,13 +476,13 @@ async function explainMovie(slug, title, year, weight) {
         }
     }
     if (weight === 0 || weight === 1) {
-        let response = await fetch(`/fetch_explanation/${inputUsername2.value}/${slug}`);
+        let response = await fetch(`/fetch_explanation/${allUsers[1].username}/${slug}`);
         if (!response.ok) throw new Error("Something went wrong getting explanation");
         let data = await response.json();
         if (data.success){
 
             explainModalTitle.textContent = `We recommend ${title} (${year})`
-            description += `<h6>Since ${document.getElementById("name-2").textContent} likes:</h6>`;
+            description += `<h6>Since ${allUsers[1].name} likes:</h6>`;
             description += "<ul>"; // Start an unordered list
             // Loop over all movies and append title and year as list items
             for (let i = 0; i < data.movies.length; i++) {
@@ -470,8 +508,8 @@ async function blacklistMovie(slug, title, year, weight) {
 
     document.getElementById("blacklistModalTitle").textContent = `Add ${title} (${year}) To Blacklist`;
     document.getElementById("blacklistModalText").innerHTML = `For which user would you like to add <b>${title} (${year})</b> to the blacklist?`;
-    document.getElementById("user1BlacklistCheckboxText").textContent = document.getElementById("name-1").textContent;
-    document.getElementById("user2BlacklistCheckboxText").textContent = document.getElementById("name-2").textContent;
+    document.getElementById("user1BlacklistCheckboxText").textContent = allUsers[0].name;
+    document.getElementById("user2BlacklistCheckboxText").textContent = allUsers[1].name;
 
     // Get elements
     let user1Checkbox = document.getElementById("user1BlacklistCheckbox");
@@ -518,8 +556,8 @@ async function blacklistMovie(slug, title, year, weight) {
     document.getElementById("addToBlacklistBtn").onclick = async function () {
         let selectedUsers = [];
 
-        if (user1Checkbox.checked) selectedUsers.push(inputUsername1.value);
-        if (user2Checkbox.checked) selectedUsers.push(inputUsername2.value);
+        if (user1Checkbox.checked) selectedUsers.push(allUsers[0].username);
+        if (user2Checkbox.checked) selectedUsers.push(allUsers[1].username);
 
         // Show loading spinner and disable button
         addToBlacklistBtn.disabled = true;
@@ -578,8 +616,8 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
     const user1BlacklistMovies = document.getElementById("user1BlacklistMovies");
     const user2BlacklistMovies = document.getElementById("user2BlacklistMovies");
 
-    document.getElementById("user1-tab").textContent = document.getElementById("name-1").textContent;
-    document.getElementById("user2-tab").textContent = document.getElementById("name-2").textContent;
+    document.getElementById("user1-tab").textContent = allUsers[0].name;
+    document.getElementById("user2-tab").textContent = allUsers[1].name;
 
     // Clear previous entries before fetching
     user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
@@ -589,7 +627,7 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
 
     try {
         // Fetch data from backend
-        let response = await fetch("/fetch_blacklists/" + inputUsername1.value + "/" + inputUsername2.value);
+        let response = await fetch("/fetch_blacklists/" + allUsers[0].username + "/" + allUsers[1].username);
         if (!response.ok) throw new Error("Failed to fetch blacklists");
 
         let data = await response.json(); // { user1: [...movies], user2: [...movies] }
@@ -601,7 +639,7 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
                 let li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-1").textContent}" data-user="${inputUsername1.value}" data-movie="${movie.slug}">&#10005;</button>`;
+                    <button class="btn btn-sm btn-danger remove-movie" data-name="${allUsers[0]}" data-user="${allUsers[0].username}" data-movie="${movie.slug}">&#10005;</button>`;
                 user1BlacklistMovies.appendChild(li);
             });
         } else {
@@ -617,7 +655,7 @@ document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", 
                 let li = document.createElement("li");
                 li.className = "list-group-item d-flex justify-content-between align-items-center";
                 li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${document.getElementById("name-2").textContent}" data-user="${inputUsername2.value}" data-movie="${movie.slug}">&#10005;</button>`;
+                    <button class="btn btn-sm btn-danger remove-movie" data-name="${allUsers[1].name}" data-user="${allUsers[1].username}" data-movie="${movie.slug}">&#10005;</button>`;
                 user2BlacklistMovies.appendChild(li);
             });
         } else {
@@ -704,7 +742,7 @@ document.getElementById("resetUser1Blacklist").addEventListener("click", async f
 
     // API call to reset blacklist on the server for User 1
     try {
-        let response = await fetch(`/reset_blacklist/${inputUsername1.value}`, { method: "DELETE" });
+        let response = await fetch(`/reset_blacklist/${allUsers[0].username}`, { method: "DELETE" });
         if (!response.ok) throw new Error("Failed to reset User 1 blacklist");
         console.log("User 1 blacklist reset successfully");
 
@@ -754,7 +792,7 @@ document.getElementById("resetUser2Blacklist").addEventListener("click", async f
 
     // API call to reset blacklist on the server for User 1
     try {
-        let response = await fetch(`/reset_blacklist/${inputUsername2.value}`, { method: "DELETE" });
+        let response = await fetch(`/reset_blacklist/${allUsers[1].username}`, { method: "DELETE" });
         if (!response.ok) throw new Error("Failed to reset User 2 blacklist");
         console.log("User 2 blacklist reset successfully");
 
@@ -825,7 +863,7 @@ document.body.addEventListener("click", async function (event) {
         }
 
         let slug = modalTrigger.getAttribute("slug");
-        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${inputUsername1.value}/${inputUsername2.value}`);
+        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${allUsers[0].username}/${allUsers[1].username}`);
         if (!response.ok) throw new Error("Something went wrong getting movie modal data");
         const movie = await response.json();
 
@@ -945,20 +983,20 @@ async function CreateModal(movie) {
                                 </div>
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
-                                    <img src="${document.getElementById('avatar-1').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${document.getElementById("name-1").textContent}</small></p>
+                                    <img src="${allUsers[0].avatar}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
+                                    <p class="text-muted text-center"><small>${allUsers[0]}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
-                                    <img src="${document.getElementById('avatar-2').src}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${document.getElementById("name-2").textContent}</small></p>
+                                    <img src="${allUsers[1].avatar}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
+                                    <p class="text-muted text-center"><small>${allUsers[1].name}</small></p>
                                 </div>    
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
                                     <div class="avatar-group-container" style="display: flex; justify-content: center;">
                                         <div class="avatar-group">
-                                            <img src="${document.getElementById('avatar-1').src}" class="avatar-img avatar-img-1">
-                                            <img src="${document.getElementById('avatar-2').src}" class="avatar-img avatar-img-2">
+                                            <img src="${allUsers[0].avatar}" class="avatar-img avatar-img-1">
+                                            <img src="${allUsers[1].avatar}" class="avatar-img avatar-img-2">
                                         </div>
                                     </div>
                                     <p class="text-muted text-center"><small>Combined</small></p>
@@ -1019,8 +1057,8 @@ document.getElementById('compareButton').addEventListener('click', async functio
     }
 
     // Set display names
-    const user1_name = document.getElementById("name-1").textContent;
-    const user2_name = document.getElementById("name-2").textContent;
+    const user1_name = allUsers[0].name;
+    const user2_name = allUsers[1].name;
     setDisplayNames(user1_name, user2_name);
 
     // Get filter settings
@@ -1032,45 +1070,8 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const maxYear = document.getElementById('maxYear').value;
 
     // Fetch content data
-    const username1 = inputUsername1.value;
-    const username2 = inputUsername2.value;
+    const username1 = allUsers[0].username;
+    const username2 = allUsers[1].username;
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    const realRewatchCombo1 = document.querySelector('#carousel1 .carousel-inner');
-    await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
-    await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    const realRewatchCombo3 = document.querySelector('#carousel3 .carousel-inner');
-    await FetchRewatchlist(username1, username2, realRewatchCombo3, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-
-    document.getElementById('RecommendContainerReal').classList.add('d-none');
-    // Show the content container
-    document.getElementById("contentContainer").classList.remove('d-none');
-    
-    // Get the selected radio button's weight
-    const selectedRadio = document.querySelector('input[name="btnradio"]:checked');
-    const associatedLabel = document.querySelector(`label[for="${selectedRadio.id}"]`);
-    const weight = parseInt(associatedLabel.getAttribute("weight"), 10);
-    // Get Recommendations
-    await FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    
-    // Show the real recommendations content
-    document.getElementById("RecommendContainerReal").classList.remove('d-none');
-
-    if (refresh == 0){
-        // Set id="btnradio2" checked
-        document.getElementById('btnradio2').checked = true;
-        document.getElementById("RecommendContainerReal").scrollTop = 0;
-    }
-    if (refresh == 1){
-        document.getElementById("RecommendContainerReal").scrollTop = 0;
-    }
-
-    // Fire the event so `waitForCompareUpdate()` knows it's done
-    const completeEvent = new Event("compareComplete");
-    document.getElementById("compareButton").dispatchEvent(completeEvent);
-    
-
-});
-
+    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear,

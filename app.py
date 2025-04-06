@@ -31,9 +31,20 @@ else:
     model_path = os.path.join(os.path.dirname(__file__), 'model/kernel_mf.pkl')
 print(f"Model path: {model_path}")
 
+################ Initialization ################
+# Store user profiles
+user_profiles = dict()
+
+# Store task statuses
+task_status = {1: "pending", 2: "pending", 3: "pending"}
+
+# Store recommender instance
+recommender_instance = None
+
 
 @app.route('/')
 def home():
+    user_profiles.clear()  # Clear user profiles on home page load
     return render_template('index.html')
 
 
@@ -47,33 +58,44 @@ def credits():
     return render_template('credits.html')
 
 
-################ Initialization ################
-# Store user profiles
-user_profiles = dict()
-
-# Store task statuses
-task_status = {1: "pending", 2: "pending", 3: "pending"}
-
-# Store recommender instance
-recommender_instance = None
-
-
 @app.route('/get_user/<string:username>', methods=['GET'])
 def get_user(username):
     try:
         start = timer()
-        if username in user_profiles:
-            user_data = user_profiles[username].to_dict()
-            # user_profiles[username].initialize_complete = False  # Reset initialization
-        else:
+        if username not in user_profiles and len(user_profiles) < 5:
             profile = UserProfile(username)
             user_profiles[username] = profile
             user_data = profile.to_dict()
-        # print(f"Time taken: {timer() - start}")
+            return jsonify({"current_user": user_data,
+                            "total_users": len(user_profiles),
+                            "all_users": [user_profile.to_dict() for user_profile in user_profiles.values()],
+                            })
+        else:
+            # user_data = user_profiles[username].to_dict()
+            # user_profiles[username].initialize_complete = False  # Reset initialization
+            raise Exception("User already exists")
 
-        return jsonify(user_data)
     except:
         return jsonify({"error": "User not found"}), 404
+
+
+@app.route('/get_user_data/<string:username>', methods=['GET'])
+def get_user_dataNEW(username):
+    """Simulate a task that takes a few seconds"""
+
+    try:
+        print(f"Initializing {username}")
+        start = timer()
+        user_inst = user_profiles[username]
+        if not user_inst.initialize_complete:
+            user_inst.initialize_complete_profile()
+        else:
+            print(f"{username} already initialized")
+        print(f"Time taken: {timer() - start}")
+
+        return jsonify({"success": True})
+    except:
+        return jsonify({"success": False}), 404
 
 
 def get_user_data(task_number, usernames):
