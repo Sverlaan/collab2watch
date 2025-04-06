@@ -59,6 +59,8 @@
                 <h1 class="text-center">Collab2Watch</h1>
                 <p class="text-center text-muted">Fill in two usernames and get recommendations!</p>
                 <div class="d-flex flex-column align-items-center">
+                    <button type="button" class="btn btn-secondary mb-2" id="filterButton" 
+                        style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#addUserModal">Add User</button>
                     <button type="button" class="btn btn-outline-warning mb-2" id="filterButton" 
                         style="width: 180pt; font-size: 18pt" data-bs-toggle="modal" data-bs-target="#filtersModal">Filters</button>
                     <button type="button" class="btn btn-warning" id="compareButton" 
@@ -112,6 +114,10 @@
                     <button type="submit" class="btn btn-secondary" id="submitButton2">Add</button>
                 </form>
             </div>
+        </div>
+
+        <div class = "row mb-3 justify-content-center align-items-top">
+            <p class="text-center text-muted" id="stats-3" style="margin-bottom: 0;">Users will be here!</p>
         </div>
     </div>
 
@@ -349,6 +355,57 @@
         </div>
 
     </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addUserModalTitle">Add User for Recommendations</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <h2 id="enterUsernameHeader">Enter username below:</h2>
+                    <p class="text-center text-muted" style="margin-bottom: 0;">Only Letterboxd accounts are supported</p>
+
+                    <form class="d-flex mt-3 justify-content-center align-items-center gap-2" id="usernameForm">
+                        <input type="text" class="form-control" id="inputUsername" 
+                            placeholder="Username" autocomplete="off" style="width: 200px;" value="Sverlaan">
+                        
+                        <button type="submit" class="btn btn-secondary" id="submitButton">Add</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     <!-- Recommendation explanation Modal -->

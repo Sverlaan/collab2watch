@@ -109,6 +109,35 @@ document.getElementById('usernameForm2').addEventListener('submit', function (ev
     fetchUserData(inputUsername2.value, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
 });
 
+// Listen for the form submit event
+document.getElementById('usernameForm').addEventListener('submit', function (event) {
+    event.preventDefault();
+    fetchUserDataNEW(inputUsername.value);
+});
+
+////////////////////////////////////////// Fetch User Data //////////////////////////////////////////
+async function fetchUserDataNEW(username) {
+    try {
+        const response = await fetch(`/get_user/${username}`);
+        if (!response.ok) throw new Error("User not found");
+        const data = await response.json();
+
+        console.log(data);
+        
+        // Update the DOM with fetched data
+        // document.getElementById(NameElement).innerHTML = `<a href="${data.url}" class="text-decoration-none edit-blacklist-link" style="font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
+        // document.getElementById(AvatarElement).src = data.avatar;
+        // document.getElementById(StatsElement1).textContent = "Watched: " + data.num_movies_watched + "  |  " + "Watchlist: " + data.watchlist_length;
+
+        // If at least two submitted
+        // document.getElementById('compareButton').disabled = false;
+
+    } catch (error) {
+        console.error(error);
+        document.getElementById("enterUsernameHeader").textContent = "User not found. Try Again:";
+    }
+}
+
 // Enable the Compare button if both forms are submitted
 function checkIfBothSubmitted() {
     if (form1Submitted && form2Submitted) {
