@@ -1,7 +1,3 @@
-
-
-
-
 ////////////////////////////////////////// Filter and Settings //////////////////////////////////////////
 document.getElementById('resetFilters').addEventListener('click', function (event) {
 
@@ -47,105 +43,46 @@ document.querySelectorAll('input[name="btnradio"]').forEach(radio => {
         });
 });
 
-
-
-
-// Track submission states
-let form1Submitted = false;
-let form2Submitted = false;
-
-////////////////////////////////////////// Fetch User Data //////////////////////////////////////////
-async function fetchUserData(username, user_id, NameElement, AvatarElement, StatsElement1, RewatchesNameElement) {
-    try {
-        const response = await fetch(`/get_user/${username}`);
-        if (!response.ok) throw new Error("User not found");
-        const data = await response.json();
-        
-        // Update the DOM with fetched data
-        document.getElementById(NameElement).innerHTML = `<a href="${data.url}" class="text-decoration-none edit-blacklist-link" style="font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${data.name}</a>`;
-
-        document.getElementById(AvatarElement).src = data.avatar;
-        document.getElementById(StatsElement1).textContent = "Watched: " + data.num_movies_watched + "  |  " + "Watchlist: " + data.watchlist_length;
-
-        if (user_id == 1) {
-            form1Submitted = true;
-        }
-        else {
-            form2Submitted = true;
-        }
-        checkIfBothSubmitted();
-
-    } catch (error) {
-        console.error(error);
-
-        document.getElementById(NameElement).textContent = "User not found";
-        document.getElementById(AvatarElement).src = "https://s.ltrbxd.com/static/img/avatar1000.d3d753e6.png";
-        document.getElementById(StatsElement1).textContent = "Only Letterboxd accounts are supported";
-        document.getElementById("loadingProgress").style.visibility = "hidden";
-
-        if (user_id == 1) {
-            form1Submitted = false;
-        }
-        else {
-            form2Submitted = false;
-        }
-        checkIfBothSubmitted();
-    }
-}
-
-////////////////////////////////////////// User Profile Form Submission //////////////////////////////////////////
-// const inputUsername1 = document.getElementById('inputUsername1');
-// const inputUsername2 = document.getElementById('inputUsername2');
-
-// // Listen for the form submit event
-// document.getElementById('usernameForm1').addEventListener('submit', function (event) {
-//     event.preventDefault();
-//     fetchUserData(allUsers[0].username, 1, 'name-1', 'avatar-1', 'stats-1', 'rewatches-name-1');
-// });
-
-// // Listen for the form submit event
-// document.getElementById('usernameForm2').addEventListener('submit', function (event) {
-//     event.preventDefault();
-//     fetchUserData(allUsers[1].username, 2, 'name-2', 'avatar-2', 'stats-2', 'rewatches-name-2');
-// });
-
 // Listen for the form submit event
 document.getElementById('usernameForm').addEventListener('submit', function (event) {
     event.preventDefault();
-    fetchUserDataNEW(inputUsername.value);
+
+    fetchUserData(document.getElementById('inputUsername').value);
+    document.getElementById('inputUsername').placeholder ='Username';  
+    document.getElementById('inputUsername').value = "";
 });
-
-
-
 
 // global list of all users
 let allUsers = [];
+// To track whether all users have been fetched
+let num_users_done = 0;
+let num_users_total = 0;
 
 ////////////////////////////////////////// Fetch User Data //////////////////////////////////////////
-async function fetchUserDataNEW(username) {
+async function fetchUserData(username) {
     try {
         // Fetch the initial user info
         const response = await fetch(`/get_user/${username}`);
         if (!response.ok) throw new Error("User not found");
         const data = await response.json();
         const current_user = data.current_user;
+        
+        document.getElementById('compareButton').disabled = true;
 
-        // Update global list and enable compare button if needed
         allUsers = data.all_users;
-        console.log(allUsers);
+        num_users_total = data.total_users;
 
         // Create a new column with the basic info and a loading spinner inside
         const col = document.createElement("div");
         col.className = "col-md-3 mb-4";
         col.id = `user-${username}`;
-
         col.innerHTML = `
-            <div class="card text-center shadow-sm h-100 d-flex flex-column justify-content-between">
+            <div class="card text-center h-100 d-flex flex-column justify-content-between">
                 <div>
-                    <img src="${current_user.avatar}" class="card-img-top img-fluid rounded-circle mt-3 mx-auto" style="width: 80px; height: 80px;" alt="${current_user.name}'s avatar">
+                    <img src="${current_user.avatar}" class="card-img-top img-fluid rounded-circle mt-3 mx-auto" style="width: 100px; height: 100px;" alt="${current_user.name}'s avatar">
                     <div class="card-body">
                         <h5 class="card-title">${current_user.name}</h5>
-                        <p id="user-stats-${username}" class="card-text text-muted">Loading stats...</p>
+                        <p id="user-stats-${username}" class="card-text text-muted">Fetching user data...</p>
                         <a href="${current_user.url}" target="_blank" class="btn btn-outline-primary btn-sm">View Profile</a>
                     </div>
                 </div>
@@ -156,11 +93,9 @@ async function fetchUserDataNEW(username) {
                 </div>
             </div>
         `;
-
-        // Append to the row
         document.getElementById("userRow").appendChild(col);
 
-        // Proceed with second request
+        // Now fetch the more in-depth user data, such as watchlist and ratings
         const response2 = await fetch(`/get_user_data/${username}`);
         if (!response2.ok) throw new Error("Could not fetch user data");
         const data2 = await response2.json();
@@ -168,19 +103,23 @@ async function fetchUserDataNEW(username) {
 
         // Update stats text
         const statsEl = document.getElementById(`user-stats-${username}`);
-        statsEl.style.whiteSpace = "pre-line";
-        statsEl.textContent = `Watched: ${current_user.num_movies_watched}\nWatchlist: ${current_user.watchlist_length}`;
+        // statsEl.style.whiteSpace = "pre-line";
+        statsEl.textContent = `Watched: ${current_user.num_movies_watched} | Watchlist: ${current_user.watchlist_length}`;
 
         // Remove spinner
         const spinner = document.getElementById(`spinner-${username}`);
         if (spinner) spinner.remove();
 
-
-        if (data.total_users >= 2) {
-            document.getElementById('compareButton').disabled = false;
+        // Mark this user as done and check whether any other is still loading
+        num_users_done += 1;
+        if (num_users_total > 1) {
+            if (num_users_done === num_users_total) {
+                document.getElementById('compareButton').disabled = false;
+            }
         }
 
     } catch (error) {
+        // TODO: Handle not found and max exceeded separately
         console.error(error);
         document.getElementById("enterUsernameHeader").textContent = "User not found. Try Again:";
     }
@@ -248,7 +187,6 @@ function startTasks() {
 }
 
 ////////////////////////////////////////// Fetch Content Data //////////////////////////////////////////
-// Fetch common watchlist from Flask backend and populate the DOM
 async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
         const response = await fetch(`/fetch_common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
@@ -1074,4 +1012,41 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const username2 = allUsers[1].username;
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear,
+    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    const realRewatchCombo1 = document.querySelector('#carousel1 .carousel-inner');
+    await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
+    await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    const realRewatchCombo3 = document.querySelector('#carousel3 .carousel-inner');
+    await FetchRewatchlist(username1, username2, realRewatchCombo3, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+
+    document.getElementById('RecommendContainerReal').classList.add('d-none');
+    // Show the content container
+    document.getElementById("contentContainer").classList.remove('d-none');
+    
+    // Get the selected radio button's weight
+    const selectedRadio = document.querySelector('input[name="btnradio"]:checked');
+    const associatedLabel = document.querySelector(`label[for="${selectedRadio.id}"]`);
+    const weight = parseInt(associatedLabel.getAttribute("weight"), 10);
+    // Get Recommendations
+    await FetchRecommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    
+    // Show the real recommendations content
+    document.getElementById("RecommendContainerReal").classList.remove('d-none');
+
+    if (refresh == 0){
+        // Set id="btnradio2" checked
+        document.getElementById('btnradio2').checked = true;
+        document.getElementById("RecommendContainerReal").scrollTop = 0;
+    }
+    if (refresh == 1){
+        document.getElementById("RecommendContainerReal").scrollTop = 0;
+    }
+
+    // Fire the event so `waitForCompareUpdate()` knows it's done
+    const completeEvent = new Event("compareComplete");
+    document.getElementById("compareButton").dispatchEvent(completeEvent);
+    
+
+});
+
