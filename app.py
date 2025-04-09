@@ -9,7 +9,7 @@ import os
 
 
 # Ignore warnings
-# warnings.filterwarnings("ignore")
+warnings.filterwarnings("ignore")
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -35,16 +35,13 @@ print(f"Model path: {model_path}")
 # Store user profiles
 user_profiles = dict()
 
-# Store task statuses
-task_status = {1: "pending", 2: "pending", 3: "pending"}
-
 # Store recommender instance
 recommender_instance = None
 
 
 @app.route('/')
 def home():
-    user_profiles.clear()  # Clear user profiles on home page load
+    user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
     return render_template('index.html')
 
 
@@ -71,7 +68,12 @@ def get_user(username):
                             "all_users": [user_profile.to_dict() for user_profile in user_profiles.values()],
                             })
         else:
-            # user_data = user_profiles[username].to_dict()
+            # TODO: Below only for quick testing
+            user_data = user_profiles[username].to_dict()
+            return jsonify({"current_user": user_data,
+                            "total_users": len(user_profiles),
+                            "all_users": [user_profile.to_dict() for user_profile in user_profiles.values()],
+                            })
             # user_profiles[username].initialize_complete = False  # Reset initialization
             raise Exception("User already exists")
 
@@ -80,9 +82,7 @@ def get_user(username):
 
 
 @app.route('/get_user_data/<string:username>', methods=['GET'])
-def get_user_dataNEW(username):
-    """Simulate a task that takes a few seconds"""
-
+def get_user_data(username):
     try:
         print(f"Initializing {username}")
         start = timer()
@@ -98,71 +98,27 @@ def get_user_dataNEW(username):
         return jsonify({"success": False}), 404
 
 
-def get_user_data(task_number, usernames):
-    """Simulate a task that takes a few seconds"""
-    global task_status
-
-    for username in usernames:
-        print(f"Initializing {username}")
-        start = timer()
-        user_inst = user_profiles[username]
-        if not user_inst.initialize_complete:
-            user_inst.initialize_complete_profile()
-        else:
-            print(f"{username} already initialized")
-        print(f"Time taken: {timer() - start}")
-
-    # Delete userdata for all users in user_profiles that are not in usernames
-    for username in user_profiles:
-        if username not in usernames:
-            del user_profiles[username]
-
-    task_status[task_number] = "complete"  # Mark as complete
-
-
-def preprocess_data(task_number, usernames):
+@app.route("/preprocess_data/<string:username1>/<string:username2>", methods=["GET"])
+def preprocess_data(username1, username2):
     """Simulate a task that takes a few seconds"""
     global recommender_instance
-    global task_status
+    try:
+        if recommender_instance is None:
+            recommender_instance = MovieRecommender(model_path=model_path)
+        recommender_instance.preprocess([username1, username2], user_profiles)
+        return jsonify({"success": True})
+    except:
+        return jsonify({"success": False}), 404
 
-    if recommender_instance is None:
-        recommender_instance = MovieRecommender(model_path=model_path)
-    recommender_instance.preprocess(usernames, user_profiles)
 
-    task_status[task_number] = "complete"  # Mark as complete
-
-
-def train_model(task_number):
+@app.route("/train_model", methods=["GET"])
+def train_model():
     """Simulate a task that takes a few seconds"""
-    global task_status
-
-    if recommender_instance is None:
-        task_status[task_number] = "error: recommender not initialized"
-        return
-    recommender_instance.train_model()
-
-    task_status[task_number] = "complete"  # Mark as complete
-
-
-@app.route("/start_task/<int:task_number>/<string:username1>/<string:username2>")
-def start_task(task_number, username1, username2):
-    """Start a task in a new thread"""
-    global task_status
-    task_status[task_number] = "running"
-    if task_number == 1:
-        thread = threading.Thread(target=get_user_data, args=(task_number, [username1, username2]))
-    if task_number == 2:
-        thread = threading.Thread(target=preprocess_data, args=(task_number, [username1, username2]))
-    if task_number == 3:
-        thread = threading.Thread(target=train_model, args=(task_number,))
-    thread.start()
-    return jsonify({"message": f"Task {task_number} started"})
-
-
-@app.route("/get_status/<int:task_number>")
-def get_status(task_number):
-    """Return the current status of the task"""
-    return jsonify({"status": task_status[task_number]})
+    try:
+        recommender_instance.train_model()
+        return jsonify({"success": True})
+    except:
+        return jsonify({"success": False}), 404
 
 
 ################ Fetch data for content ################

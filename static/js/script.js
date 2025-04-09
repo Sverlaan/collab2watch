@@ -70,6 +70,7 @@ async function fetchUserData(username) {
         document.getElementById('compareButton').disabled = true;
 
         allUsers = data.all_users;
+        console.log(allUsers);
         num_users_total = data.total_users;
 
         // Create a new column with the basic info and a loading spinner inside
@@ -126,64 +127,19 @@ async function fetchUserData(username) {
 }
 
 
+async function InitializeAndTrain(username1, username2) {
+    try {
 
-////////////////////////////////////////// Progress Bars //////////////////////////////////////////
-function ResetProgressBars() {
+        const response = await fetch(`/preprocess_data/${username1}/${username2}`);
+        if (!response.ok) throw new Error("Something went wrong preprocessing data");
 
-    document.getElementById("progress1").textContent = `Fetching profile data from ${allUsers[0].username} and ${allUsers[1].username}`;
-    document.getElementById("progress2").textContent = `Adding to 9.8M ratings from 11.0K other users`;
+        const response2 = await fetch(`/train_model`);
+        if (!response2.ok) throw new Error("Something went wrong training model");
 
-    document.getElementById("circleImagePlaceholder1").style.display = "inline-block";
-    document.getElementById("circleImagePlaceholder2").style.display = "inline-block";
-    document.getElementById("circleImagePlaceholder3").style.display = "inline-block";
 
-    // Hide the checkmarks and circle images
-    document.getElementById("circleImage1").style.display = "none";
-    document.getElementById("circleImage2").style.display = "none";
-    document.getElementById("circleImage3").style.display = "none";
-
-    // Hide the spinners
-    document.getElementById("spinner1").style.display = "none";
-    document.getElementById("spinner2").style.display = "none";
-    document.getElementById("spinner3").style.display = "none";
-
-    // Make loading progress visible, remove d-none
-    document.getElementById("loadingProgress").style.visibility = "visible";
-}
-
-////////////////////////////////////////// Initialization Tasks //////////////////////////////////////////
-function startTasks() {
-    return new Promise((resolve) => {
-        function checkStatus(taskNumber) {
-            fetch(`/get_status/${taskNumber}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === "complete") {
-                        document.getElementById(`spinner${taskNumber}`).style.display = "none";
-                        document.getElementById(`circleImagePlaceholder${taskNumber}`).style.display = "none";
-                        document.getElementById(`circleImage${taskNumber}`).style.display = "inline-block";
-
-                        if (taskNumber < 3) {
-                            let nextTask = taskNumber + 1;
-                            document.getElementById(`spinner${nextTask}`).style.display = "inline-block";
-                            document.getElementById(`circleImagePlaceholder${nextTask}`).style.display = "none";
-                            fetch(`/start_task/${nextTask}/${allUsers[0].username}/${allUsers[1].username}`)
-                                .then(() => checkStatus(nextTask));
-                        } else {
-                            resolve();
-                        }
-                    } else {
-                        setTimeout(() => checkStatus(taskNumber), 1000);
-                    }
-                });
-        }
-
-        document.getElementById("spinner1").style.display = "inline-block";
-        document.getElementById("circleImagePlaceholder1").style.display = "none";
-        
-        fetch(`/start_task/1/${allUsers[0].username}/${allUsers[1].username}`)
-            .then(() => checkStatus(1));
-    });
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 ////////////////////////////////////////// Fetch Content Data //////////////////////////////////////////
@@ -308,26 +264,6 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
         data.forEach(movie => {
             index += 1;
 
-            // Determine avatar display based on weight
-            let avatarHTML = "";
-            if (weight === 0) {
-                avatarHTML = `
-                    <div class="avatar-group-B">
-                        <img src="${allUsers[0].avatar}" class="avatar-img-B avatar-img-1">
-                        <img src="${allUsers[1].avatar}" class="avatar-img-B avatar-img-2">
-                    </div>`;
-            } else if (weight === -1) {
-                avatarHTML = `
-                    <div>
-                        <img src="${allUsers[0].avatar}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
-                    </div>`;
-            } else if (weight === 1) {
-                avatarHTML = `
-                    <div>
-                        <img src="${allUsers[1].avatar}" class="rounded-circle" style="width: 40px; height: 40px; border: 1px solid rgba(130, 130, 130, 1);">
-                    </div>`;
-            }
-
             // Create a new div for each movie and append to the fragment
             const movieElement = document.createElement("div");
             movieElement.classList.add("row");
@@ -352,10 +288,7 @@ async function FetchRecommendations(username1, username2, weight, minRating, max
                             </div>
 
                             <div class="col-auto p-4 align-items-center d-flex flex-column justify-content-center">
-                                <h5 class="text-top text-score p">${movie.score}%</h5>
-                                <div class="avatar-group-container" style="display: flex; justify-content: center;">
-                                    ${avatarHTML}
-                                </div>
+                                <h4 class="text-top text-score p">${movie.score}%</h4>
                             </div>
 
                             <div class="col-auto p-2 align-items-center  d-flex flex-column justify-content-center">
@@ -922,7 +855,7 @@ async function CreateModal(movie) {
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
                                     <img src="${allUsers[0].avatar}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${allUsers[0]}</small></p>
+                                    <p class="text-muted text-center"><small>${allUsers[0].name}</small></p>
                                 </div>     
                                 <div class="col-md-3 d-flex flex-column align-items-center">
                                     <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
@@ -982,16 +915,19 @@ function setDisplayNames(user1_name, user2_name) {
 ////////////////////////////////////////// Compare Button //////////////////////////////////////////
 document.getElementById('compareButton').addEventListener('click', async function (event) {
 
+    document.getElementById("go-spinner").style.display = "block"; // Show loading spinner
+
+    const username1 = allUsers[0].username;
+    const username2 = allUsers[1].username;
+
     const refresh = event.refresh ?? 0; // Use event.refresh if available, otherwise default to true
     if (refresh == 0) {
-        ResetProgressBars();
         document.getElementById("contentContainer").classList.add('d-none');
-        await startTasks();
+        await InitializeAndTrain(username1, username2);
     }
     else if (refresh == 1){
         // Show the content container
-        ResetProgressBars();
-        await startTasks();
+        await InitializeAndTrain(username1, username2);
     }
 
     // Set display names
@@ -1008,8 +944,6 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const maxYear = document.getElementById('maxYear').value;
 
     // Fetch content data
-    const username1 = allUsers[0].username;
-    const username2 = allUsers[1].username;
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
@@ -1042,6 +976,8 @@ document.getElementById('compareButton').addEventListener('click', async functio
     if (refresh == 1){
         document.getElementById("RecommendContainerReal").scrollTop = 0;
     }
+
+    document.getElementById("go-spinner").style.display = "none"; // Hide loading spinner
 
     // Fire the event so `waitForCompareUpdate()` knows it's done
     const completeEvent = new Event("compareComplete");
