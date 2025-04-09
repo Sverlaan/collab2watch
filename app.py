@@ -59,7 +59,7 @@ def credits():
 def get_user(username):
     try:
         start = timer()
-        if username not in user_profiles and len(user_profiles) < 3:
+        if username not in user_profiles and len(user_profiles) < 8:
             profile = UserProfile(username)
             user_profiles[username] = profile
             user_data = profile.to_dict()

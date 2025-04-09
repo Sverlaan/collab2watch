@@ -33,7 +33,7 @@
     </nav>
     
 
-    <div class="container-fluid hover-zoom bg-secondary-subtle p-5">
+    <div class="container-fluid bg-secondary-subtle p-5">
 
         <!-- Website header -->
         <h1 class="text-center">Letterboxd Group Recommendation</h1>
@@ -310,56 +310,56 @@
         <!--divider-->
         <hr class="my-5 w-75 mx-auto">
 
+    </div>
 
-        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3" style="min-height: 870px;" id="RecommendContainer">
+    <!-- TODO: put this in the above container with the other content containers and remove d-none here!!!!!!!!! -->
+    <div class="container bg-tertiary-subtle mt-5 mb-5 p-3 d-none" style="min-height: 870px;" id="RecommendContainer">
 
-            <div class="row justify-content-center align-items-top g-0 mb-5">
-                <h1 class="text-center">Recommendations</h1>
-                <p class="text-center text-muted no-spacing">Combined and personalized recommendations for movies you have not seen!</p>
-                <p class="text-center text-muted mb-3">Use the blacklist functionality to dismiss any suggestions and tune the recommendations.</p>
+        <div class="row justify-content-center align-items-top g-0 mb-5">
+            <h1 class="text-center">Recommendations</h1>
+            <p class="text-center text-muted no-spacing">Combined and personalized recommendations for movies you have not seen!</p>
+            <p class="text-center text-muted mb-3">Use the blacklist functionality to dismiss any suggestions and tune the recommendations.</p>
 
-                <!-- Flexbox wrapper to control alignment -->
-                <div class="row justify-content-center align-items-top">
-                    <!-- Centered button group -->
-                    <div class="col-md-2">
-                        <!-- Empty div for spacing -->
+            <!-- Flexbox wrapper to control alignment -->
+            <div class="row justify-content-center align-items-top">
+                <!-- Centered button group -->
+                <div class="col-md-2">
+                    <!-- Empty div for spacing -->
+                </div>
+                <div class="col-md-5 d-flex justify-content-center align-items-center">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+                        <label class="btn btn-outline-warning" for="btnradio1" weight="-1" id="RC_user1_name">User 1</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
+                        <label class="btn btn-outline-warning" for="btnradio2" weight="0">Combined</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
+                        <label class="btn btn-outline-warning" for="btnradio3" weight="1" id="RC_user2_name">User 2</label>
                     </div>
-                    <div class="col-md-5 d-flex justify-content-center align-items-center">
-                        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-                            <label class="btn btn-outline-warning" for="btnradio1" weight="-1" id="RC_user1_name">User 1</label>
+                </div>
+                <div class="col-md-2 d-flex justify-content-center align-items-center">
+                    <!-- Edit Blacklist button pushed to the right -->
+                    <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">  Edit Blacklist
+                    </a>
+                </div>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off" checked>
-                            <label class="btn btn-outline-warning" for="btnradio2" weight="0">Combined</label>
+            </div>
+        </div>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradio3" autocomplete="off">
-                            <label class="btn btn-outline-warning" for="btnradio3" weight="1" id="RC_user2_name">User 2</label>
-                        </div>
-                    </div>
-                    <div class="col-md-2 d-flex justify-content-center align-items-center">
-                        <!-- Edit Blacklist button pushed to the right -->
-                        <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">  Edit Blacklist
-                        </a>
-                    </div>
 
+
+        <div class="row justify-content-between align-items-top hover-zoom-rec-card g-0">
+            <div class="col-md-1">
+            </div>
+            <div class="col-md-9">
+                <div class="row justify-content-center align-items-top g-0 overflow-auto d-none" 
+                    id="RecommendContainerReal" 
+                    style="max-height: 630px;">
                 </div>
             </div>
-
-
-
-            <div class="row justify-content-between align-items-top hover-zoom-rec-card g-0">
-                <div class="col-md-1">
-                </div>
-                <div class="col-md-9">
-                    <div class="row justify-content-center align-items-top g-0 overflow-auto d-none" 
-                        id="RecommendContainerReal" 
-                        style="max-height: 630px;">
-                    </div>
-                </div>
-                <div class="col-md-1">
-                </div>
+            <div class="col-md-1">
             </div>
-
         </div>
 
     </div>

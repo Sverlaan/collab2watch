@@ -78,10 +78,10 @@ async function fetchUserData(username) {
         col.className = "col-md-3 mb-4";
         col.id = `user-${username}`;
         col.innerHTML = `
-            <div class="card text-center h-100 d-flex flex-column justify-content-between">
+            <div class="card user-card text-center h-100 d-flex flex-column justify-content-between">
                 <div>
-                    <img src="${current_user.avatar}" class="card-img-top img-fluid rounded-circle mt-3 mx-auto" style="width: 100px; height: 100px;" alt="${current_user.name}'s avatar">
-                    <div class="card-body">
+                    <img src="${current_user.avatar}" class="img-fluid rounded-circle mt-3 mx-auto" style="width: 100px; height: 100px;" alt="${current_user.name}'s avatar">
+                    <div class="card-body"">
                         <h5 class="card-title">${current_user.name}</h5>
                         <p id="user-stats-${username}" class="card-text text-muted">Fetching user data...</p>
                         <a href="${current_user.url}" target="_blank" class="btn btn-outline-primary btn-sm">View Profile</a>
@@ -956,7 +956,9 @@ document.getElementById('compareButton').addEventListener('click', async functio
 
     document.getElementById('RecommendContainerReal').classList.add('d-none');
     // Show the content container
-    document.getElementById("contentContainer").classList.remove('d-none');
+
+    //document.getElementById("contentContainer").classList.remove('d-none');
+    document.getElementById("RecommendContainer").classList.remove('d-none');
     
     // Get the selected radio button's weight
     const selectedRadio = document.querySelector('input[name="btnradio"]:checked');

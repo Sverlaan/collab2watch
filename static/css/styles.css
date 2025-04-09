@@ -1,4 +1,15 @@
 
+/* Custom card for user cards */
+.user-card {
+    border-radius: 1.3rem; /* Larger border radius */
+    transition: transform 0.3s ease;
+}
+
+.user-card:hover {
+    transform: scale(1.05); /* Slight enlargement */
+    /* box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);  Optional: subtle shadow */
+}
+
 
 
 /* Initially hide the buttons
