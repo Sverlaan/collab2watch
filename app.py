@@ -41,7 +41,7 @@ recommender_instance = None
 
 @app.route('/')
 def home():
-    user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
+    # user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
     return render_template('index.html')
 
 
@@ -98,14 +98,16 @@ def get_user_data(username):
         return jsonify({"success": False}), 404
 
 
-@app.route("/preprocess_data/<string:username1>/<string:username2>", methods=["GET"])
-def preprocess_data(username1, username2):
+@app.route("/preprocess_data/<string:usernames>", methods=["GET"])
+def preprocess_data(usernames):
     """Simulate a task that takes a few seconds"""
     global recommender_instance
     try:
         if recommender_instance is None:
             recommender_instance = MovieRecommender(model_path=model_path)
-        recommender_instance.preprocess([username1, username2], user_profiles)
+
+        usernames = usernames.split(",")
+        recommender_instance.preprocess(usernames, user_profiles)
         return jsonify({"success": True})
     except:
         return jsonify({"success": False}), 404
@@ -199,22 +201,24 @@ def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntim
     return jsonify(movies)
 
 
-@app.route('/fetch_rewatchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_rewatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_rewatchlist/<string:username>/<string:other_usernames>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_rewatchlist(username, other_usernames, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    slugs = get_rewatchlist(username1, username2, user_profiles, recommender_instance)
+    other_usernames = other_usernames.split(",")
+    slugs = get_rewatchlist(username, other_usernames, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=10)
     return jsonify(movies)
 
 
-@app.route('/fetch_recommendations/<string:username1>/<string:username2>/<string:weight>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_recommendations(username1, username2, weight, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_recommendations/<string:usernames>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_recommendations(usernames, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    slugs, scores_dict = recommender_instance.get_recommendations([username1, username2], user_profiles, int(weight), amount=5000)
+    usernames = usernames.split(",")
+    slugs, scores_dict = recommender_instance.get_recommendations(usernames, user_profiles, amount=5000)
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=50, scores=scores_dict)
     print(f"Time taken getting recommendations and retrieving: {timer() - start}")
     return jsonify(movies)
