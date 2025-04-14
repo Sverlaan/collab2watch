@@ -190,11 +190,12 @@ def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntim
     return jsonify(movies)
 
 
-@app.route('/fetch_single_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_single_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_single_watchlist/<string:username>/<string:all_usernames>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_single_watchlist(username, all_usernames, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    slugs = get_single_watchlist(username1, username2, user_profiles, recommender_instance)
+    all_usernames = all_usernames.split(",")
+    slugs = get_single_watchlist(username, all_usernames, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=5)

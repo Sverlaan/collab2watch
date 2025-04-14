@@ -159,7 +159,76 @@ async function FetchCommonWatchlist(username1, username2, minRating, maxRating, 
 }
 
 // Fetch single watchlist from Flask backend and populate the DOM
-async function FetchSingleWatchlist(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+    try {
+
+        const all_usernames = allUsers.map(u => u.username).join(",");
+
+        const superContainer = document.getElementById("SingleWatchlistsContainer");
+
+        let index = 0
+        for (let user of allUsers) {
+
+            index = index+1;
+
+            const containerId = `SingleWatchlistContainer_${user.username}`;
+            const titleId = `SWL_${user.username}_title`;
+            const subtitleId = `SWL_${user.username}_subtitle`;
+            const contentId = `SWC_${user.username}_RC`;
+        
+            const isEven = index % 2 === 0;
+        
+            const container = document.createElement('div');
+            container.className = "container mt-4 hover-zoom bg-tertiary-subtle w-75 p-3";
+            container.id = containerId;
+        
+            container.innerHTML = `
+                <div class="row justify-content-evenly align-items-center">
+                    <div class="col-md-3 justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
+                        <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}</h1>
+                        <h1 class="text-center">Watchlist</h1>
+                        <p id="${subtitleId}" class="text-center text-muted">${user.subtitle}</p>
+                    </div>
+                    <div class="col-md-8 justify-content-center align-items-center ${isEven ? '' : 'order-md-1'}">
+                        <div class="row row-cols-1 row-cols-md-5 g-4" id="${contentId}"></div>
+                    </div>
+                </div>
+            `;
+
+            superContainer.appendChild(container);
+
+
+            const response = await fetch(`/fetch_single_watchlist/${user.username}/${all_usernames}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+            if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
+            const data = await response.json();
+
+            // Loop through the data and generate the cards
+            data.forEach(movie => {
+
+                // Generate each card
+                const card = document.createElement("div");
+                card.classList.add("col");
+                card.innerHTML = `
+                    <img src="${movie.poster}" 
+                        class="card-img-top rounded open-movie-modal" 
+                        alt="${`${movie.title}`}"
+                        slug="${movie.slug}">
+                `;
+                document.getElementById(`${contentId}`).appendChild(card);
+            });
+        
+            
+
+        }
+
+    } catch (error) {
+        console.error(error);
+    }
+    
+}
+
+// Fetch single watchlist from Flask backend and populate the DOM
+async function FetchSingleWatchlistOLD(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
         const response = await fetch(`/fetch_single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
@@ -835,10 +904,10 @@ function setDisplayNames(user1_name, user2_name) {
     // document.getElementById("RC-name-2").textContent = "Rewatches for " + user2_name;
     // document.getElementById("RC-sub-1").textContent = "Movies watched by " + user1_name + " that " + user2_name + " might like!";
     // document.getElementById("RC-sub-2").textContent = "Movies watched by " + user2_name + " that " + user1_name + " might like!";
-    document.getElementById(`SWL1_title`).textContent = `On ${user1_name}'s`;
-    document.getElementById(`SWL1_subtitle`).textContent = `Movies on ${user1_name}'s watchlist that ${user2_name} might like!`;
-    document.getElementById(`SWL2_title`).textContent = `On ${user2_name}'s`;
-    document.getElementById(`SWL2_subtitle`).textContent = `Movies on ${user2_name}'s watchlist that ${user1_name} might like!`;
+    // document.getElementById(`SWL1_title`).textContent = `On ${user1_name}'s`;
+    // document.getElementById(`SWL1_subtitle`).textContent = `Movies on ${user1_name}'s watchlist that ${user2_name} might like!`;
+    // document.getElementById(`SWL2_title`).textContent = `On ${user2_name}'s`;
+    // document.getElementById(`SWL2_subtitle`).textContent = `Movies on ${user2_name}'s watchlist that ${user1_name} might like!`;
     // document.getElementById(`RC_user1_name`).textContent = `${user1_name}`;
     // document.getElementById(`RC_user2_name`).textContent = `${user2_name}`;
 }
@@ -882,8 +951,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     // Fetch single watchlist data
-    await FetchSingleWatchlist(username1, username2, 1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    await FetchSingleWatchlist(username2, username1, 2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     // Fetch rewatchlist data
     generateRewatchCarousels(allUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);

@@ -287,13 +287,15 @@ def get_common_watchlist(username1, username2, user_profiles, recommender):
     return [slug for slug, _ in preds_avg]
 
 
-def get_single_watchlist(username1, username2, user_profiles, recommender):
+def get_single_watchlist(username, all_usernames, user_profiles, recommender):
     """
     Get watchlist of user1 that user2 has not seen yet, ordered by predicted rating of user2
     """
-
+    # TODO: change to use all usernames
+    username2 = all_usernames[1]
+    
     user2_seen_slugs = user_profiles[username2].get_watched()
-    user1_watchlist_slugs = user_profiles[username1].get_watchlist()
+    user1_watchlist_slugs = user_profiles[username].get_watchlist()
     user2_watchlist_slugs = user_profiles[username2].get_watchlist()
 
     # Get all movies of user2 that user1 has not seen yet
