@@ -261,7 +261,48 @@ class MovieRecommender:
         return True, influential_movies
 
 
-def get_common_watchlist(username1, username2, user_profiles, recommender):
+def get_common_watchlist(usernames, user_profiles, recommender):
+    """
+    Get common watchlist between a list of users, sorted by average predicted rating.
+    """
+
+    if not usernames:
+        return []
+
+    # Start with the watchlist of the first user
+    common_slugs = user_profiles[usernames[0]].get_watchlist()
+
+    # Intersect with the rest of the users' watchlists
+    for username in usernames[1:]:
+        common_slugs = common_slugs.intersection(user_profiles[username].get_watchlist())
+
+    # Filter only movies that are in the recommender model
+    # common_slugs = [slug for slug in common_slugs if slug in recommender.movies_trained_on]
+
+    if not common_slugs:
+        return []
+
+    # Accumulate predictions per slug
+    rating_sums = {slug: 0.0 for slug in common_slugs}
+    rating_counts = {slug: 0 for slug in common_slugs}
+
+    for username in usernames:
+        preds = recommender.get_predictions(username, common_slugs, sorted=False)
+        for i, slug in enumerate(common_slugs):
+            rating_sums[slug] += preds[i]
+            rating_counts[slug] += 1
+
+    # Calculate average ratings
+    avg_preds = [(slug, rating_sums[slug] / rating_counts[slug]) for slug in common_slugs]
+
+    # Sort by average rating
+    avg_preds.sort(key=lambda x: x[1], reverse=True)
+
+    # Return sorted list of slugs
+    return [slug for slug, _ in avg_preds]
+
+
+def get_common_watchlistOlD(username1, username2, user_profiles, recommender):
     """
     Get common watchlist between two users
     """
@@ -289,11 +330,51 @@ def get_common_watchlist(username1, username2, user_profiles, recommender):
 
 def get_single_watchlist(username, all_usernames, user_profiles, recommender):
     """
+    Get watchlist of `username` that none of the users in `all_usernames` have seen yet,
+    ordered by the average predicted rating from users in `all_usernames`.
+    """
+
+    user1_watchlist_slugs = user_profiles[username].get_watchlist()
+
+    # Initialize with all slugs in user1's watchlist
+    diff_slugs = set(user1_watchlist_slugs)
+
+    # Exclude slugs that any user in all_usernames has seen or has in their watchlist
+    for other_user in all_usernames:
+        seen = user_profiles[other_user].get_watched()
+        diff_slugs -= seen
+
+    # Only keep movies that the recommender model has data for
+    diff_slugs = [slug for slug in diff_slugs if slug in recommender.movies_trained_on]
+
+    # Initialize a dictionary to accumulate ratings
+    rating_sums = {slug: 0.0 for slug in diff_slugs}
+    rating_counts = {slug: 0 for slug in diff_slugs}
+
+    # Gather predictions from all users
+    for other_user in all_usernames:
+        preds = recommender.get_predictions(other_user, diff_slugs, sorted=False)
+        for i, slug in enumerate(diff_slugs):
+            rating_sums[slug] += preds[i]
+            rating_counts[slug] += 1
+
+    # Compute average predictions
+    avg_preds = [(slug, rating_sums[slug] / rating_counts[slug]) for slug in diff_slugs]
+
+    # Sort by average predicted rating in descending order
+    avg_preds.sort(key=lambda x: x[1], reverse=True)
+
+    # Return list of slugs sorted by average rating
+    return [slug for slug, _ in avg_preds]
+
+
+def get_single_watchlistOLD(username, all_usernames, user_profiles, recommender):
+    """
     Get watchlist of user1 that user2 has not seen yet, ordered by predicted rating of user2
     """
     # TODO: change to use all usernames
     username2 = all_usernames[1]
-    
+
     user2_seen_slugs = user_profiles[username2].get_watched()
     user1_watchlist_slugs = user_profiles[username].get_watchlist()
     user2_watchlist_slugs = user_profiles[username2].get_watchlist()

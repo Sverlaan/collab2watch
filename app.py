@@ -41,7 +41,7 @@ recommender_instance = None
 
 @app.route('/')
 def home():
-    # user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
+    user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
     return render_template('index.html')
 
 
@@ -179,11 +179,12 @@ def fetch_movie_data_for_modal(slug, username1, username2):
     return jsonify(movie_data)
 
 
-@app.route('/fetch_common_watchlist/<string:username1>/<string:username2>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
-def fetch_common_watchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
+@app.route('/fetch_common_watchlist/<string:usernames>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
+def fetch_common_watchlist(usernames, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    slugs = get_common_watchlist(username1, username2, user_profiles, recommender_instance)
+    usernames = usernames.split(",")
+    slugs = get_common_watchlist(usernames, user_profiles, recommender_instance)
     # print(f"Time taken: {timer() - start}")
 
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)

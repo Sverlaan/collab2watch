@@ -123,9 +123,10 @@ async function InitializeAndTrain() {
 }
 
 ////////////////////////////////////////// Fetch Content Data //////////////////////////////////////////
-async function FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
+async function FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
-        const response = await fetch(`/fetch_common_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
+        const usernames = allUsers.map(u => u.username).join(",");
+        const response = await fetch(`/fetch_common_watchlist/${usernames}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting common watchlist");
         const data = await response.json();
 
@@ -177,17 +178,27 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             const contentId = `SWC_${user.username}_RC`;
         
             const isEven = index % 2 === 0;
+
+            // Remove the old container if it exists
+            const oldContainer = document.getElementById(containerId);
+            if (oldContainer) {
+                oldContainer.remove();
+            }
         
             const container = document.createElement('div');
-            container.className = "container mt-4 hover-zoom bg-tertiary-subtle w-75 p-3";
+            if (index == 1) {
+                container.className = "container hover-zoom bg-tertiary-subtle w-75 p-3";
+            } else {
+                container.className = "container mt-4 hover-zoom bg-tertiary-subtle w-75 p-3";
+            }
             container.id = containerId;
         
             container.innerHTML = `
                 <div class="row justify-content-evenly align-items-center">
                     <div class="col-md-3 justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
-                        <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}</h1>
+                        <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}'s</h1>
                         <h1 class="text-center">Watchlist</h1>
-                        <p id="${subtitleId}" class="text-center text-muted">${user.subtitle}</p>
+                        <p id="${subtitleId}" class="text-center text-muted">Movies the other(s) might like!</p>
                     </div>
                     <div class="col-md-8 justify-content-center align-items-center ${isEven ? '' : 'order-md-1'}">
                         <div class="row row-cols-1 row-cols-md-5 g-4" id="${contentId}"></div>
@@ -314,7 +325,7 @@ async function generateRewatchCarousels(allUsers, minRating, maxRating, minRunti
         container.innerHTML += `
             <div class="col-md-6 d-inline-block align-top">
                 <h1 class="text-center">Rewatches for ${user.name}</h1>
-                <p class="text-center text-muted mb-3">Movies seen by ${user.name} that ${otherUsers.map(u => u.name).join(", ")} might like!</p>
+                <p class="text-center text-muted mb-3">Movies highly rated by ${user.name} that the other(s) might like!</p>
                 <div id="${carouselId}" class="carousel slide p-4" data-bs-ride="carousel">
                     <div class="carousel-inner" id="${carouselInnerId}"></div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
@@ -948,7 +959,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const maxYear = document.getElementById('maxYear').value;
 
     // Fetch content data
-    await FetchCommonWatchlist(username1, username2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     // Fetch single watchlist data
     await FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
