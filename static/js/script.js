@@ -194,7 +194,7 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             container.id = containerId;
         
             container.innerHTML = `
-                <div class="row justify-content-evenly align-items-center">
+                <div class="row justify-content-evenly align-items-center" data-aos="${isEven ? 'fade-left' : 'fade-right'}">
                     <div class="col-md-3 justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
                         <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}'s</h1>
                         <h1 class="text-center">Watchlist</h1>
@@ -971,7 +971,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     // const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
     // await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
-    document.getElementById('RecommendContainerReal').classList.add('d-none');
+    //document.getElementById('RecommendContainerReal').classList.add('d-none');
     // Show the content container
 
     document.getElementById("contentContainer").classList.remove('d-none');
@@ -985,13 +985,15 @@ document.getElementById('compareButton').addEventListener('click', async functio
     //await FetchRecommendations(username1, username2, 0, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     
     // Show the real recommendations content
-    document.getElementById("RecommendContainerReal").classList.remove('d-none');
+    //document.getElementById("RecommendContainerReal").classList.remove('d-none');
     document.getElementById("RecommendContainerReal").scrollTop = 0;
     document.getElementById("go-spinner").style.display = "none"; // Hide loading spinner
 
     // Fire the event so `waitForCompareUpdate()` knows it's done
     const completeEvent = new Event("compareComplete");
     document.getElementById("compareButton").dispatchEvent(completeEvent);
+
+    AOS.refresh(); // <- This tells AOS to re-scan the DOM
     
 
 });
@@ -1102,7 +1104,7 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
 
                 <div class="col">
                     <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
-                        <div class="row g-0">
+                        <div class="row g-0" >
                             <div class="col-auto">
                                 <img src="${movie.poster}" class="rec-card-img open-movie-modal rounded-start" alt="${movie.title}" slug="${movie.slug}">
                             </div>
