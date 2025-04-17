@@ -41,7 +41,7 @@ recommender_instance = None
 
 @app.route('/')
 def home():
-    # user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
+    user_profiles.clear()  # Clear user profiles on home page load, # TODO: off only for quick testing
     return render_template('index.html')
 
 
