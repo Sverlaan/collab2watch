@@ -11,6 +11,26 @@
 }
 
 
+/* Initially hidden
+.user-close-btn {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+    z-index: 10;
+}
+
+/* Show when card is hovered 
+.user-card:hover .user-close-btn {
+    opacity: 1;
+    visibility: visible;
+}
+*/
+
+
+
+
+
+
 
 /* Initially hide the buttons
 .carousel-control-prev,

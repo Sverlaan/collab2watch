@@ -57,10 +57,16 @@ async function fetchUserData(username) {
         col.className = "col-md-3 mb-4";
         col.id = `user-${username}`;
         col.innerHTML = `
-            <div class="card user-card text-center h-100 d-flex flex-column justify-content-between">
+            <div class="card user-card text-center h-100 d-flex flex-column justify-content-between position-relative">
+                <button 
+                    type="button"
+                    class="btn-close position-absolute top-0 end-0 m-2 close-btn user-close-btn" 
+                    aria-label="Close"
+                    data-username="${username}">
+                </button>
                 <div>
                     <img src="${current_user.avatar}" class="img-fluid rounded-circle mt-3 mx-auto" style="width: 100px; height: 100px;" alt="${current_user.name}'s avatar">
-                    <div class="card-body"">
+                    <div class="card-body">
                         <h5 class="card-title">${current_user.name}</h5>
                         <p id="user-stats-${username}" class="card-text text-muted">Fetching user data...</p>
                         <a href="${current_user.url}" target="_blank" class="btn btn-outline-secondary btn-sm">View Profile</a>
@@ -74,6 +80,34 @@ async function fetchUserData(username) {
             </div>
         `;
         document.getElementById("userRow").appendChild(col);
+
+        // Add event listener for the close button
+        col.querySelector('.close-btn').addEventListener('click', (e) => {
+            const usernameToRemove = e.target.getAttribute('data-username');
+            // Call your custom logic here
+            console.log(`Close button clicked for user: ${usernameToRemove}`);
+
+            // Example: Remove the card
+            const cardToRemove = document.getElementById(`user-${usernameToRemove}`);
+            if (cardToRemove) {
+                cardToRemove.remove();
+                // Delete user from allUsers
+                allUsers = allUsers.filter(user => user.username !== usernameToRemove);
+                console.log(`User ${usernameToRemove} removed from allUsers.`);
+                // Update the number of users done
+                num_users_done -= 1;
+                // Enable the compare button if no users are left
+                if (num_users_done <= 1) {
+                    document.getElementById('compareButton').disabled = true;
+                }
+                else {
+                    // press the compare button to update the recommendations
+                    const event = new Event('click', { bubbles: true });
+                    event.refresh = 1;
+                    document.getElementById('compareButton').dispatchEvent(event);
+                }
+            }
+        });
 
         // Now fetch the more in-depth user data, such as watchlist and ratings
         const response2 = await fetch(`/get_user_data/${username}`);
@@ -166,6 +200,10 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
         const all_usernames = allUsers.map(u => u.username).join(",");
 
         const superContainer = document.getElementById("SingleWatchlistsContainer");
+        // delete all existing containers
+        while (superContainer.firstChild) {
+            superContainer.removeChild(superContainer.firstChild);
+        }
 
         let index = 0
         for (let user of allUsers) {

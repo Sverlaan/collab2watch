@@ -153,26 +153,6 @@
                     <label class="btn btn-outline-warning" for="btn-check-outlined">Enhance</label>
                 </div>
             </div>
-            
-
-            <!-- Placeholder Row -->
-            <div class="row row-cols-1 row-cols-md-5 g-4 placeholders d-none" id="loadingPlaceholders">
-                <div class="col">
-                    <div class="placeholder placeholder-img"></div>
-                </div>
-                <div class="col">
-                    <div class="placeholder placeholder-img"></div>
-                </div>
-                <div class="col">
-                    <div class="placeholder placeholder-img"></div>
-                </div>
-                <div class="col">
-                    <div class="placeholder placeholder-img"></div>
-                </div>
-                <div class="col">
-                    <div class="placeholder placeholder-img"></div>
-                </div>
-            </div>
 
             <!-- Real content -->
             <div class="row row-cols-1 row-cols-md-5 g-4" id="realContent"></div>
@@ -521,7 +501,7 @@
         offset: 50, // Trigger 150px before element enters viewport
         duration: 800,
         easing: 'ease-in-out',
-        once: false // Only animate once (can set to false if you want repeat)
+        once: true // TODO: Only animate once (can set to false if you want repeat)
         });
     </script>
 </body>
