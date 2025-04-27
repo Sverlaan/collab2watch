@@ -156,42 +156,93 @@ async function InitializeAndTrain() {
     }
 }
 
-////////////////////////////////////////// Fetch Content Data //////////////////////////////////////////
 async function FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
         const usernames = allUsers.map(u => u.username).join(",");
         const response = await fetch(`/fetch_common_watchlist/${usernames}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting common watchlist");
-        const data = await response.json();
+        const result = await response.json();
 
         const realContent = document.getElementById("realContent");
-        // delete all existing cards
-        while (realContent.firstChild) {
-            realContent.removeChild(realContent.firstChild);
+        const commonWatchlistCount = document.getElementById("commonWatchlistCount");
+        const subtitle = document.getElementById("commonWatchlistSubtitle");
+
+        // Clear previous content
+        realContent.innerHTML = "";
+
+        let data = [];
+        if (result.success) {
+            console.log("Common watchlist fetched successfully");
+            data = result.movies;
+            subtitle.textContent = "Let's see what movies you all want to watch!";
+        } else {
+            console.log("No common movies found");
+            subtitle.textContent = "No common movies found in your watchlists";
         }
 
-        document.getElementById("commonWatchlistCount").textContent = data.length;
+        commonWatchlistCount.textContent = data.length;
 
-        // Loop through the data and generate the cards
-        data.forEach(movie => {
+        // Track if showing all or only 9
+        let showingAll = false;
 
-            // Generate each card
-            const card = document.createElement("div");
-            card.classList.add("col");
-            card.innerHTML = `
-                <img src="${movie.poster}" 
-                    class="card-img-top rounded open-movie-modal" 
-                    alt="${`${movie.title}`}"
-                    slug="${movie.slug}">
+        // Create a container div for cards
+        const cardsContainer = document.createElement("div");
+        cardsContainer.classList.add("row", "row-cols-1", "row-cols-md-5", "g-4");
+        realContent.appendChild(cardsContainer);
+
+        // Helper function to render movies
+        function renderMovies() {
+            cardsContainer.innerHTML = ""; // Clear cards first
+
+            const moviesToShow = showingAll ? data : data.slice(0, 9); // Show 9 cards initially, then toggle
+            moviesToShow.forEach(movie => {
+                const card = document.createElement("div");
+                card.classList.add("col");
+                card.innerHTML = `
+                    <div class="card">
+                        <img src="${movie.poster}" class="card-img-top rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+
+            // Add the "Show More" button as the final card in the grid
+            const buttonCard = document.createElement("div");
+            buttonCard.classList.add("col");
+            buttonCard.innerHTML = `
+                <div class="card d-flex justify-content-center align-items-center" style="height: 100%;">
+                    <button class="btn btn-secondary w-100" style="height: 100%; padding: 0; font-size: 20px">
+                        ${showingAll ? "Show Less" : "Show More"}
+                    </button>
+                </div>
             `;
-            realContent.appendChild(card);
+            cardsContainer.appendChild(buttonCard);
+
+            // Hide the button if there are 9 or fewer movies
+            if (data.length <= 9) {
+                buttonCard.style.display = "none"; // Hide button if 9 or fewer movies
+            }
+        }
+
+        renderMovies(); // Initial render
+
+        // Add click event listener to toggle button
+        cardsContainer.addEventListener("click", (event) => {
+            if (event.target.closest("button")) {
+                showingAll = !showingAll;
+                renderMovies();
+            }
         });
 
     } catch (error) {
         console.error(error);
     }
-    
 }
+
+
+
+
+
 
 // Fetch single watchlist from Flask backend and populate the DOM
 async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
@@ -942,7 +993,7 @@ async function CreateModal(movie) {
 
                             <class="container-fluid" id="similarMoviesContainer">
 
-                                <div class="mt-3 w-100 p-2">
+                                <div class="mt-4 w-100 p-2">
                                     <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
                                 </div>
                                 <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         

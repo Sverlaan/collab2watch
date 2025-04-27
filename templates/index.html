@@ -139,7 +139,7 @@
 
 
         <!-- Common watchlist container -->
-        <div class="container mt-5 hover-zoom bg-tertiary-subtle w-75 p-3" data-aos="fade-in" id="CommonWatchlistContainer"">
+        <div class="container mt-5 hover-zoom bg-tertiary-subtle w-75 p-3" data-aos="fade-in" id="CommonWatchlistContainer">
 
             <!-- Title -->
             <div class="row justify-content-center align-items-top">
@@ -148,7 +148,7 @@
                 </div>
                 <div class="col-md-6 text-center">
                     <h1 class="text-center">Common Watchlist (<span id="commonWatchlistCount">...</span>)</h1>
-                    <p class="text-center text-muted mb-5">Let's see what movies you all want to watch!</p>
+                    <p class="text-center text-muted mb-5" id="commonWatchlistSubtitle">Let's see what movies you all want to watch!</p>
                 </div>
                 <div class="col-md-3 justify-content-start align-items-top mt-1 p-1">
                     <input type="checkbox" class="btn-check" id="btn-check-outlined" autocomplete="off">
@@ -156,8 +156,8 @@
                 </div>
             </div>
 
-            <!-- Real content -->
-            <div class="row row-cols-1 row-cols-md-5 g-4" id="realContent"></div>
+            <!-- Real content container -->
+            <div class="" id="realContent"></div>
         </div>
 
         
@@ -487,8 +487,8 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center bg-secondary-subtle text-lg-start" id="footer">
-        <div class="text-center text-muted p-3">
+    <footer class="text-center bg-secondary-subtle text-lg-start p-5" id="footer">
+        <div class="text-center text-muted">
             <p>© 2025 Stianne. Check out the source code on <a href="https://github.com/Sverlaan/collab2watch.git" target="_blank">GitHub</a>.</p>
             <p>This product uses the TMDB API but is not endorsed or certified by TMDB. This is also not an official Letterboxd product.</p>
 

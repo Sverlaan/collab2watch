@@ -192,10 +192,12 @@ def fetch_common_watchlist(usernames, minRating, maxRating, minRuntime, maxRunti
     start = timer()
     usernames = usernames.split(",")
     slugs = get_common_watchlist(usernames, user_profiles, recommender_instance)
+    if len(slugs) == 0:
+        return jsonify({"success": False, "message": "No common watchlist found", "movies": []})
     # print(f"Time taken: {timer() - start}")
 
     movies = retrieve_movies(slugs, float(minRating), float(maxRating), minRuntime, maxRuntime, minYear, maxYear, top_k=-1)
-    return jsonify(movies)
+    return jsonify({"success": True, "message": "Common watchlist found", "movies": movies})
 
 
 @app.route('/fetch_single_watchlist/<string:username>/<string:all_usernames>/<string:minRating>/<string:maxRating>/<int:minRuntime>/<int:maxRuntime>/<int:minYear>/<int:maxYear>', methods=['GET'])
