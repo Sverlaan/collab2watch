@@ -966,6 +966,9 @@ function setDisplayNames(user1_name, user2_name) {
 ////////////////////////////////////////// Compare Button //////////////////////////////////////////
 document.getElementById('compareButton').addEventListener('click', async function (event) {
 
+    // Hide footer
+    document.getElementById("footer").classList.add('d-none');
+
     document.getElementById("go-spinner").style.display = "block"; // Show loading spinner
 
     
@@ -1030,6 +1033,9 @@ document.getElementById('compareButton').addEventListener('click', async functio
     // Fire the event so `waitForCompareUpdate()` knows it's done
     const completeEvent = new Event("compareComplete");
     document.getElementById("compareButton").dispatchEvent(completeEvent);
+
+    // Show the footer
+    document.getElementById("footer").classList.remove('d-none');
 
     AOS.refresh(); // <- This tells AOS to re-scan the DOM
     

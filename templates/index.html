@@ -13,7 +13,7 @@
   <body>
 
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg bg-secondary-subtle">
+    <!-- <nav class="navbar navbar-expand-lg bg-secondary-subtle">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('home') }}">collab2watch.com</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,23 +21,20 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav">
-                    <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">Collab2Watch</a>
+                    <a class="nav-link active" aria-current="page" href="{{ url_for('home') }}">HOME</a>
                     <a class="nav-link" href="{{ url_for('how_it_works') }}">HOW IT WORKS</a>
                     <a class="nav-link" href="{{ url_for('credits') }}">CREDITS</a>
                 </div>
             </div>
-            <!-- Dark/Light Mode Toggle Button -->
-            <button class="btn btn-outline-secondary" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark/Light Mode">
-                <i class="bi bi-moon-stars" id="theme-icon"> </i>
-            </button>
+
         </div>
-    </nav>
+    </nav> -->
     
 
     <div class="container-fluid bg-secondary-subtle p-5">
 
         <!-- Website header -->
-        <h1 class="text-center" data-aos="fade-in">Letterboxd Group Recommendation</h1>
+        <h1 class="text-center mt-3" data-aos="fade-in">Letterboxd Group Recommendation</h1>
 
         <div class="d-flex flex-column align-items-center text-center gap-4 mt-5" data-aos="fade-in" data-aos-delay="200">
 
@@ -86,6 +83,11 @@
                     data-bs-toggle="modal"
                     data-bs-target="#filtersModal">
                     <i class="bi bi-funnel"></i>
+                </button>
+
+                <!-- Dark/Light Mode Toggle Button -->
+                <button class="btn btn-outline-secondary" style="width: 50pt; font-size: 18pt" onclick="toggleTheme()" id="theme-toggle" aria-label="Toggle Dark/Light Mode">
+                    <i class="bi bi-moon-stars" id="theme-icon"> </i>
                 </button>
 
                 <div id="go-spinner" class="spinner-border text-secondary" style="display:none; width: 40px; height: 40px;"></div>
@@ -184,7 +186,7 @@
         <!--divider-->
         <hr class="my-5 w-75 mx-auto">
 
-        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3"  style="min-height: 870px;" data-aos="fade-in" data-aos-offset="500" data-aos-delay="50" id="RecommendContainer">
+        <div class="container bg-tertiary-subtle mt-5 mb-5 p-3"  style="min-height: 870px; height: 900px;" data-aos="fade-in" data-aos-offset="500" data-aos-delay="50" id="RecommendContainer">
 
             <div class="row justify-content-center align-items-top g-0 mb-5">
                 <h1 class="text-center">Recommendations</h1>
@@ -485,11 +487,31 @@
     </div>
 
     <!-- Footer -->
-    <footer class="text-center bg-tertiary-subtle text-lg-start">
+    <footer class="text-center bg-secondary-subtle text-lg-start" id="footer">
         <div class="text-center text-muted p-3">
-            © 2025 Stianne
+            <p>© 2025 Stianne. Check out the source code on <a href="https://github.com/Sverlaan/collab2watch.git" target="_blank">GitHub</a>.</p>
+            <p>This product uses the TMDB API but is not endorsed or certified by TMDB. This is also not an official Letterboxd product.</p>
+
+            <!-- Logos container -->
+            <div class="d-flex justify-content-center align-items-center gap-3 mt-3">
+                <!-- TMDB logo -->
+                <a href="https://www.themoviedb.org/" target="_blank">
+                    <img src="https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg" 
+                        alt="The Movie Database Logo" 
+                        class="img-fluid" 
+                        style="height: 20px;">
+                </a>
+                <!-- Letterboxd logo -->
+                <a href="https://letterboxd.com/" target="_blank">
+                    <img src="https://a.ltrbxd.com/logos/letterboxd-logo-h-pos-rgb.svg" 
+                        alt="Letterboxd Logo" 
+                        class="img-fluid" 
+                        style="height: 50px;">
+                </a>
+            </div>
         </div>
     </footer>
+
 
 
     <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
