@@ -784,8 +784,9 @@ document.body.addEventListener("click", async function (event) {
             document.querySelector(".modal-backdrop").remove();
         }
 
+        const all_usernames = allUsers.map(u => u.username).join(",");
         let slug = modalTrigger.getAttribute("slug");
-        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${allUsers[0].username}/${allUsers[1].username}`);
+        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${all_usernames}`);
         if (!response.ok) throw new Error("Something went wrong getting movie modal data");
         const movie = await response.json();
 
@@ -861,6 +862,46 @@ async function CreateModal(movie) {
 
     let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png" //"https://a.ltrbxd.com/logos/letterboxd-logo-v-neg-rgb.svg" 
 
+    // Start of user scores dynamic section
+    let userScoresHtml = `
+        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;">
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
+                <img src="${letterboxd_logo}" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>Letterboxd</small></p>
+            </div>
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
+                
+                <img src="https://cdn-icons-png.flaticon.com/512/718/718339.png" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>Combined</small></p>
+            </div>
+    `;
+
+    // Loop through all users dynamically
+    for (let i = 0; i < allUsers.length; i++) {
+        const user = allUsers[i];
+        const scoreData = movie.all_scores.find(u => u.username === user.username);  // match by username
+        console.log(scoreData);
+
+        userScoresHtml += `
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 ${scoreData ? scoreData.score_color : 'text-muted'}">${scoreData ? scoreData.score : '--'}</h5>
+                <img src="${user.avatar}" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>${user.name}</small></p>
+            </div>
+        `;
+    }
+
+    // Add combined score block at the end
+    userScoresHtml += `
+
+    </div> <!-- End of dynamic user row -->
+    `;
+
+
+
+
     let modalHtml = `
         <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
@@ -897,39 +938,11 @@ async function CreateModal(movie) {
                                 </div>
                             </div>
                             
-                            <div class="row g-3 mt-1 justify-content-between">
-                                <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
-                                    <img src="${letterboxd_logo}" style="width: 50px; height: 50px;">
-                                    <p class="text-muted text-center"><small>Letterboxd</small></p>
-                                </div>
-                                <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 ${movie.score_1_color}">${movie.score_1}</h5>
-                                    <img src="${allUsers[0].avatar}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${allUsers[0].name}</small></p>
-                                </div>     
-                                <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 ${movie.score_2_color}">${movie.score_2}</h5>
-                                    <img src="${allUsers[1].avatar}" class="rounded-circle" style="width: 50px; height: 50px; border: 1px solid rgba(130, 130, 130, 1);">
-                                    <p class="text-muted text-center"><small>${allUsers[1].name}</small></p>
-                                </div>    
-                                <div class="col-md-3 d-flex flex-column align-items-center">
-                                    <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
-                                    <div class="avatar-group-container" style="display: flex; justify-content: center;">
-                                        <div class="avatar-group">
-                                            <img src="${allUsers[0].avatar}" class="avatar-img avatar-img-1">
-                                            <img src="${allUsers[1].avatar}" class="avatar-img avatar-img-2">
-                                        </div>
-                                    </div>
-                                    <p class="text-muted text-center"><small>Combined</small></p>
-                                </div>          
-                            </div>
+                            ${userScoresHtml}
 
                             <class="container-fluid" id="similarMoviesContainer">
 
-                                <hr class="my-3 w-75 mx-auto">
-
-                                <div class="w-100 p-2">
+                                <div class="mt-3 w-100 p-2">
                                     <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
                                 </div>
                                 <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         

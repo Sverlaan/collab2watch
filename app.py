@@ -125,57 +125,64 @@ def train_model():
 
 ################ Fetch data for content ################
 
-@app.route('/fetch_movie_data_for_modal/<string:slug>/<string:username1>/<string:username2>', methods=['GET'])
-def fetch_movie_data_for_modal(slug, username1, username2):
-
+@app.route('/fetch_movie_data_for_modal/<string:slug>/<string:usernames>', methods=['GET'])
+def fetch_movie_data_for_modal(slug, usernames):
     # Get movie details
-    # print(f"Fetching movie data for {slug} from db")
     start = timer()
     movie = Movie.query.filter_by(slug=slug).first()
     if movie is None:
         raise Exception(f"{slug} not in db. Since this is for opening a modal, this should not happen.")
     movie_data = movie.to_dict()
 
-    pred_1, pred_2 = None, None
+    # Split usernames (assuming comma-separated)
+    username_list = usernames.split(",")
 
-    # Get user ratings
-    rating_1 = user_profiles[username1].get_rating(slug)
-    if rating_1 is not None:
-        movie_data["score_1"] = f"{rating_1}"
-        movie_data["score_1_color"] = "text-muted"
-    else:
-        pred_1 = recommender_instance.predict_user_rating(username1, slug)
-        if pred_1 is not None:
-            movie_data["score_1"] = f"{round(pred_1 * 20, 1)}%"
-            movie_data["score_1_color"] = "text-score"
+    all_scores = []
+    predictions = []
+
+    for username in username_list:
+        rating = user_profiles[username].get_rating(slug)
+        if rating is not None:
+            score = f"{rating}"
+            score_color = "text-muted"
+            numeric_score = rating  # for combined score
         else:
-            movie_data["score_1"] = "--"
-            movie_data["score_1_color"] = "text-muted"
+            pred = recommender_instance.predict_user_rating(username, slug)
+            if pred is not None:
+                score = f"{round(pred * 20, 1)}%"
+                score_color = "text-score"
+                numeric_score = pred * 20  # pred is usually 0–1, convert to 0–100 scale
+            else:
+                score = "--"
+                score_color = "text-muted"
+                numeric_score = None  # no data
 
-    rating_2 = user_profiles[username2].get_rating(slug)
-    if rating_2 is not None:
-        movie_data["score_2"] = f"{rating_2}"
-        movie_data["score_2_color"] = "text-muted"
-    else:
-        pred_2 = recommender_instance.predict_user_rating(username2, slug)
-        if pred_2 is not None:
-            movie_data["score_2"] = f"{round(pred_2 * 20, 1)}%"
-            movie_data["score_2_color"] = "text-score"
-        else:
-            movie_data["score_2"] = "--"
-            movie_data["score_2_color"] = "text-muted"
+        all_scores.append({
+            "username": username,
+            "score": score,
+            "score_color": score_color,
+            "numeric_score": numeric_score  # keep numeric for averaging later
+        })
 
-    if rating_1 is not None and rating_2 is not None:
-        movie_data["score_combined"] = str(round((rating_1 + rating_2) / 2.0, 3))
-        movie_data["score_combined_color"] = "text-muted"
-    elif pred_1 is not None and pred_2 is not None:
-        movie_data["score_combined"] = str(round((pred_1 * 20 + pred_2 * 20) / 2.0, 1)) + "%"
+    # Calculate combined score (average of available numeric scores)
+    valid_scores = [user["numeric_score"] for user in all_scores if user["numeric_score"] is not None]
+    if valid_scores:
+        sum_total = 0
+        for user in all_scores:
+            if user["score_color"] == "text-score":
+                sum_total += user["numeric_score"]
+            else:
+                sum_total += user["numeric_score"] * 20.0
+        avg_score = sum_total / len(valid_scores)
+        movie_data["score_combined"] = f"{round(avg_score, 1)}%"
         movie_data["score_combined_color"] = "text-score"
     else:
         movie_data["score_combined"] = "--"
         movie_data["score_combined_color"] = "text-muted"
 
-    # print(f"Time taken: {timer() - start}")
+    # Attach all users' score data
+    movie_data["all_scores"] = all_scores
+
     return jsonify(movie_data)
 
 
