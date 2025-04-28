@@ -187,7 +187,7 @@ async function FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime
 
         // Create a container div for cards
         const cardsContainer = document.createElement("div");
-        cardsContainer.classList.add("row", "row-cols-1", "row-cols-md-5", "g-4");
+        cardsContainer.classList.add("row", "row-cols-2", "row-cols-md-5", "g-4");
         realContent.appendChild(cardsContainer);
 
         // Helper function to render movies
@@ -284,7 +284,7 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
         
             container.innerHTML = `
                 <div class="row justify-content-evenly align-items-center" data-aos="${isEven ? 'fade-left' : 'fade-right'}">
-                    <div class="col-md-3 justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
+                    <div class="col-md-3 bg-tertiary justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
                         <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}'s</h1>
                         <h1 class="text-center">Watchlist</h1>
                         <p id="${subtitleId}" class="text-center text-muted">Movies the other(s) might like!</p>
@@ -310,7 +310,7 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
                 card.classList.add("col");
                 card.innerHTML = `
                     <img src="${movie.poster}" 
-                        class="card-img-top rounded open-movie-modal" 
+                        class="card card-img-top rounded open-movie-modal" 
                         alt="${`${movie.title}`}"
                         slug="${movie.slug}">
                 `;
@@ -320,40 +320,6 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             
 
         }
-
-    } catch (error) {
-        console.error(error);
-    }
-    
-}
-
-// Fetch single watchlist from Flask backend and populate the DOM
-async function FetchSingleWatchlistOLD(username1, username2, SWL_num, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
-    try {
-        const response = await fetch(`/fetch_single_watchlist/${username1}/${username2}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
-        if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
-        const data = await response.json();
-
-        const realContent = document.getElementById(`SWC${SWL_num}_RC`);
-        // delete all existing cards
-        while (realContent.firstChild) {
-            realContent.removeChild(realContent.firstChild);
-        }
-
-        // Loop through the data and generate the cards
-        data.forEach(movie => {
-
-            // Generate each card
-            const card = document.createElement("div");
-            card.classList.add("col");
-            card.innerHTML = `
-                <img src="${movie.poster}" 
-                    class="card-img-top rounded open-movie-modal" 
-                    alt="${`${movie.title}`}"
-                    slug="${movie.slug}">
-            `;
-            realContent.appendChild(card);
-        });
 
     } catch (error) {
         console.error(error);
@@ -383,7 +349,7 @@ async function FetchRewatchlist(username, other_usernames, realRewatchCombo, min
             realRewatchCombo.innerHTML += `
             <div class="carousel-item ${index === 1 ? 'active' : ''}">
                 <div class="hover-zoom overflow-hidden">
-                    <img src="${movie.banner}" class="d-block w-100 rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
+                    <img src="${movie.banner}" class="card d-block w-100 rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
                 </div>
                 <div class="position-relative text-center text-muted p-3" style="font-size: 18px;">
                     ${movie.title} (${movie.year})
@@ -412,7 +378,7 @@ async function generateRewatchCarousels(allUsers, minRating, maxRating, minRunti
         // Create carousel HTML dynamically
         // TODO: Can also do: <div class="d-inline-block align-top" style="width: 500px; margin-right: 20px;"> in first line!
         container.innerHTML += `
-            <div class="col-md-6 d-inline-block align-top">
+            <div class="col-md-5 d-inline-block align-top">
                 <h1 class="text-center">Rewatches for ${user.name}</h1>
                 <p class="text-center text-muted mb-3">Movies highly rated by ${user.name} that the other(s) might like!</p>
                 <div id="${carouselId}" class="carousel slide p-4" data-bs-ride="carousel">

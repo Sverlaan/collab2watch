@@ -133,6 +133,16 @@
     border-radius: 10px;
 }
 
+#RewatchContainer {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+#RewatchContainer::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+
 
 
 
@@ -247,14 +257,15 @@ html {
 
 /* For the recommendation cards */
 .rec-card-img {
-    height: 120px;
+    height: 138px;
     object-fit: cover;
 }
 .rec-card {
     border-radius: 8px;
-    border-width: 0px;
-    background-color:rgba(173, 216, 230, .3);
-    height: 120px;
+    border-width: 1px;
+    /* background-color:rgba(173, 216, 230, .3); */
+    background-color:rgba(113, 140, 150, 0.231);
+    height: 140px;  /* 120px */
     transition: background-color 0.1s ease-in-out; /* Smooth transition */
 }
 .hover-zoom-rec-card .card:hover {
