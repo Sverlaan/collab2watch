@@ -11,77 +11,38 @@
 }
 
 
-/* Initially hidden
-.user-close-btn {
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-    z-index: 10;
-}
-
-/* Show when card is hovered 
-.user-card:hover .user-close-btn {
-    opacity: 1;
-    visibility: visible;
-}
-*/
 
 
 
 
 
-
-
-/* Initially hide the buttons
-.carousel-control-prev,
+/* .carousel-control-prev,
 .carousel-control-next {
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
-} */
+}
 
 .carousel-control-prev,
 .carousel-control-next {
     opacity: 0;
     transition: opacity 0.3s ease-in-out;
     position: absolute;
-    top: 191px;
-    transform: translateY(-50%);
     z-index: 11;
-    width: 50px; /* Match background size */
-    height: 50px; /* Match background size */
+    width: 50px;
+    height: 100%; 
     display: flex;
     align-items: center;
     justify-content: center;
     background: none;
     border: none;
     padding: 0;
-}
+} 
 
-/* Dark circular background */
-.carousel-control-prev::before,
-.carousel-control-next::before {
-    content: "";
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    background: rgba(0, 0, 0, 0.5);
-    border-radius: 50%;
-    z-index: -1;
-}
-
-/* Ensure the SVG icon is properly centered */
-.carousel-control-prev svg,
-.carousel-control-next svg {
-    width: 40px;
-    height: 40px;
-}
-
-/* Show buttons when hovering over the carousel */
 .carousel:hover .carousel-control-prev,
 .carousel:hover .carousel-control-next {
     opacity: 1;
 }
-
+*/
 
 /* Image zoom effect */
 .carousel-inner img {
@@ -152,45 +113,7 @@ html {
     scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-bg);
 }
 
-/* For overlapping avatar images */
-.avatar-group {
-    position: relative;
-    width: 85px; /* Adjust to fit both images */
-    height: 50px;
-    display: flex;
-    justify-content: center;
-}
-.avatar-group-B {
-    position: relative;
-    width: 68px; /* Adjust to fit both images */
-    height: 40px;
-    display: flex;
-    justify-content: center;
-}
-.avatar-img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    position: absolute;
-    border: 1px solid rgba(130, 130, 130, 1);
-}
-.avatar-img-B {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    position: absolute;
-    border: 1px solid rgba(130, 130, 130, 1);
-}
-.avatar-img-1 {
-    left: 0%;
-    transform: translateX(0%);
-    z-index: 2;
-}
-.avatar-img-2 {
-    left: 0%;
-    transform: translateX(70%); /* Adjust for desired overlap */
-    z-index: 1;
-}
+
 
 /* Add a hover effect to images */
 .hover-zoom img {
@@ -224,21 +147,7 @@ html {
   transform: scale(1.1);
 }
 
-/* Carousel */
-/* .carousel-control-prev,
-.carousel-control-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-70%);
-    z-index: 10;
-    filter: invert(100%);
-}
-.carousel-control-prev {
-    left: -70px; 
-}
-.carousel-control-next {
-    right: -70px;
-} */
+
 .carousel-caption {
     position: absolute;
     bottom: 0;
@@ -309,33 +218,3 @@ html {
   line-height: 1.2; /* Adjust if needed */
 }
 
-/* Placeholders */
-.placeholder {
-    background-color: #cecece;
-    /* color:rgb(114, 207, 114); */
-    animation: flicker 1.5s infinite;
-    border-radius: 8px;
-}
-.placeholder-img {
-    height: 300px;   
-    width: 100%;
-}
-.placeholder-img2 {
-    height: 240px;   
-    width: 100%;
-}
-.placeholder-rec-card {
-    height: 120px;
-    width: 860px;
-}
-@keyframes flicker {
-    0% {
-        opacity: 0.6;
-    }
-    50% {
-        opacity: 0.9;
-    }
-    100% {
-        opacity: 0.6;
-    }
-}
