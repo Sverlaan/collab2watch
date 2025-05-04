@@ -153,47 +153,42 @@
         <!--divider-->
         <hr class="my-4 w-75 mx-auto">
 
-        <div class="container mt-5 mb-5 p-3"  style="min-height: 870px; height: 900px;" data-aos="fade-in" data-aos-offset="500" data-aos-delay="50" id="RecommendContainer">
+        <div class="container mt-5 mb-5 p-3" data-aos="fade-in" data-aos-offset="500" data-aos-delay="50" id="RecommendContainer">
 
             <div class="row justify-content-center align-items-top g-0 mb-5">
                 <h1 class="text-center">Recommendations</h1>
                 <p class="text-center text-muted no-spacing">Combined and personalized recommendations for movies you have not seen!</p>
                 <p class="text-center text-muted mb-3">Use the blacklist functionality to dismiss any suggestions and tune the recommendations.</p>
 
-                <!-- Flexbox wrapper to control alignment -->
-                <div class="row justify-content-center align-items-top">
-                    <!-- Centered button group -->
-                    <div class="col-md-2">
-                        <!-- Empty div for spacing -->
-                    </div>
-                    <div class="col-md-5 d-flex justify-content-center align-items-center">
-                        <div class="btn-group" role="group" aria-label="Toggle button group" id="userButtonsContainer">
-                            <!-- Buttons will be inserted here -->
-                        </div>
-                    </div>
-                    <div class="col-md-2 d-flex justify-content-center align-items-center">
-                        <!-- Edit Blacklist button pushed to the right -->
-                        <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link ms-4" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">  Edit Blacklist
-                        </a>
-                    </div>
-                </div>
-
 
             </div>
 
 
 
-            <div class="row justify-content-center align-items-top hover-zoom-rec-card g-0">
-                <!-- <div class="col-md-1">
+            <div class="row justify-content-center align-items-top g-3">
+                <div class="col-md-6">
+                    <div class="row justify-content-center align-items-top g-0 overflow-auto" 
+                        id="RecommendContainerMovie">
+                    </div>
                 </div>
-                <div class="col-md-9"> -->
+
+                <div class="col-md-6 hover-zoom-rec-card ">
+                    <!-- Flexbox wrapper to control alignment -->
+                    <div class="row justify-content-center align-items-center mb-4">
+                        <div class="col-auto d-flex">
+                             <div class="btn-group" role="group" aria-label="Toggle button group" id="userButtonsContainer">
+                                <!-- Buttons will be inserted here -->
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <a href="#" id="editBlacklistButton" class="text-danger text-decoration-none edit-blacklist-link" data-bs-toggle="modal" data-bs-target="#editBlacklistModal">  Edit Blacklist</a>
+                        </div>
+                    </div>
                     <div class="row justify-content-center align-items-top g-0 overflow-auto" 
                         id="RecommendContainerReal" 
                         style="max-height: 630px;">
                     </div>
-                <!-- </div>
-                <div class="col-md-1">
-                </div> -->
+                </div>
             </div>
 
         </div>

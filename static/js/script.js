@@ -69,7 +69,7 @@ async function fetchUserData(username) {
                     <div class="card-body">
                         <h5 class="card-title">${current_user.name}</h5>
                         <p id="user-stats-${username}" class="card-text text-muted">Fetching user data...</p>
-                        <a href="${current_user.url}" target="_blank" class="btn btn-outline-secondary btn-sm">View Profile</a>
+                        <a href="${current_user.url}" target="_blank" class="btn btn-outline-primary btn-sm">View Profile</a>
                     </div>
                 </div>
                 <div class="pb-3">
@@ -381,7 +381,7 @@ async function generateRewatchCarousels(allUsers, minRating, maxRating, minRunti
             <div class="col-md-5 d-inline-block align-top">
                 <h1 class="text-center">Rewatches for ${user.name}</h1>
                 <p class="text-center text-muted mb-3">Movies highly rated by ${user.name} that the other(s) might like!</p>
-                <div id="${carouselId}" class="carousel slide p-4" data-bs-ride="carousel">
+                <div id="${carouselId}" class="carousel slide p-3" data-bs-ride="carousel">
                     <div class="carousel-inner" id="${carouselInnerId}"></div>
                     <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
                     </button>
@@ -771,6 +771,7 @@ document.getElementById("resetUser2Blacklist").addEventListener("click", async f
 document.body.addEventListener("click", async function (event) {
 
     let modalTrigger = event.target.closest(".open-movie-modal");
+    let modalTrigger2 = event.target.closest(".show-movie-modal");
 
     if (event.target.matches("button[id^='explain_']")) {
         const slug = event.target.getAttribute("data-slug");
@@ -785,6 +786,12 @@ document.body.addEventListener("click", async function (event) {
         const title = event.target.getAttribute("data-title");
         const year = event.target.getAttribute("data-year");
         blacklistMovie(slug, title, year, weight);
+    }
+    else if (modalTrigger2) {
+
+        // call showRecommendedMovie function
+        const slug = modalTrigger2.getAttribute("slug");
+        showRecommendedMovie(slug);
     }
     else if (modalTrigger) {
 
@@ -867,6 +874,107 @@ document.body.addEventListener("click", async function (event) {
         });
     }
 });
+
+async function showRecommendedMovie(slug) {
+
+            // Clear previous content in the container
+        document.getElementById("RecommendContainerMovie").innerHTML = "";
+
+        const all_usernames = allUsers.map(u => u.username).join(",");
+
+        const response = await fetch(`/fetch_movie_data_for_modal/${slug}/${all_usernames}`);
+        if (!response.ok) throw new Error("Something went wrong getting movie modal data");
+
+        const movie = await response.json();
+
+        // Create modal HTML
+        let modalHtml = await CreateModal2(movie);
+
+        // Strip outer modal wrapper, extract just `.card`
+        const tempWrapper = document.createElement("div");
+        tempWrapper.innerHTML = modalHtml;
+        const cardContent = tempWrapper//.querySelector(".card");
+
+        // Append only the card content to the column
+        document.getElementById("RecommendContainerMovie").appendChild(cardContent);
+
+}
+
+// Create movie modal HTML
+async function CreateModal2(movie) {
+
+    let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png" //"https://a.ltrbxd.com/logos/letterboxd-logo-v-neg-rgb.svg" 
+
+    // Start of user scores dynamic section
+    let userScoresHtml = `
+        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;">
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
+                <img src="${letterboxd_logo}" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>Letterboxd</small></p>
+            </div>
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
+                
+                <img src="https://cdn-icons-png.flaticon.com/512/718/718339.png" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>Combined</small></p>
+            </div>
+        </div>
+    `;
+
+    let modalHtml = `
+        <div class="card position-relative" style="border: none;">
+
+            <div class="banner-fade open-movie-modal" slug="${movie.slug}" style="overflow: hidden; position: relative;">
+                <img src="${movie.banner}" 
+                    class="card-img-top img-fluid" 
+                    alt="${movie.title}"
+                    style="object-fit: cover; height: 300px; object-position: top;">
+            </div>
+
+
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-lg-3">    
+                        <img src="${movie.poster}" 
+                            class="card card-img-top rounded open-movie-modal" 
+                            style="object-fit: contain;" 
+                            alt="${movie.title}"
+                            slug="${movie.slug}">
+                    </div>
+                    
+                    <div class="col-lg-9">
+                        <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.5em; font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
+                        <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
+                        <p class="card-text">${movie.description}</p>
+                        <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
+                        <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
+                        <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
+                    </div>
+                </div>
+
+                <div class="row text-center mt-3">
+                <button type="button"
+                        class="btn btn-link text-muted text-decoration-none edit-blacklist-link fst-italic fs-4 explain-btn"
+                        data-bs-toggle="modal"
+                        data-bs-target="#explainModal"
+                        data-slug="${movie.slug}"
+                        data-title="${movie.title}"
+                        data-year="${movie.year}"
+                        data-weight="${0}"
+                        id="explain_${movie.slug}_0_0">
+                    Why did we recommend this?
+                </button>
+                </div>
+
+                
+                
+            </div>
+        </div>
+    `;
+    
+    return modalHtml;
+}
 
 // Create movie modal HTML
 async function CreateModal(movie) {
@@ -1087,7 +1195,7 @@ function generateRecUserButtons() {
     allUsers.forEach((user, index) => {
         const button = document.createElement("button");
         button.type = "button";
-        button.className = "btn btn-outline-warning";
+        button.className = "btn btn-outline-warning me-1";
         button.innerText = user.name;
         button.setAttribute("weight", 1); // Optional: for custom logic
         button.setAttribute("data-user", user.username); // Optional: for custom logic
@@ -1171,7 +1279,7 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
                 </div>
 
                 <div class="col">
-                    <div class="card rec-card open-movie-modal mb-3" slug="${movie.slug}">
+                    <div class="card rec-card show-movie-modal mb-3" slug="${movie.slug}">
                         <div class="row g-0" >
                             <div class="col-auto">
                                 <img src="${movie.poster}" class="rec-card-img open-movie-modal rounded-start" alt="${movie.title}" slug="${movie.slug}">
@@ -1180,24 +1288,22 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
                             <div class="col">
                                 <div class="card-body" slug="${movie.slug}">
                                     <h5 class="card-title">${movie.title} (${movie.year})</h5>
-                                    <p class="card-text no-spacing text-muted">${movie.genres}</p> 
-                                    <p class="card-text no-spacing text-muted">${movie.runtime} mins</p> 
+                                    <h5 class="text-top text-score p">${movie.score}%</h5>
                                 </div>
                             </div>
-
-                            <div class="col-auto p-4 align-items-center d-flex flex-column justify-content-center">
-                                <h4 class="text-top text-score p">${movie.score}%</h4>
-                            </div>
-
-                            <div class="col-auto p-2 align-items-center  d-flex flex-column justify-content-center">
-                                <button type="button" class="btn btn-outline-warning mb-2 explain-btn" 
-                                    id="explain_${movie.slug}_${weight}_${index}" data-slug="${movie.slug}" data-title="${movie.title}" data-year="${movie.year}" data-weight="${weight}">?
-                                </button>
-                            </div>
                             <div class="col-auto p-2 align-items-center  d-flex flex-column justify-content-center" style="margin-right: 20px;">
-                                <button type="button" class="btn btn-outline-danger mb-2" 
-                                    id="blacklist_${movie.slug}_${weight}_${index}" data-slug="${movie.slug}" data-title="${movie.title}" data-year="${movie.year}" data-weight="${weight}">&#10005;
+
+                                <button 
+                                    type="button"
+                                    class="btn-close"
+                                    aria-label="Blacklist"
+                                    id="blacklist_${movie.slug}_${weight}_${index}"
+                                    data-slug="${movie.slug}"
+                                    data-title="${movie.title}"
+                                    data-year="${movie.year}"
+                                    data-weight="${weight}">
                                 </button>
+
                             </div>
 
                         </div>
@@ -1210,6 +1316,10 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
 
         // Append all movie elements to the DOM in one go
         realRecommendContent.appendChild(fragment);
+
+        // Call showRecommendedMovie function for the first movie
+        const firstMovieSlug = data[0].slug;
+        showRecommendedMovie(firstMovieSlug);
 
     } catch (error) {
         console.error(error);

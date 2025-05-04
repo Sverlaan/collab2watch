@@ -105,6 +105,27 @@
 
 
 
+.banner-fade {
+  position: relative;
+  z-index: 0;
+}
+
+.banner-fade::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to bottom, var(--bs-body-bg), rgba(0,0,0,0) 10%),
+    linear-gradient(to top, var(--bs-body-bg), rgba(0,0,0,0) 10%),
+    linear-gradient(to right, var(--bs-body-bg), rgba(0,0,0,0) 0%),
+    linear-gradient(to left, var(--bs-body-bg), rgba(0,0,0,0) 0%);
+}
+
+
+
+
 
 
 
@@ -166,15 +187,14 @@ html {
 
 /* For the recommendation cards */
 .rec-card-img {
-    height: 138px;
+    height: 120px;
     object-fit: cover;
 }
 .rec-card {
     border-radius: 8px;
-    border-width: 1px;
-    /* background-color:rgba(173, 216, 230, .3); */
-    background-color:rgba(113, 140, 150, 0.231);
-    height: 140px;  /* 120px */
+    border-width: 0px;
+    background: var(--bs-secondary-bg);
+    height: 120px;  /* 120px */
     transition: background-color 0.1s ease-in-out; /* Smooth transition */
 }
 .hover-zoom-rec-card .card:hover {
