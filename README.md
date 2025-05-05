@@ -1,5 +1,5 @@
 # Collab2Watch
-A web tool that recommends movies for multiple parties by combining Letterboxd user profiles and applying collaborative filtering. Currently, it supports two users, but this will be extended in the future for larger group recommendations.
+A web tool that recommends movies for multiple parties by combining Letterboxd user profiles and applying group collaborative filtering.
 
 ## Hosted website
 The website is currently hosted through Railway [here](https://collab2watch-production.up.railway.app).
