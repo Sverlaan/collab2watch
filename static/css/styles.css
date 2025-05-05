@@ -103,6 +103,24 @@
   display: none; /* Safari and Chrome */
 }
 
+#userScoresRow {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+#userScoresRow::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
+#userScoresRow2 {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+#userScoresRow2::-webkit-scrollbar {
+  display: none; /* Safari and Chrome */
+}
+
 
 
 .banner-fade {

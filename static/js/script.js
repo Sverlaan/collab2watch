@@ -199,9 +199,7 @@ async function FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime
                 const card = document.createElement("div");
                 card.classList.add("col");
                 card.innerHTML = `
-                    <div class="card">
-                        <img src="${movie.poster}" class="card-img-top rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
-                    </div>
+                    <img src="${movie.poster}" class="card card-img-top rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
                 `;
                 cardsContainer.appendChild(card);
             });
@@ -844,7 +842,7 @@ document.body.addEventListener("click", async function (event) {
                 let similarMovieHtml = `
                 <div class="col">
                     <img src="${similarMovie.poster}" 
-                        class="card-img-top rounded open-movie-modal" 
+                        class="card card-img-top rounded open-movie-modal" 
                         alt="${similarMovie.title}"
                         slug="${similarMovie.slug}">
                 </div>
@@ -907,7 +905,7 @@ async function CreateModal2(movie) {
 
     // Start of user scores dynamic section
     let userScoresHtml = `
-        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;">
+        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;" id="userScoresRow">
             <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
                 <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
                 <img src="${letterboxd_logo}" class="rounded-circle" style="width: 60px; height: 60px;">
@@ -919,7 +917,27 @@ async function CreateModal2(movie) {
                 <img src="https://cdn-icons-png.flaticon.com/512/718/718339.png" class="rounded-circle" style="width: 60px; height: 60px;">
                 <p class="text-muted text-center"><small>Combined</small></p>
             </div>
-        </div>
+    `;
+
+    // Loop through all users dynamically
+    for (let i = 0; i < allUsers.length; i++) {
+        const user = allUsers[i];
+        const scoreData = movie.all_scores.find(u => u.username === user.username);  // match by username
+        console.log(scoreData);
+
+        userScoresHtml += `
+            <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
+                <h5 class="text-center mb-2 ${scoreData ? scoreData.score_color : 'text-muted'}">${scoreData ? scoreData.score : '--'}</h5>
+                <img src="${user.avatar}" class="rounded-circle" style="width: 60px; height: 60px;">
+                <p class="text-muted text-center"><small>${user.name}</small></p>
+            </div>
+        `;
+    }
+
+    // Add combined score block at the end
+    userScoresHtml += `
+
+    </div> <!-- End of dynamic user row -->
     `;
 
     let modalHtml = `
@@ -945,13 +963,15 @@ async function CreateModal2(movie) {
                     
                     <div class="col-lg-9">
                         <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.5em; font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
-                        <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
+                        <h6 class="card-subtitle mt-3 mb-2 text-muted">${movie.runtime} mins | ${movie.genres}</h6> 
                         <p class="card-text">${movie.description}</p>
                         <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
                         <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
                         <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
                     </div>
                 </div>
+
+                ${userScoresHtml}
 
                 <div class="row text-center mt-3">
                 <button type="button"
@@ -963,11 +983,9 @@ async function CreateModal2(movie) {
                         data-year="${movie.year}"
                         data-weight="${0}"
                         id="explain_${movie.slug}_0_0">
-                    Why did we recommend this?
+                    Why did we recommend this movie?
                 </button>
                 </div>
-
-                
                 
             </div>
         </div>
@@ -983,7 +1001,7 @@ async function CreateModal(movie) {
 
     // Start of user scores dynamic section
     let userScoresHtml = `
-        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;">
+        <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;" id="userScoresRow2">
             <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
                 <h5 class="text-center mb-2 text-muted">${movie.rating}</h5>
                 <img src="${letterboxd_logo}" class="rounded-circle" style="width: 60px; height: 60px;">
@@ -1043,13 +1061,13 @@ async function CreateModal(movie) {
                             <div class="row g-3">
                                 <div class="col-lg-2">
                                     <img src="${movie.poster}" 
-                                        class="card-img rounded" 
+                                        class="card card-img rounded" 
                                         style="object-fit: contain;" 
                                         alt="${movie.title}">
                                 </div>
                                 <div class="col-lg-10">
                                     <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.5em; font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
-                                    <h6 class="card-subtitle mt-3 mb-2 text-muted">Runtime: ${movie.runtime} mins | ${movie.genres}</h6> 
+                                    <h6 class="card-subtitle mt-3 mb-2 text-muted">${movie.runtime} mins | ${movie.genres}</h6> 
                                     <p class="card-text">${movie.description}</p>
                                     <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
                                     <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
@@ -1149,14 +1167,9 @@ document.getElementById('compareButton').addEventListener('click', async functio
 
     document.getElementById("contentContainer").classList.remove('d-none');
     
-    // Get the selected radio button's weight
-    // const selectedRadio = document.querySelector('input[name="btnradio"]:checked');
-    // const associatedLabel = document.querySelector(`label[for="${selectedRadio.id}"]`);
-    // const weight = parseInt(associatedLabel.getAttribute("weight"), 10);
     // Get Recommendations
-    generateRecUserButtons();
-    //await FetchRecommendations(username1, username2, 0, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    
+    generateRecUserButtons(refresh);
+
     // Show the real recommendations content
     //document.getElementById("RecommendContainerReal").classList.remove('d-none');
     document.getElementById("RecommendContainerReal").scrollTop = 0;
@@ -1181,9 +1194,7 @@ function getActiveUsernames() {
 }
 
 
-function generateRecUserButtons() {
-    const container = document.getElementById("userButtonsContainer");
-    container.innerHTML = ""; // Clear previous buttons
+function generateRecUserButtons(refresh) {
 
     const minRating = document.getElementById('minRating').value;
     const maxRating = document.getElementById('maxRating').value;
@@ -1192,31 +1203,39 @@ function generateRecUserButtons() {
     const minYear = document.getElementById('minYear').value;
     const maxYear = document.getElementById('maxYear').value;
 
-    allUsers.forEach((user, index) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.className = "btn btn-outline-warning me-1";
-        button.innerText = user.name;
-        button.setAttribute("weight", 1); // Optional: for custom logic
-        button.setAttribute("data-user", user.username); // Optional: for custom logic
-        // set button active
-        button.classList.add("active");
+    if (refresh == 0) {
+        console.log("Refreshing user buttons");
+        const container = document.getElementById("userButtonsContainer");
+        container.innerHTML = ""; // Clear previous buttons
 
-        // Optional: specific IDs for known users
-        button.id = `user-btn-${user}`;
+        allUsers.forEach((user, index) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "btn btn-outline-warning me-1";
+            button.innerText = user.name;
+            button.setAttribute("weight", 1); // Optional: for custom logic
+            button.setAttribute("data-user", user.username); // Optional: for custom logic
+            // set button active
+            button.classList.add("active");
 
-        // Toggle active class on click
-        button.addEventListener("click", () => {
-            button.classList.toggle("active");
+            // Optional: specific IDs for known users
+            button.id = `user-btn-${user}`;
 
-            // Pass them to FetchRecommendations
-            FetchRecommendations(getActiveUsernames(), minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+            // Toggle active class on click
+            button.addEventListener("click", () => {
+                button.classList.toggle("active");
+
+                // Pass them to FetchRecommendations
+                FetchRecommendations(getActiveUsernames(), minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+            });
+
+            container.appendChild(button);
         });
+    }
 
-        container.appendChild(button);
-    });
-
-    const allActiveUsers = allUsers.map(u => u.username);
+    // get all users whose buttons are active
+    const activeButtons = document.querySelectorAll("#userButtonsContainer button.active");
+    const allActiveUsers = Array.from(activeButtons).map(btn => btn.getAttribute("data-user"));
     FetchRecommendations(allActiveUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 }
 
