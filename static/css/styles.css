@@ -121,6 +121,16 @@
   display: none; /* Safari and Chrome */
 }
 
+/* Hide horizontal scrollbar cross-browser */
+.no-scrollbar {
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;     /* IE and Edge */
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;                /* Chrome, Safari */
+}
+
+
 
 
 .banner-fade {

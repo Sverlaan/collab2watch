@@ -239,12 +239,12 @@ def fetch_recommendations(usernames, minRating, maxRating, minRuntime, maxRuntim
 def fetch_similar_movies(slug, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear):
 
     start = timer()
-    hits, similar_movies = recommender_instance.get_similar_movies(slug, top_n=4)
+    hits, similar_movies = recommender_instance.get_similar_movies(slug, top_n=5)
     if hits == False:
         return jsonify({"success": False, "message": "No similar movies found", "movies": []})  # Return a valid response with a flag
     # print(f"Time taken: {timer() - start}")
 
-    movies = retrieve_movies(similar_movies, top_k=4)
+    movies = retrieve_movies(similar_movies, top_k=5)
 
     return jsonify({"success": True, "message": "Similar movies found", "movies": movies})
 

@@ -103,7 +103,7 @@ async function fetchUserData(username) {
                 else {
                     // press the compare button to update the recommendations
                     const event = new Event('click', { bubbles: true });
-                    event.refresh = 1;
+                    event.refresh = 0;
                     document.getElementById('compareButton').dispatchEvent(event);
                 }
             }
@@ -182,60 +182,32 @@ async function FetchCommonWatchlist(minRating, maxRating, minRuntime, maxRuntime
 
         commonWatchlistCount.textContent = data.length;
 
-        // Track if showing all or only 9
-        let showingAll = false;
+        // Create horizontally scrollable container
+        const scrollContainer = document.createElement("div");
+        scrollContainer.style.display = "flex";
+        scrollContainer.style.overflowX = "auto";
+        scrollContainer.style.gap = "2rem";
+        scrollContainer.style.padding = "1.2rem 1.2rem"; // Only vertical padding
+        scrollContainer.classList.add("no-scrollbar");
 
-        // Create a container div for cards
-        const cardsContainer = document.createElement("div");
-        cardsContainer.classList.add("row", "row-cols-2", "row-cols-md-5", "g-4");
-        realContent.appendChild(cardsContainer);
+        realContent.appendChild(scrollContainer);
 
-        // Helper function to render movies
-        function renderMovies() {
-            cardsContainer.innerHTML = ""; // Clear cards first
-
-            const moviesToShow = showingAll ? data : data.slice(0, 9); // Show 9 cards initially, then toggle
-            moviesToShow.forEach(movie => {
-                const card = document.createElement("div");
-                card.classList.add("col");
-                card.innerHTML = `
-                    <img src="${movie.poster}" class="card card-img-top rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
-                `;
-                cardsContainer.appendChild(card);
-            });
-
-            // Add the "Show More" button as the final card in the grid
-            const buttonCard = document.createElement("div");
-            buttonCard.classList.add("col");
-            buttonCard.innerHTML = `
-                <div class="card d-flex justify-content-center align-items-center" style="height: 100%;">
-                    <button class="btn btn-secondary w-100" style="height: 100%; padding: 0; font-size: 20px">
-                        ${showingAll ? "Show Less" : "Show More"}
-                    </button>
-                </div>
+        data.forEach(movie => {
+            const card = document.createElement("div");
+            card.style.minWidth = "250px"; // Fixed size for flex layout
+            card.style.flexShrink = "0";
+            card.innerHTML = `
+                <img src="${movie.poster}" class="card card-img-top rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
             `;
-            cardsContainer.appendChild(buttonCard);
-
-            // Hide the button if there are 9 or fewer movies
-            if (data.length <= 9) {
-                buttonCard.style.display = "none"; // Hide button if 9 or fewer movies
-            }
-        }
-
-        renderMovies(); // Initial render
-
-        // Add click event listener to toggle button
-        cardsContainer.addEventListener("click", (event) => {
-            if (event.target.closest("button")) {
-                showingAll = !showingAll;
-                renderMovies();
-            }
+            scrollContainer.appendChild(card);
         });
 
     } catch (error) {
         console.error(error);
     }
 }
+
+
 
 
 
@@ -875,7 +847,8 @@ document.body.addEventListener("click", async function (event) {
 
 async function showRecommendedMovie(slug) {
 
-            // Clear previous content in the container
+        // Clear previous content in the container
+        document.getElementById("footer").style.visibility = "hidden";
         document.getElementById("RecommendContainerMovie").innerHTML = "";
 
         const all_usernames = allUsers.map(u => u.username).join(",");
@@ -895,6 +868,8 @@ async function showRecommendedMovie(slug) {
 
         // Append only the card content to the column
         document.getElementById("RecommendContainerMovie").appendChild(cardContent);
+
+        document.getElementById("footer").style.visibility = "visible";
 
 }
 
@@ -983,7 +958,7 @@ async function CreateModal2(movie) {
                         data-year="${movie.year}"
                         data-weight="${0}"
                         id="explain_${movie.slug}_0_0">
-                    Why did we recommend this movie?
+                    Why do we recommend this movie?
                 </button>
                 </div>
                 
@@ -994,12 +969,10 @@ async function CreateModal2(movie) {
     return modalHtml;
 }
 
-// Create movie modal HTML
 async function CreateModal(movie) {
+    let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png";
 
-    let letterboxd_logo = "https://a.ltrbxd.com/logos/letterboxd-mac-icon.png" //"https://a.ltrbxd.com/logos/letterboxd-logo-v-neg-rgb.svg" 
-
-    // Start of user scores dynamic section
+    // Build user scores section
     let userScoresHtml = `
         <div class="row g-3 mt-1 justify-content-start flex-nowrap overflow-auto" style="white-space: nowrap;" id="userScoresRow2">
             <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
@@ -1009,17 +982,14 @@ async function CreateModal(movie) {
             </div>
             <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
                 <h5 class="text-center mb-2 ${movie.score_combined_color}">${movie.score_combined}</h5>
-                
                 <img src="https://cdn-icons-png.flaticon.com/512/718/718339.png" class="rounded-circle" style="width: 60px; height: 60px;">
                 <p class="text-muted text-center"><small>Combined</small></p>
             </div>
     `;
 
-    // Loop through all users dynamically
     for (let i = 0; i < allUsers.length; i++) {
         const user = allUsers[i];
-        const scoreData = movie.all_scores.find(u => u.username === user.username);  // match by username
-        console.log(scoreData);
+        const scoreData = movie.all_scores.find(u => u.username === user.username);
 
         userScoresHtml += `
             <div class="col-md-3 d-flex flex-column align-items-center" style="min-width: 150px;">
@@ -1030,71 +1000,83 @@ async function CreateModal(movie) {
         `;
     }
 
-    // Add combined score block at the end
-    userScoresHtml += `
-
-    </div> <!-- End of dynamic user row -->
-    `;
-
-
-
+    userScoresHtml += `</div>`;
 
     let modalHtml = `
         <div class="modal fade" id="dynamicModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" style="max-width: 40%; width: 40%;">
-            <div class="modal-content">
-                <div class="modal-body p-0">
-                    <div class="card position-relative">
-                        <div class="card-img-wrap">
-                            <button type="button" 
+            <div class="modal-dialog modal-dialog-centered" style="max-width: 50%; width: 50%;">
+                <div class="modal-content">
+                    <div class="modal-body p-0">
+
+                        <!-- Background section (banner + user scores) -->
+                        <div class="card position-relative text-white" style="
+                            border: none;
+                            background-image: url('${movie.banner}');
+                            background-size: cover;
+                            background-position: center;
+                        ">
+                            <!-- Dark overlay -->
+                            <div style="
+                                position: absolute;
+                                top: 0; left: 0; right: 0; bottom: 0;
+                                background: rgba(0, 0, 0, 0.6);
+                                z-index: 1;
+                            "></div>
+
+
+                            <!-- Foreground content over banner -->
+                            <div class="card-body position-relative" style="z-index: 2;">
+                                <button type="button" 
                                     class="btn-close position-absolute top-0 end-0 m-2"
                                     data-bs-dismiss="modal" 
                                     aria-label="Close"
                                     style="z-index: 10; background-color: white; border-radius: 50%; padding: 10px;">
-                            </button>
-                            <img src="${movie.banner}" 
-                                class="card-img-top img-fluid" 
-                                alt="${movie.title}"
-                                style="object-fit: cover; height: 300px; object-position: top;">
+                                </button>
+
+                                <div class="row g-3">
+                                    <div class="col-lg-3">
+                                        <img src="${movie.poster}" 
+                                            class="card card-img rounded" 
+                                            style="object-fit: contain;" 
+                                            alt="${movie.title}">
+                                    </div>
+                                    <div class="col-lg-9">
+                                        <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.6em; font-weight: bolder; color: white;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
+                                        <h6 class="card-subtitle mt-3 mb-2 text-light">${movie.runtime} mins | ${movie.genres}</h6> 
+                                        <p class="card-text">${movie.description}</p>
+                                        <p class="card-text no-spacing text-light"><small>Director: ${movie.director}</small></p>
+                                        <p class="card-text no-spacing text-light"><small>Cast: ${movie.actors}</small></p>
+                                        <a href="${movie.trailer}" class="text-decoration-none text-light" target="_blank" rel="noopener noreferrer"><small>Watch trailer</small></a>
+                                    </div>
+                                </div>
+
+                                <!-- User Scores over background -->
+                                <div class="mt-4">
+                                    ${userScoresHtml}
+                                </div>
+                            </div>
                         </div>
+
+                        <!-- Plain section for similar movies -->
                         <div class="card-body">
-                            <div class="row g-3">
-                                <div class="col-lg-2">
-                                    <img src="${movie.poster}" 
-                                        class="card card-img rounded" 
-                                        style="object-fit: contain;" 
-                                        alt="${movie.title}">
+                            <div class="container-fluid" id="similarMoviesContainer">
+                                <div class="mt-2 w-100 p-2">
+                                    <div class="text-center text-muted fst-italic fs-4">Movies similar to ${movie.title}:</div>   
                                 </div>
-                                <div class="col-lg-10">
-                                    <a href="${movie.letterboxd_link}" class="text-decoration-none edit-blacklist-link" style="font-size: 1.5em; font-weight: bolder; color: inherit;" target="_blank" rel="noopener noreferrer">${movie.title} (${movie.year})</a>
-                                    <h6 class="card-subtitle mt-3 mb-2 text-muted">${movie.runtime} mins | ${movie.genres}</h6> 
-                                    <p class="card-text">${movie.description}</p>
-                                    <p class="card-text no-spacing text-muted"><small>Director: ${movie.director}</small></p>
-                                    <p class="card-text no-spacing text-muted"><small>Cast: ${movie.actors}</small></p>
-                                    <a href="${movie.trailer}" class="text-decoration-none" target="_blank" rel="noopener noreferrer"><small>Watch trailer<small></a>
-                                </div>
+                                <div class="row hover-zoom g-3 justify-content-evenly p-1 mb-3" id="similarMovies"></div>
                             </div>
-                            
-                            ${userScoresHtml}
-
-                            <class="container-fluid" id="similarMoviesContainer">
-
-                                <div class="mt-4 w-100 p-2">
-                                    <h5 class="text-center text-muted">Movies similar to ${movie.title}:</h5>   
-                                </div>
-                                <div class="row hover-zoom g-3 justify-content-evenly p-2" id="similarMovies">         
-                                </div>
-                            </div>
-                            
                         </div>
+
                     </div>
                 </div>
             </div>
         </div>
     `;
-    
+
     return modalHtml;
 }
+
+
 
 ////////////////////////////////////////// Set Display Names //////////////////////////////////////////
 function setDisplayNames(user1_name, user2_name) {
@@ -1196,13 +1178,6 @@ function getActiveUsernames() {
 
 function generateRecUserButtons(refresh) {
 
-    const minRating = document.getElementById('minRating').value;
-    const maxRating = document.getElementById('maxRating').value;
-    const minRuntime = document.getElementById('minRuntime').value;
-    const maxRuntime = document.getElementById('maxRuntime').value;
-    const minYear = document.getElementById('minYear').value;
-    const maxYear = document.getElementById('maxYear').value;
-
     if (refresh == 0) {
         console.log("Refreshing user buttons");
         const container = document.getElementById("userButtonsContainer");
@@ -1211,7 +1186,7 @@ function generateRecUserButtons(refresh) {
         allUsers.forEach((user, index) => {
             const button = document.createElement("button");
             button.type = "button";
-            button.className = "btn btn-outline-warning me-1";
+            button.className = "btn btn-outline-warning";
             button.innerText = user.name;
             button.setAttribute("weight", 1); // Optional: for custom logic
             button.setAttribute("data-user", user.username); // Optional: for custom logic
@@ -1225,6 +1200,13 @@ function generateRecUserButtons(refresh) {
             button.addEventListener("click", () => {
                 button.classList.toggle("active");
 
+                const minRating = document.getElementById('minRating').value;
+                const maxRating = document.getElementById('maxRating').value;
+                const minRuntime = document.getElementById('minRuntime').value;
+                const maxRuntime = document.getElementById('maxRuntime').value;
+                const minYear = document.getElementById('minYear').value;
+                const maxYear = document.getElementById('maxYear').value;
+
                 // Pass them to FetchRecommendations
                 FetchRecommendations(getActiveUsernames(), minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
             });
@@ -1232,6 +1214,13 @@ function generateRecUserButtons(refresh) {
             container.appendChild(button);
         });
     }
+
+    const minRating = document.getElementById('minRating').value;
+    const maxRating = document.getElementById('maxRating').value;
+    const minRuntime = document.getElementById('minRuntime').value;
+    const maxRuntime = document.getElementById('maxRuntime').value;
+    const minYear = document.getElementById('minYear').value;
+    const maxYear = document.getElementById('maxYear').value;
 
     // get all users whose buttons are active
     const activeButtons = document.querySelectorAll("#userButtonsContainer button.active");
