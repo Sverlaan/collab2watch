@@ -253,7 +253,7 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             container.id = containerId;
         
             container.innerHTML = `
-                <div class="row justify-content-evenly align-items-center" data-aos="${isEven ? 'fade-left' : 'fade-right'}">
+                <div class="row justify-content-evenly align-items-center">
                     <div class="col-md-3 bg-tertiary justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
                         <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}'s</h1>
                         <h1 class="text-center">Watchlist</h1>
@@ -406,330 +406,37 @@ async function explainMovie(slug, title, year) {
 
 }
 
-// Function to handle blacklist logic
-async function blacklistMovie(slug, title, year, weight) {
-    weight = parseInt(weight, 10);
-
-    document.getElementById("blacklistModalTitle").textContent = `Add ${title} (${year}) To Blacklist`;
-    document.getElementById("blacklistModalText").innerHTML = `For which user would you like to add <b>${title} (${year})</b> to the blacklist?`;
-    document.getElementById("user1BlacklistCheckboxText").textContent = allUsers[0].name;
-    document.getElementById("user2BlacklistCheckboxText").textContent = allUsers[1].name;
-
-    // Get elements
-    let user1Checkbox = document.getElementById("user1BlacklistCheckbox");
-    let user2Checkbox = document.getElementById("user2BlacklistCheckbox");
-    let addToBlacklistBtn = document.getElementById("addToBlacklistBtn");
-    let loadingIndicator = document.getElementById("blacklistLoading");
-
-    if (!user1Checkbox || !user2Checkbox || !loadingIndicator) {
-        console.error("Required elements not found!");
-        return;
-    }
-
-    // Reset checkboxes and button state
-    user1Checkbox.checked = false;
-    user2Checkbox.checked = false;
-    addToBlacklistBtn.disabled = true; // Initially disable button
-    loadingIndicator.style.display = "none"; // Hide loading initially
-
-    // Apply logic for weight
-    if (weight === -1) {
-        user1Checkbox.checked = true;
-        addToBlacklistBtn.disabled = false;
-    } else if (weight === 1) {
-        user2Checkbox.checked = true;
-        addToBlacklistBtn.disabled = false;
-    } else if (weight === 0) {
-        addToBlacklistBtn.disabled = true;
-    }
-
-    // Function to enable/disable button based on checkbox selection
-    function updateButtonState() {
-        addToBlacklistBtn.disabled = !(user1Checkbox.checked || user2Checkbox.checked);
-    }
-
-    // Add event listeners to checkboxes
-    user1Checkbox.addEventListener("change", updateButtonState);
-    user2Checkbox.addEventListener("change", updateButtonState);
-
-    // Show the modal
-    let modal = new bootstrap.Modal(document.getElementById("blacklistModal"));
-    modal.show();
-
-    // Add click event to blacklist button
-    document.getElementById("addToBlacklistBtn").onclick = async function () {
-        let selectedUsers = [];
-
-        if (user1Checkbox.checked) selectedUsers.push(allUsers[0].username);
-        if (user2Checkbox.checked) selectedUsers.push(allUsers[1].username);
-
-        // Show loading spinner and disable button
-        addToBlacklistBtn.disabled = true;
-        addToBlacklistBtn.textContent = "Processing...";
-        loadingIndicator.style.display = "block"; 
-
-        try {
-            for (let user of selectedUsers) {
-                let response = await fetch(`/add_to_blacklist/${user}/${slug}`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" }
-                });
-                if (!response.ok) {
-                    throw new Error(`Failed to add ${slug} to ${user}'s blacklist`);
-                }
-            }
-
-            // Function to wait for compare button action to complete
-            async function waitForCompareUpdate() {
-                return new Promise((resolve) => {
-                    function onCompareComplete() {
-                        console.log("Compare button action completed.");
-                        resolve();
-                    }
-
-                    compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
-
-                    const event = new Event("click", { bubbles: true });
-                    event.refresh = 1;
-                    compareButton.dispatchEvent(event);
-                });
-            }
-
-            console.log("Waiting for compare button action...");
-            await waitForCompareUpdate();
-            console.log("Compare button action completed.");
-
-            // Close modal
-            modal.hide();
-
-        } catch (error) {
-            console.error(error);
-            alert("Something went wrong. Please try again.");
-        } finally {
-            // Reset button and hide loading indicator
-            addToBlacklistBtn.disabled = true; // Re-disable button after completion
-            addToBlacklistBtn.textContent = "Add to Blacklist";
-            loadingIndicator.style.display = "none";
-        }
-    };
-}
 
 
 
-document.getElementById("editBlacklistModal").addEventListener("show.bs.modal", async function () {
-    const user1BlacklistMovies = document.getElementById("user1BlacklistMovies");
-    const user2BlacklistMovies = document.getElementById("user2BlacklistMovies");
-
-    document.getElementById("user1-tab").textContent = allUsers[0].name;
-    document.getElementById("user2-tab").textContent = allUsers[1].name;
-
-    // Clear previous entries before fetching
-    user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
-    user2BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">Loading...</li>';
-    document.getElementById("resetUser1Blacklist").style.display = "block";
-    document.getElementById("resetUser2Blacklist").style.display = "block";
-
-    try {
-        // Fetch data from backend
-        let response = await fetch("/fetch_blacklists/" + allUsers[0].username + "/" + allUsers[1].username);
-        if (!response.ok) throw new Error("Failed to fetch blacklists");
-
-        let data = await response.json(); // { user1: [...movies], user2: [...movies] }
-
-        // Populate User 1 Blacklist
-        user1BlacklistMovies.innerHTML = "";
-        if (data.user1.length > 0) {
-            data.user1.forEach(movie => {
-                let li = document.createElement("li");
-                li.className = "list-group-item d-flex justify-content-between align-items-center";
-                li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${allUsers[0]}" data-user="${allUsers[0].username}" data-movie="${movie.slug}">&#10005;</button>`;
-                user1BlacklistMovies.appendChild(li);
-            });
-        } else {
-            user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
-            // hide clear button
-            document.getElementById("resetUser1Blacklist").style.display = "none";
-        }
-
-        // Populate User 2 Blacklist
-        user2BlacklistMovies.innerHTML = "";
-        if (data.user2.length > 0) {
-            data.user2.forEach(movie => {
-                let li = document.createElement("li");
-                li.className = "list-group-item d-flex justify-content-between align-items-center";
-                li.innerHTML = `${movie.title} (${movie.year}) 
-                    <button class="btn btn-sm btn-danger remove-movie" data-name="${allUsers[1].name}" data-user="${allUsers[1].username}" data-movie="${movie.slug}">&#10005;</button>`;
-                user2BlacklistMovies.appendChild(li);
-            });
-        } else {
-            user2BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
-            // hide clear button
-            document.getElementById("resetUser2Blacklist").style.display = "none";
-        }
-
-    } catch (error) {
-        console.error(error);
-        user1BlacklistMovies.innerHTML = '<li class="list-group-item text-danger">Error loading blacklist</li>';
-        user2BlacklistMovies.innerHTML = '<li class="list-group-item text-danger">Error loading blacklist</li>';
-    }
-});
 
 
-document.addEventListener("click", async function (event) {
-    if (event.target.classList.contains("remove-movie")) {
-        let user = event.target.dataset.user;
-        let name = event.target.dataset.name;
-        let movieSlug = event.target.dataset.movie;
-
-        // if (!confirm(`Are you sure you want to remove this movie from ${name}'s blacklist?`)) {
-        //     return;
-        // }
-        
-        const loadingSpinner = document.getElementById("blacklistLoadingSpinner");
-        // Show loading spinner and clear previous lists
-        loadingSpinner.style.display = "block"; 
-
-        try {
-            let response = await fetch(`/remove_from_blacklist/${user}/${movieSlug}`, { method: "DELETE" });
-            if (!response.ok) throw new Error("Failed to remove movie");
-
-            // Refresh blacklist after removal
-            document.getElementById("editBlacklistModal").dispatchEvent(new Event("show.bs.modal"));
-
-            // Trigger compare button action to update recommendations
-            // Function to wait for compare button action to complete
-            async function waitForCompareUpdate() {
-                return new Promise((resolve) => {
-                    function onCompareComplete() {
-                        console.log("Compare button action completed.");
-                        resolve();
-                    }
-
-                    compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
-
-                    const event = new Event("click", { bubbles: true });
-                    event.refresh = 1;
-                    compareButton.dispatchEvent(event);
-                });
-            }
-
-            console.log("Waiting for compare button action...");
-            await waitForCompareUpdate();
-            console.log("Compare button action completed.");
-
-        } catch (error) {
-            console.error(error);
-            alert("Something went wrong. Please try again.");
-        }
-        finally {
-            // Hide loading spinner
-            loadingSpinner.style.display = "none";
-        }
-    }
 
 
-});
 
-// Reset User 1 Blacklist
-document.getElementById("resetUser1Blacklist").addEventListener("click", async function () {
-    const user1BlacklistMovies = document.getElementById("user1BlacklistMovies");
 
-    // Clear the list on the frontend
-    user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
-    // Remove clear button
-    document.getElementById("resetUser1Blacklist").style.display = "none";
 
-    const loadingSpinner = document.getElementById("blacklistLoadingSpinner");
-    // Show loading spinner and clear previous lists
-    loadingSpinner.style.display = "block"; 
 
-    // API call to reset blacklist on the server for User 1
-    try {
-        let response = await fetch(`/reset_blacklist/${allUsers[0].username}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Failed to reset User 1 blacklist");
-        console.log("User 1 blacklist reset successfully");
 
-        // Trigger compare button action to update recommendations
-        // Function to wait for compare button action to complete
-        async function waitForCompareUpdate() {
-            return new Promise((resolve) => {
-                function onCompareComplete() {
-                    console.log("Compare button action completed.");
-                    resolve();
-                }
 
-                compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
 
-                const event = new Event("click", { bubbles: true });
-                event.refresh = 1;
-                compareButton.dispatchEvent(event);
-            });
-        }
 
-        console.log("Waiting for compare button action...");
-        await waitForCompareUpdate();
-        console.log("Compare button action completed.");
 
-    } catch (error) {
-        console.error(error);
-        alert("Error resetting User 1 blacklist");
-    }
-    finally {
-        // Hide loading spinner
-        loadingSpinner.style.display = "none";
-    }
-});
 
-// Reset User 1 Blacklist
-document.getElementById("resetUser2Blacklist").addEventListener("click", async function () {
-    const user1BlacklistMovies = document.getElementById("user2BlacklistMovies");
 
-    // Clear the list on the frontend
-    user1BlacklistMovies.innerHTML = '<li class="list-group-item text-muted">No blacklisted movies</li>';
-    // Remove clear button
-    document.getElementById("resetUser2Blacklist").style.display = "none";
 
-    const loadingSpinner = document.getElementById("blacklistLoadingSpinner");
-    // Show loading spinner and clear previous lists
-    loadingSpinner.style.display = "block"; 
 
-    // API call to reset blacklist on the server for User 1
-    try {
-        let response = await fetch(`/reset_blacklist/${allUsers[1].username}`, { method: "DELETE" });
-        if (!response.ok) throw new Error("Failed to reset User 2 blacklist");
-        console.log("User 2 blacklist reset successfully");
 
-        // Trigger compare button action to update recommendations
-        // Function to wait for compare button action to complete
-        async function waitForCompareUpdate() {
-            return new Promise((resolve) => {
-                function onCompareComplete() {
-                    console.log("Compare button action completed.");
-                    resolve();
-                }
 
-                compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
 
-                const event = new Event("click", { bubbles: true });
-                event.refresh = 1;
-                compareButton.dispatchEvent(event);
-            });
-        }
 
-        console.log("Waiting for compare button action...");
-        await waitForCompareUpdate();
-        console.log("Compare button action completed.");
 
-    } catch (error) {
-        console.error(error);
-        alert("Error resetting User 2 blacklist");
-    }
-    finally {
-        // Hide loading spinner
-        loadingSpinner.style.display = "none";
-    }
-});
+
+
+
+
+
+
 
 
 
@@ -1099,9 +806,6 @@ function setDisplayNames(user1_name, user2_name) {
 ////////////////////////////////////////// Compare Button //////////////////////////////////////////
 document.getElementById('compareButton').addEventListener('click', async function (event) {
 
-    // Hide footer
-    document.getElementById("footer").classList.add('d-none');
-
     document.getElementById("go-spinner").style.display = "block"; // Show loading spinner
 
     
@@ -1155,18 +859,12 @@ document.getElementById('compareButton').addEventListener('click', async functio
 
     // Show the real recommendations content
     //document.getElementById("RecommendContainerReal").classList.remove('d-none');
-    document.getElementById("RecommendContainerReal").scrollTop = 0;
+    //document.getElementById("RecommendContainerReal").scrollTop = 0;
     document.getElementById("go-spinner").style.display = "none"; // Hide loading spinner
 
     // Fire the event so `waitForCompareUpdate()` knows it's done
     const completeEvent = new Event("compareComplete");
     document.getElementById("compareButton").dispatchEvent(completeEvent);
-
-    // Show the footer
-    document.getElementById("footer").classList.remove('d-none');
-
-    AOS.refresh(); // <- This tells AOS to re-scan the DOM
-    
 
 });
 
@@ -1226,6 +924,7 @@ function generateRecUserButtons(refresh) {
     // get all users whose buttons are active
     const activeButtons = document.querySelectorAll("#userButtonsContainer button.active");
     const allActiveUsers = Array.from(activeButtons).map(btn => btn.getAttribute("data-user"));
+    
     FetchRecommendations(allActiveUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 }
 
@@ -1270,6 +969,7 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
 
         const weight = 0;
 
+        const scrollY = window.scrollY; // <-- Save scroll position
         const realRecommendContent = document.getElementById("RecommendContainerReal");
         realRecommendContent.innerHTML = "";  // Clear content efficiently
 

@@ -116,11 +116,11 @@ def preprocess_data(usernames):
 @app.route("/train_model", methods=["GET"])
 def train_model():
     """Simulate a task that takes a few seconds"""
-    try:
-        recommender_instance.train_model()
-        return jsonify({"success": True})
-    except:
-        return jsonify({"success": False}), 404
+    # try:
+    recommender_instance.train_model()
+    return jsonify({"success": True})
+    # except:
+    #     return jsonify({"success": False}), 404
 
 
 ################ Fetch data for content ################
@@ -263,13 +263,19 @@ def fetch_explanation(username, slug):
     return jsonify({"success": True, "message": "Influential movies found", "username": username, "movies": movies})
 
 
-@app.route('/fetch_blacklists/<string:username1>/<string:username2>', methods=['GET'])
-def get_blacklists(username1, username2):
-    blacklist_1 = list(user_profiles[username1].get_blacklist())
-    movies_bl1 = retrieve_movies(blacklist_1, top_k=-1)
-    blacklist_2 = list(user_profiles[username2].get_blacklist())
-    movies_bl2 = retrieve_movies(blacklist_2, top_k=-1)
-    return jsonify({"user1": movies_bl1, "user2": movies_bl2})
+@app.route('/fetch_blacklists/<string:usernames>', methods=['GET'])
+def get_blacklists(usernames):
+    usernames = usernames.split(",")
+    user_blacklists = {}
+    for username in usernames:
+        if username in user_profiles:
+            blacklist = list(user_profiles[username].get_blacklist())
+            movies_bl = retrieve_movies(blacklist, top_k=-1)
+            user_blacklists[username] = movies_bl
+        else:
+            return jsonify({"error": f"User {username} not found"}), 404
+
+    return jsonify(user_blacklists)
 
 
 @app.route('/add_to_blacklist/<string:username>/<string:slug>', methods=['POST'])
