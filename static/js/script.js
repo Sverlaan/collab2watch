@@ -309,6 +309,7 @@ async function FetchRewatchlist(username, other_usernames, realRewatchCombo, min
             realRewatchCombo.removeChild(realRewatchCombo.firstChild);
         }
 
+
         // Loop through the data and generate the carousel items
         index = 0;
         data.forEach(movie => {
