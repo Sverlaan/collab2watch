@@ -221,6 +221,11 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
         const all_usernames = allUsers.map(u => u.username).join(",");
 
         const superContainer = document.getElementById("SingleWatchlistsContainer");
+
+
+        const height = allUsers.length * 261;
+        superContainer.style.height = `${height}px`;
+
         // delete all existing containers
         while (superContainer.firstChild) {
             superContainer.removeChild(superContainer.firstChild);
@@ -245,17 +250,13 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             }
         
             const container = document.createElement('div');
-            if (index == 1) {
-                container.className = "container hover-zoom bg-tertiary-subtle w-75 p-3";
-            } else {
-                container.className = "container mt-4 hover-zoom bg-tertiary-subtle w-75 p-3";
-            }
+            container.className = "container hover-zoom bg-tertiary-subtle w-75 p-4";
             container.id = containerId;
         
             container.innerHTML = `
                 <div class="row justify-content-evenly align-items-center">
                     <div class="col-md-3 bg-tertiary justify-content-center align-items-center ${isEven ? '' : 'order-md-2'}">
-                        <h1 id="${titleId}" style="margin-bottom: 0px;" class="text-center">${user.name}'s</h1>
+                        <h1 id="${titleId}" class="text-center">${user.name}'s</h1>
                         <h1 class="text-center">Watchlist</h1>
                         <p id="${subtitleId}" class="text-center text-muted">Movies the other(s) might like!</p>
                     </div>
@@ -272,7 +273,7 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
             if (!response.ok) throw new Error(`Something went wrong getting single watchlist ${SWL_num}`);
             const data = await response.json();
 
-            // Loop through the data and generate the cards
+            //Loop through the data and generate the cards
             data.forEach(movie => {
 
                 // Generate each card
@@ -286,10 +287,10 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
                 `;
                 document.getElementById(`${contentId}`).appendChild(card);
             });
-        
+        }
             
 
-        }
+        
 
     } catch (error) {
         console.error(error);
@@ -297,47 +298,52 @@ async function FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime
     
 }
 
-// Fetch common watchlist from Flask backend and populate the DOM
 async function FetchRewatchlist(username, other_usernames, realRewatchCombo, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
         const response = await fetch(`/fetch_rewatchlist/${username}/${other_usernames}/${minRating}/${maxRating}/${minRuntime}/${maxRuntime}/${minYear}/${maxYear}`);
         if (!response.ok) throw new Error("Something went wrong getting rewatchlist");
         const data = await response.json();
-        
-        // delete all existing carousel items
-        while (realRewatchCombo.firstChild) {
-            realRewatchCombo.removeChild(realRewatchCombo.firstChild);
-        }
 
+        // Clear existing items safely
+        realRewatchCombo.innerHTML = "";
 
-        // Loop through the data and generate the carousel items
-        index = 0;
+        const fragment = document.createDocumentFragment();
+
+        let index = 0;
         data.forEach(movie => {
-
             index += 1;
 
-            // Generate each carousel item
-            realRewatchCombo.innerHTML += `
-            <div class="carousel-item ${index === 1 ? 'active' : ''}">
+            const carouselItem = document.createElement("div");
+            carouselItem.className = `carousel-item ${index === 1 ? 'active' : ''}`;
+
+            carouselItem.innerHTML = `
                 <div class="hover-zoom overflow-hidden">
                     <img src="${movie.banner}" class="card d-block w-100 rounded open-movie-modal" alt="${movie.title}" slug="${movie.slug}">
                 </div>
                 <div class="position-relative text-center text-muted p-3" style="font-size: 18px;">
                     ${movie.title} (${movie.year})
                 </div>
-            </div>
             `;
+
+            fragment.appendChild(carouselItem);
         });
+
+        realRewatchCombo.appendChild(fragment);
 
     } catch (error) {
         console.error(error);
     }
-    
 }
+
 
 async function generateRewatchCarousels(allUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     const container = document.getElementById("RewatchContainer");
-    container.innerHTML = ""; // Clear previous carousels
+
+    // LOCK scroll position to prevent jump
+    const scrollY = window.scrollY;
+
+    // Clear previous carousels
+    container.innerHTML = "";
 
     for (let user of allUsers) {
         const otherUsers = allUsers.filter(u => u.username !== user.username);
@@ -346,27 +352,29 @@ async function generateRewatchCarousels(allUsers, minRating, maxRating, minRunti
         const carouselId = `carousel-${user.username}`;
         const carouselInnerId = `${carouselId}-inner`;
 
-        // Create carousel HTML dynamically
-        // TODO: Can also do: <div class="d-inline-block align-top" style="width: 500px; margin-right: 20px;"> in first line!
-        container.innerHTML += `
-            <div class="col-md-5 d-inline-block align-top">
-                <h1 class="text-center">Rewatches for ${user.name}</h1>
-                <p class="text-center text-muted mb-3">Movies highly rated by ${user.name} that the other(s) might like!</p>
-                <div id="${carouselId}" class="carousel slide p-3" data-bs-ride="carousel">
-                    <div class="carousel-inner" id="${carouselInnerId}"></div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev">
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next">
-                    </button>
-                </div>
+        // Create wrapper element and append later
+        const wrapper = document.createElement("div");
+        wrapper.className = "col-md-5 d-inline-block align-top";
+        wrapper.innerHTML = `
+            <h1 class="text-center">Rewatches for ${user.name}</h1>
+            <p class="text-center text-muted mb-3">Movies highly rated by ${user.name} that the other(s) might like!</p>
+            <div id="${carouselId}" class="carousel slide p-3" data-bs-ride="carousel">
+                <div class="carousel-inner" id="${carouselInnerId}"></div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#${carouselId}" data-bs-slide="prev"></button>
+                <button class="carousel-control-next" type="button" data-bs-target="#${carouselId}" data-bs-slide="next"></button>
             </div>
         `;
 
-        // Fetch and populate carousel
-        const innerCarousel = document.getElementById(carouselInnerId);
+        container.appendChild(wrapper);
+
+        const innerCarousel = wrapper.querySelector(`#${carouselInnerId}`);
         await FetchRewatchlist(user.username, otherUsernames, innerCarousel, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
     }
+
+    // RESTORE scroll position
+    window.scrollTo({ top: scrollY });
 }
+
 
 
 
@@ -464,6 +472,8 @@ document.body.addEventListener("click", async function (event) {
         const title = event.target.getAttribute("data-title");
         const year = event.target.getAttribute("data-year");
         blacklistMovie(slug, title, year, weight);
+
+        
     }
     else if (modalTrigger2) {
 
@@ -816,11 +826,12 @@ document.getElementById('compareButton').addEventListener('click', async functio
     const refresh = event.refresh ?? 0; // Use event.refresh if available, otherwise default to true
     if (refresh == 0) {
         document.getElementById("contentContainer").classList.add('d-none');
-        await InitializeAndTrain(username1, username2);
+        await InitializeAndTrain();
     }
     else if (refresh == 1){
         // Show the content container
-        await InitializeAndTrain(username1, username2);
+        console.log("WAS HERE 1");
+        await InitializeAndTrain();
     }
 
     // Set display names
@@ -843,11 +854,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     await FetchSingleWatchlist(minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     // Fetch rewatchlist data
-    generateRewatchCarousels(allUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    // const realRewatchCombo1 = document.querySelector('#carousel1 .carousel-inner');
-    // await FetchRewatchlist(username1, username2, realRewatchCombo1, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
-    // const realRewatchCombo2 = document.querySelector('#carousel2 .carousel-inner');
-    // await FetchRewatchlist(username2, username1, realRewatchCombo2, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await generateRewatchCarousels(allUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 
     //document.getElementById('RecommendContainerReal').classList.add('d-none');
     // Show the content container
@@ -855,7 +862,7 @@ document.getElementById('compareButton').addEventListener('click', async functio
     document.getElementById("contentContainer").classList.remove('d-none');
     
     // Get Recommendations
-    generateRecUserButtons(refresh);
+    await generateRecUserButtons(refresh);
 
     // Show the real recommendations content
     //document.getElementById("RecommendContainerReal").classList.remove('d-none');
@@ -863,8 +870,8 @@ document.getElementById('compareButton').addEventListener('click', async functio
     document.getElementById("go-spinner").style.display = "none"; // Hide loading spinner
 
     // Fire the event so `waitForCompareUpdate()` knows it's done
-    const completeEvent = new Event("compareComplete");
-    document.getElementById("compareButton").dispatchEvent(completeEvent);
+    // const completeEvent = new Event("compareComplete");
+    // document.getElementById("compareButton").dispatchEvent(completeEvent);
 
 });
 
@@ -875,14 +882,14 @@ function getActiveUsernames() {
 }
 
 
-function generateRecUserButtons(refresh) {
+async function generateRecUserButtons(refresh) {
 
     if (refresh == 0) {
         console.log("Refreshing user buttons");
         const container = document.getElementById("userButtonsContainer");
         container.innerHTML = ""; // Clear previous buttons
 
-        allUsers.forEach((user, index) => {
+        for (let [index, user] of allUsers.entries()) {
             const button = document.createElement("button");
             button.type = "button";
             button.className = "btn btn-outline-warning";
@@ -896,22 +903,22 @@ function generateRecUserButtons(refresh) {
             button.id = `user-btn-${user}`;
 
             // Toggle active class on click
-            button.addEventListener("click", () => {
+            button.addEventListener("click", async () => {
                 button.classList.toggle("active");
-
+            
                 const minRating = document.getElementById('minRating').value;
                 const maxRating = document.getElementById('maxRating').value;
                 const minRuntime = document.getElementById('minRuntime').value;
                 const maxRuntime = document.getElementById('maxRuntime').value;
                 const minYear = document.getElementById('minYear').value;
                 const maxYear = document.getElementById('maxYear').value;
-
-                // Pass them to FetchRecommendations
-                FetchRecommendations(getActiveUsernames(), minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+            
+                // ✅ Await now works here
+                await FetchRecommendations(getActiveUsernames(), minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
             });
 
             container.appendChild(button);
-        });
+        };
     }
 
     const minRating = document.getElementById('minRating').value;
@@ -925,7 +932,7 @@ function generateRecUserButtons(refresh) {
     const activeButtons = document.querySelectorAll("#userButtonsContainer button.active");
     const allActiveUsers = Array.from(activeButtons).map(btn => btn.getAttribute("data-user"));
     
-    FetchRecommendations(allActiveUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
+    await FetchRecommendations(allActiveUsers, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear);
 }
 
 ////////////////////////////////////////// Radio Buttons //////////////////////////////////////////
@@ -955,6 +962,8 @@ function generateRecUserButtons(refresh) {
 async function FetchRecommendations(usernames, minRating, maxRating, minRuntime, maxRuntime, minYear, maxYear) {
     try {
 
+        
+
         if (usernames.length === 0) {
             console.error("No users selected for recommendations.");
             const realRecommendContent = document.getElementById("RecommendContainerReal");
@@ -969,7 +978,6 @@ async function FetchRecommendations(usernames, minRating, maxRating, minRuntime,
 
         const weight = 0;
 
-        const scrollY = window.scrollY; // <-- Save scroll position
         const realRecommendContent = document.getElementById("RecommendContainerReal");
         realRecommendContent.innerHTML = "";  // Clear content efficiently
 

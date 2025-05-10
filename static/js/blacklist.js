@@ -35,7 +35,9 @@ async function blacklistMovie(slug, title, year, weight) {
     // Auto-blacklist for a single user
     if (allActiveUsers.length === 1) {
         const user = allActiveUsers[0];
+
         try {
+            console.log(`Adding ${slug} to ${user}'s blacklist...`);
             const response = await fetch(`/add_to_blacklist/${user}/${slug}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" }
@@ -46,6 +48,8 @@ async function blacklistMovie(slug, title, year, weight) {
             }
 
             await waitForCompareUpdate();
+
+            return;
             
         } catch (error) {
             console.error(error);
@@ -107,6 +111,7 @@ async function blacklistMovie(slug, title, year, weight) {
             }
 
             await waitForCompareUpdate();
+            modal.hide();
         } catch (error) {
             console.error(error);
             alert("Something went wrong. Please try again.");
@@ -244,17 +249,17 @@ document.addEventListener("click", async function (event) {
 
 
 async function waitForCompareUpdate() {
-    return new Promise((resolve) => {
-        function onCompareComplete() {
-            console.log("Compare button action completed.");
-            resolve();
-        }
+    // return new Promise((resolve) => {
+    //     function onCompareComplete() {
+    //         console.log("Compare button action completed.");
+    //         resolve();
+    //     }
 
-        compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
+    //     compareButton.addEventListener("compareComplete", onCompareComplete, { once: true });
 
         const event = new Event("click", { bubbles: true });
         event.refresh = 1;
         compareButton.dispatchEvent(event);
-    });
+    // });
 }
 
